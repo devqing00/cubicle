@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { toast } from "sonner";
-import { ClockIcon, CalendarIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import HugeIcon from "@/components/ui/HugeIcon";
 
 // Days of the week mapping
 const DAYS = [
@@ -32,10 +32,7 @@ export default function AvailabilityPage() {
   
   const [overrides, setOverrides] = useState<{ id: string; date: string; reason: string }[]>([]);
   const [newOverride, setNewOverride] = useState({ date: "", reason: "" });
-  
   const [isSaving, setIsSaving] = useState(false);
-
-
 
   const toggleDay = (dayId: number) => {
     setSchedule(prev => ({
@@ -83,60 +80,73 @@ export default function AvailabilityPage() {
     }
   };
 
-  if (authLoading) return <div className="animate-pulse">Loading availability...</div>;
+  if (authLoading) {
+    return (
+      <div className="min-h-[300px] flex items-center justify-center font-body text-text-secondary">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 border-2 border-accent-blue border-t-transparent rounded-full animate-spin" />
+          <span>Loading availability...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (userData?.role !== "tutor") {
-    return <div>Unauthorized access.</div>;
+    return (
+      <div className="min-h-[300px] flex items-center justify-center font-body text-text-secondary">
+        <span>Unauthorized access.</span>
+      </div>
+    );
   }
 
   return (
     <div className="w-full">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-border-light">
         <div>
-          <h1 className="font-heading text-4xl font-bold text-oboe-black mb-2">Availability</h1>
-          <p className="font-body text-mid-gray-brown">Manage your weekly working hours.</p>
+          <h1 className="font-heading text-3xl md:text-4xl font-bold text-text-primary">Availability</h1>
+          <p className="font-body text-xs md:text-sm text-text-secondary mt-1">Manage your weekly working hours and lesson time slots.</p>
         </div>
         <div className="flex items-center gap-3">
           <button 
             onClick={() => toast.info("Google Calendar sync will be added soon!")}
-            className="px-6 py-2.5 bg-white border border-border-warm text-dark-charcoal rounded-full font-body font-medium flex items-center gap-2 hover:bg-surface-base transition-colors"
+            className="px-5 py-2.5 bg-white border border-border-light text-text-primary rounded-full font-body text-xs font-semibold flex items-center gap-2 hover:bg-surface-muted transition-colors"
           >
-            <CalendarIcon className="w-5 h-5" />
-            Sync Calendar
+            <HugeIcon name="calendar" size={16} className="text-accent-blue" />
+            <span>Sync Calendar</span>
           </button>
           <button 
             onClick={handleSave}
             disabled={isSaving}
-            className="px-6 py-2.5 bg-oboe-black text-white rounded-full font-body font-medium hover:bg-dark-charcoal transition-colors disabled:opacity-50"
+            className="px-6 py-2.5 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors disabled:opacity-50"
           >
             {isSaving ? "Saving..." : "Save Schedule"}
           </button>
         </div>
       </div>
 
-      <div className="bg-white p-8 rounded-3xl border border-border-warm shadow-sm">
-        <div className="flex items-center gap-3 mb-8 border-b border-border-warm pb-6">
-          <div className="p-3 bg-chip-yellow rounded-xl">
-            <ClockIcon className="w-6 h-6 text-dark-charcoal" />
+      <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-border-light shadow-xs mb-8">
+        <div className="flex items-center gap-3 mb-8 border-b border-border-light pb-6">
+          <div className="w-10 h-10 bg-accent-blue/10 rounded-xl border border-accent-blue/20 flex items-center justify-center text-accent-blue">
+            <HugeIcon name="clock" size={20} />
           </div>
           <div>
-            <h3 className="font-heading text-xl font-bold text-oboe-black">Weekly Hours</h3>
-            <p className="font-body text-sm text-mid-gray-brown">These hours dictate when students can book you.</p>
+            <h3 className="font-heading text-xl font-bold text-text-primary">Weekly Hours</h3>
+            <p className="font-body text-xs text-text-secondary">These hours dictate when students can book lessons with you.</p>
           </div>
         </div>
 
         <div className="space-y-6 max-w-3xl">
           {DAYS.map(day => (
-            <div key={day.id} className="flex flex-col sm:flex-row sm:items-center gap-4 py-2 border-b border-border-warm/50 last:border-0 pb-6 last:pb-0">
+            <div key={day.id} className="flex flex-col sm:flex-row sm:items-center gap-4 py-2 border-b border-border-light/60 last:border-0 pb-6 last:pb-0">
               
               <div className="w-40 flex items-center gap-3">
                 <button
                   onClick={() => toggleDay(day.id)}
-                  className={`w-12 h-6 rounded-full p-1 transition-colors ${schedule[day.id].active ? 'bg-highlight-green' : 'bg-surface-base border border-border-warm'}`}
+                  className={`w-12 h-6 rounded-full p-1 transition-colors relative ${schedule[day.id].active ? 'bg-accent-blue' : 'bg-surface-muted border border-border-light'}`}
                 >
-                  <div className={`w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform ${schedule[day.id].active ? 'translate-x-6' : 'translate-x-0 bg-mid-gray-brown'}`} />
+                  <div className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform ${schedule[day.id].active ? 'translate-x-6' : 'translate-x-0'}`} />
                 </button>
-                <span className={`font-body font-medium ${schedule[day.id].active ? 'text-oboe-black' : 'text-mid-gray-brown'}`}>
+                <span className={`font-body text-xs font-bold ${schedule[day.id].active ? 'text-text-primary' : 'text-text-secondary'}`}>
                   {day.label}
                 </span>
               </div>
@@ -147,18 +157,18 @@ export default function AvailabilityPage() {
                     type="time" 
                     value={schedule[day.id].startTime}
                     onChange={(e) => updateTime(day.id, "startTime", e.target.value)}
-                    className="p-3 bg-surface-base border border-border-warm rounded-xl font-body text-dark-charcoal focus:outline-none focus:ring-2 focus:ring-cta-yellow"
+                    className="px-3 py-2 bg-surface-near-white border border-border-light rounded-xl font-body text-xs text-text-primary focus:outline-none focus:border-accent-blue"
                   />
-                  <span className="text-mid-gray-brown">to</span>
+                  <span className="text-xs text-text-secondary font-medium">to</span>
                   <input 
                     type="time" 
                     value={schedule[day.id].endTime}
                     onChange={(e) => updateTime(day.id, "endTime", e.target.value)}
-                    className="p-3 bg-surface-base border border-border-warm rounded-xl font-body text-dark-charcoal focus:outline-none focus:ring-2 focus:ring-cta-yellow"
+                    className="px-3 py-2 bg-surface-near-white border border-border-light rounded-xl font-body text-xs text-text-primary focus:outline-none focus:border-accent-blue"
                   />
                 </div>
               ) : (
-                <div className="flex-1 text-mid-gray-brown font-body italic text-sm py-3">
+                <div className="flex-1 text-text-subtle font-body italic text-xs py-2">
                   Unavailable
                 </div>
               )}
@@ -168,67 +178,67 @@ export default function AvailabilityPage() {
         </div>
       </div>
 
-      <div className="bg-white p-8 rounded-3xl border border-border-warm shadow-sm mt-8">
-        <div className="flex items-center gap-3 mb-8 border-b border-border-warm pb-6">
-          <div className="p-3 bg-chip-pink rounded-xl">
-            <CalendarIcon className="w-6 h-6 text-dark-charcoal" />
+      <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-border-light shadow-xs">
+        <div className="flex items-center gap-3 mb-8 border-b border-border-light pb-6">
+          <div className="w-10 h-10 bg-surface-muted rounded-xl border border-border-light flex items-center justify-center text-text-primary">
+            <HugeIcon name="calendar" size={20} />
           </div>
           <div>
-            <h3 className="font-heading text-xl font-bold text-oboe-black">Date Overrides</h3>
-            <p className="font-body text-sm text-mid-gray-brown">Block off specific dates for holidays or time off.</p>
+            <h3 className="font-heading text-xl font-bold text-text-primary">Date Overrides</h3>
+            <p className="font-body text-xs text-text-secondary">Block off specific dates for holidays or personal time off.</p>
           </div>
         </div>
 
         <div className="max-w-3xl">
-          <div className="flex items-end gap-4 mb-6 p-4 bg-surface-base rounded-2xl border border-border-warm">
+          <div className="flex items-end gap-4 mb-6 p-4 bg-surface-near-white rounded-2xl border border-border-light">
             <div className="flex-1">
-              <label className="block font-body text-xs font-bold text-dark-charcoal mb-1 uppercase tracking-wider">Date</label>
+              <label className="block font-body text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Date</label>
               <input 
                 type="date"
                 value={newOverride.date}
                 onChange={e => setNewOverride({...newOverride, date: e.target.value})}
-                className="w-full p-3 bg-white border border-border-warm rounded-xl font-body text-sm text-dark-charcoal focus:outline-none focus:ring-2 focus:ring-cta-yellow"
+                className="w-full px-3 py-2 bg-white border border-border-light rounded-xl font-body text-xs text-text-primary focus:outline-none focus:border-accent-blue"
               />
             </div>
             <div className="flex-1">
-              <label className="block font-body text-xs font-bold text-dark-charcoal mb-1 uppercase tracking-wider">Reason (Optional)</label>
+              <label className="block font-body text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Reason (Optional)</label>
               <input 
                 type="text"
                 placeholder="e.g. Vacation"
                 value={newOverride.reason}
                 onChange={e => setNewOverride({...newOverride, reason: e.target.value})}
-                className="w-full p-3 bg-white border border-border-warm rounded-xl font-body text-sm text-dark-charcoal focus:outline-none focus:ring-2 focus:ring-cta-yellow"
+                className="w-full px-3 py-2 bg-white border border-border-light rounded-xl font-body text-xs text-text-primary focus:outline-none focus:border-accent-blue"
               />
             </div>
             <button
               onClick={addOverride}
-              className="p-3 bg-cta-yellow text-oboe-black rounded-xl hover:bg-chip-yellow transition-colors font-bold flex items-center justify-center border border-oboe-black"
+              className="px-4 py-2 bg-text-primary text-white rounded-xl hover:bg-black transition-colors text-xs font-semibold flex items-center justify-center"
             >
-              <PlusIcon className="w-5 h-5" />
+              <span>+ Add</span>
             </button>
           </div>
 
           {overrides.length > 0 ? (
             <div className="space-y-3">
               {overrides.map(override => (
-                <div key={override.id} className="flex justify-between items-center p-4 bg-white border border-border-warm rounded-xl shadow-sm">
+                <div key={override.id} className="flex justify-between items-center p-4 bg-surface-near-white border border-border-light rounded-2xl">
                   <div>
-                    <h4 className="font-heading font-semibold text-oboe-black">
+                    <h4 className="font-heading font-bold text-xs text-text-primary">
                       {new Date(override.date).toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                     </h4>
-                    {override.reason && <p className="font-body text-sm text-mid-gray-brown">{override.reason}</p>}
+                    {override.reason && <p className="font-body text-[11px] text-text-secondary mt-0.5">{override.reason}</p>}
                   </div>
                   <button
                     onClick={() => removeOverride(override.id)}
-                    className="p-2 text-mid-gray-brown hover:text-red-600 transition-colors bg-surface-base rounded-lg"
+                    className="p-2 text-text-secondary hover:text-red-600 transition-colors bg-white rounded-lg border border-border-light"
                   >
-                    <TrashIcon className="w-5 h-5" />
+                    <HugeIcon name="cancel" size={16} />
                   </button>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="font-body text-sm text-mid-gray-brown italic py-2">No overrides added yet.</p>
+            <p className="font-body text-xs text-text-subtle italic py-2">No overrides added yet.</p>
           )}
         </div>
       </div>

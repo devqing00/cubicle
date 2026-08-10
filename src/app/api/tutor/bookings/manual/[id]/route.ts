@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminDb as db } from "@/lib/firebase-admin";
+import { issueRefund } from "@/lib/paystack";
 
 async function sendWhatsAppMessage(to: string, text: string) {
   const phoneId = process.env.WHATSAPP_PHONE_ID;
@@ -60,6 +61,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const isTrial = bookingData?.tier === "trial";
     const finalStatus = (status === "confirmed" && isTrial) ? "paid" : status;
 
+    // Handle refunds if rejecting a paid booking
+    if (status === "cancelled" && bookingData?.status === "paid" && bookingData?.paystackReference) {
+      console.log(`Rejecting paid booking ${id}. Issuing refund...`);
+      await issueRefund(bookingData.paystackReference);
+    }
+
     await bookingRef.update({
       status: finalStatus,
       updatedAt: new Date().toISOString(),
@@ -67,13 +74,25 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     });
 
     // Send WhatsApp notification
-    if (status === "confirmed" && bookingData?.studentWhatsApp) {
-      if (isTrial) {
-        const meetLink = bookingData.meetLink || bookingData.responses?.meetLink || "You will receive the meeting link shortly from your instructor.";
-        const msg = `Hi ${bookingData.studentName || 'there'}!\n\nYour Free Trial booking on Cubicle has been *confirmed*! 🎉\n\nBooking Reference: ${bookingData.reference}\nMeeting Link: ${meetLink}\n\nThank you for choosing Cubicle!`;
+    if (bookingData?.studentWhatsApp) {
+      const directContactLink = "https://wa.me/234XXXXXXXXXX"; // Replace with actual business number
+      if (status === "confirmed") {
+        if (isTrial) {
+          const meetLink = bookingData.meetLink || bookingData.responses?.meetLink || "You will receive the meeting link shortly from your instructor.";
+          const msg = `Hi ${bookingData.studentName || 'there'}!\n\nYour Free Trial booking on Cubicle has been *confirmed*! 🎉\n\nBooking Reference: ${bookingData.reference}\nMeeting Link: ${meetLink}\n\nIf you have any questions, you can message your tutor directly here: ${directContactLink}\n\nThank you for choosing Cubicle!`;
+          await sendWhatsAppMessage(bookingData.studentWhatsApp, msg);
+        } else {
+          const msg = `Hi ${bookingData.studentName || 'there'}!\n\nYour music lesson booking on Cubicle has been *confirmed* by the instructor. 🎉\n\nBooking Reference: ${bookingData.reference}\n\nPlease proceed to make your payment to secure your spot. We will send you the class link shortly after payment.\n\nIf you have any questions, you can message your tutor directly here: ${directContactLink}\n\nThank you for choosing Cubicle!`;
+          await sendWhatsAppMessage(bookingData.studentWhatsApp, msg);
+        }
+      } else if (status === "cancelled") {
+        let msg = `Hi ${bookingData.studentName || 'there'},\n\nUnfortunately, your lesson booking (${bookingData.reference}) was declined by the instructor due to unavailability.`;
+        if (bookingData.status === "paid" && bookingData.paystackReference) {
+          msg += `\n\nWe have automatically issued a full refund of your payment via Paystack. It should reflect in your account shortly.`;
+        }
         await sendWhatsAppMessage(bookingData.studentWhatsApp, msg);
-      } else {
-        const msg = `Hi ${bookingData.studentName || 'there'}!\n\nYour music lesson booking on Cubicle has been *confirmed* by the instructor. 🎉\n\nBooking Reference: ${bookingData.reference}\n\nPlease proceed to make your payment to secure your spot. We will send you the class link shortly after payment.\n\nThank you for choosing Cubicle!`;
+      } else if (status === "completed") {
+        const msg = `Hi ${bookingData.studentName || 'there'}!\n\nYour lesson (${bookingData.reference}) is now complete! 🎶\n\nWe hope you had a great time. Don't forget to practice and book your next session soon!\n\n- The Cubicle Team`;
         await sendWhatsAppMessage(bookingData.studentWhatsApp, msg);
       }
     }

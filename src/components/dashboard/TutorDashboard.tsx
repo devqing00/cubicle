@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { UserData } from "@/lib/AuthContext";
-import { ClockIcon, UserGroupIcon, ChartBarIcon, CalendarIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
+import HugeIcon from "@/components/ui/HugeIcon";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Booking } from "./StudentDashboard";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function TutorDashboard({ userData }: { userData: UserData }) {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // Modal states
+  const [rejectModalBooking, setRejectModalBooking] = useState<Booking | null>(null);
+  const [completeModalBooking, setCompleteModalBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
     const q = query(
@@ -36,25 +43,67 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
   // Derived stats
   const completedLessons = bookings.filter(l => l.status === "completed");
   const totalEarnings = completedLessons.reduce((sum, lesson) => sum + (lesson.tier === "standard" ? 15000 : lesson.tier === "intensive" ? 25000 : 0), 0);
-  const hoursTaught = completedLessons.length; // Assuming 1 hr per lesson
+  const hoursTaught = completedLessons.length;
   const activeStudents = new Set(bookings.filter(l => l.status !== "cancelled").map(l => l.studentId)).size;
   
-  const upcomingLessons = bookings.filter(l => l.status === "confirmed").sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  const upcomingLessons = bookings.filter(l => l.status === "confirmed" || l.status === "paid").sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   const nextLesson = upcomingLessons[0];
 
   const pastLessons = bookings.filter(l => l.status === "completed" || l.status === "cancelled").slice(0, 3);
   const pendingApprovals = bookings.filter(l => l.status === "pending_wa");
 
   const handleApprove = async (id: string) => {
+    setActionLoading(true);
     try {
       await fetch(`/api/tutor/bookings/manual/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "confirmed" })
       });
-      // toast will be added later if needed, state auto updates via onSnapshot
+      toast.success("Booking approved and confirmed.");
     } catch (e) {
       console.error(e);
+      toast.error("Failed to approve booking.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const confirmReject = async () => {
+    if (!rejectModalBooking) return;
+    setActionLoading(true);
+    try {
+      await fetch(`/api/tutor/bookings/manual/${rejectModalBooking.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "cancelled" })
+      });
+      toast.success("Booking rejected.");
+      setRejectModalBooking(null);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to reject booking.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const confirmComplete = async () => {
+    if (!completeModalBooking) return;
+    setActionLoading(true);
+    try {
+      await fetch(`/api/tutor/bookings/manual/${completeModalBooking.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "completed" })
+      });
+      toast.success("Lesson marked as completed!");
+      setCompleteModalBooking(null);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to update status.");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -73,181 +122,230 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
             const bDate = new Date(b.createdAt);
             return bDate.getDate() === d.getDate() && bDate.getMonth() === d.getMonth() && bDate.getFullYear() === d.getFullYear();
         });
-        const dayEarnings = dayBookings.reduce((sum, lesson) => sum + (lesson.tier === "standard" ? 15000 : lesson.tier === "intensive" ? 25000 : 0), 0);
-        data.push({ name: dayStr, earnings: dayEarnings });
+        
+        const earnings = dayBookings.reduce((sum, b) => sum + (b.tier === "standard" ? 15000 : b.tier === "intensive" ? 25000 : 0), 0);
+        data.push({ day: dayStr, earnings });
     }
     return data;
   }, [bookings]);
 
   return (
-    <div className="w-full">
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-12 pb-8 border-b border-border-warm">
+    <div className="space-y-8 font-body">
+      
+      {/* Welcome Banner */}
+      <div className="bg-white p-8 rounded-[28px] border border-border-light shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-6 w-full">
         <div>
-          <h1 className="font-heading text-4xl md:text-[44px] font-bold text-oboe-black leading-[1.1] mb-2">
-            Welcome back,
-          </h1>
-          <h2 className="font-heading text-4xl md:text-[44px] font-bold text-oboe-black leading-[1.1] mb-4">
-            {userData.displayName || userData.email?.split("@")[0]}
-          </h2>
-          <p className="font-body text-[17px] text-mid-gray-brown">Manage your schedule, students, and earnings.</p>
-        </div>
-        <div className="hidden md:block">
-          <span className="px-6 py-2 bg-gradient-to-tr from-chip-green/80 to-chip-blue/80 backdrop-blur-md text-[#2a2522] text-xs font-bold uppercase tracking-[0.25em] rounded-full shadow-sm border border-white/60">
-            Instructor
+          <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-xs font-bold uppercase tracking-wider mb-2 inline-block border border-accent-blue/20">
+            Instructor Portal
           </span>
+          <h1 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
+            Welcome back, {userData.displayName || userData.firstName || userData.fullName || "Tutor"}
+          </h1>
+          <p className="font-body text-xs sm:text-sm text-text-secondary mt-1">
+            Manage your teaching schedule, incoming session requests, and revenue analytics.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <Link
+            href="/dashboard/schedule"
+            className="px-6 py-3 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors shrink-0 shadow-xs"
+          >
+            Manage Schedule
+          </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Stat Cards - Premium Large Overlay Styling */}
-        <div className="group bg-oboe-black p-8 rounded-3xl text-white shadow-lg relative overflow-hidden flex flex-col justify-end min-h-[180px] cursor-default">
-          <div className="absolute -top-6 -right-6 p-4 opacity-10 group-hover:opacity-15 transition-all duration-500 transform -rotate-12 group-hover:-rotate-8 group-hover:scale-110">
-            <svg width="0" height="0">
-              <linearGradient id="clockGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop stopColor="rgba(255, 255, 255, 0)" offset="30%" />
-                <stop stopColor="#f5d576" offset="100%" />
-              </linearGradient>
-            </svg>
-            <ClockIcon className="w-40 h-40" style={{ stroke: "url(#clockGradient)" }} />
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="bg-white rounded-[24px] p-6 border border-border-light shadow-xs flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-surface-muted border border-border-light flex items-center justify-center text-text-primary shrink-0">
+            <HugeIcon name="clock" size={24} />
           </div>
-          <div className="relative z-10">
-            <p className="font-body text-sm text-gray-300 mb-2 uppercase tracking-wider font-semibold">Hours Taught</p>
-            <p className="font-heading text-5xl font-bold text-white">{loading ? "-" : hoursTaught}</p>
-          </div>
-        </div>
-        
-        <div className="group bg-chip-blue p-8 rounded-3xl border border-border-warm shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden flex flex-col justify-end min-h-[180px] cursor-default">
-          <div className="absolute -top-6 -right-6 p-4 opacity-10 group-hover:opacity-15 transition-all duration-500 transform -rotate-12 group-hover:-rotate-8 group-hover:scale-110">
-            <svg width="0" height="0">
-              <linearGradient id="usersGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop stopColor="rgba(24, 76, 133, 0)" offset="30%" />
-                <stop stopColor="#184c85" offset="100%" />
-              </linearGradient>
-            </svg>
-            <UserGroupIcon className="w-40 h-40" style={{ stroke: "url(#usersGradient)" }} />
-          </div>
-          <div className="relative z-10">
-            <p className="font-body text-sm text-dark-charcoal/80 mb-2 uppercase tracking-wider font-semibold group-hover:text-dark-charcoal transition-colors">Active Students</p>
-            <p className="font-heading text-5xl font-bold text-oboe-black">{loading ? "-" : activeStudents}</p>
+          <div>
+            <p className="font-body text-xs text-text-secondary">Hours Taught</p>
+            <p className="font-heading text-2xl font-bold text-text-primary mt-0.5">{hoursTaught} hrs</p>
           </div>
         </div>
 
-        <div className="group bg-chip-pink p-8 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden flex flex-col justify-end min-h-[180px] cursor-default border border-border-warm">
-          <div className="absolute -top-6 -right-6 p-4 opacity-10 group-hover:opacity-15 transition-all duration-500 transform -rotate-12 group-hover:-rotate-8 group-hover:scale-110">
-            <svg width="0" height="0">
-              <linearGradient id="chartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop stopColor="rgba(133, 34, 24, 0)" offset="30%" />
-                <stop stopColor="#852218" offset="100%" />
-              </linearGradient>
-            </svg>
-            <ChartBarIcon className="w-40 h-40" style={{ stroke: "url(#chartGradient)" }} />
+        <div className="bg-white rounded-[24px] p-6 border border-border-light shadow-xs flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-accent-blue/10 border border-accent-blue/20 flex items-center justify-center text-accent-blue shrink-0">
+            <HugeIcon name="sparkles" size={24} />
           </div>
-          <div className="relative z-10">
-            <p className="font-body text-sm text-dark-charcoal/80 mb-2 uppercase tracking-wider font-semibold">Total Earnings</p>
-            <p className="font-heading text-5xl font-bold text-oboe-black">
-              {loading ? "-" : `₦${totalEarnings.toLocaleString()}`}
-            </p>
+          <div>
+            <p className="font-body text-xs text-text-secondary">Active Students</p>
+            <p className="font-heading text-2xl font-bold text-text-primary mt-0.5">{activeStudents}</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-[24px] p-6 border border-border-light shadow-xs flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-surface-muted border border-border-light flex items-center justify-center text-text-primary shrink-0">
+            <HugeIcon name="credit-card" size={24} />
+          </div>
+          <div>
+            <p className="font-body text-xs text-text-secondary">Total Earnings</p>
+            <p className="font-heading text-2xl font-bold text-text-primary mt-0.5">₦{totalEarnings.toLocaleString()}</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Analytical Graph */}
-        <div className="lg:col-span-2 bg-gradient-to-br from-white to-chip-pink/5 p-8 rounded-3xl border border-border-warm shadow-sm flex flex-col relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-chip-pink/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:bg-chip-pink/20 transition-colors duration-700" />
-          <div className="flex justify-between items-center mb-6 z-10">
-            <div>
-              <h2 className="font-heading text-2xl font-bold text-oboe-black">Revenue Analytics</h2>
-              <p className="font-body text-sm text-mid-gray-brown">Your earnings over the last 7 days</p>
-            </div>
-          </div>
-          <div className="flex-1 min-h-[300px] w-full z-10">
-            {loading ? (
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="w-10 h-10 border-4 border-cta-yellow border-t-transparent rounded-full animate-spin"></div>
+        
+        {/* Main 2-Col Area: Revenue Chart & Pending Approvals */}
+        <div className="lg:col-span-2 space-y-8">
+          
+          {/* Action Required: Pending Approvals */}
+          {pendingApprovals.length > 0 && (
+            <div className="bg-white rounded-[24px] p-6 sm:p-8 border border-amber-200 shadow-xs bg-amber-50/20">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="font-heading text-xl font-bold text-text-primary">Action Required</h2>
+                  <p className="font-body text-xs text-text-secondary">Pending bookings awaiting WhatsApp confirmation</p>
+                </div>
+                <span className="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">
+                  {pendingApprovals.length} Pending
+                </span>
               </div>
-            ) : (
+
+              <div className="space-y-4">
+                {pendingApprovals.map(b => (
+                  <div key={b.id} className="p-4 bg-white rounded-2xl border border-border-light flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-heading font-bold text-sm text-text-primary capitalize">{b.tier} Lesson</span>
+                        <span className="px-2 py-0.5 text-[10px] font-semibold bg-surface-muted rounded-full">Ref: {b.reference}</span>
+                      </div>
+                      <p className="font-body text-xs text-text-secondary mt-1">
+                        Booked: {new Date(b.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <button
+                        onClick={() => handleApprove(b.id)}
+                        disabled={actionLoading}
+                        className="px-4 py-2 bg-text-primary text-white rounded-full text-xs font-medium hover:bg-black transition-colors"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => setRejectModalBooking(b)}
+                        disabled={actionLoading}
+                        className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Revenue Analytics Chart */}
+          <div className="bg-white rounded-[24px] p-6 sm:p-8 border border-border-light shadow-xs">
+            <h2 className="font-heading text-xl font-bold text-text-primary mb-1">Weekly Revenue</h2>
+            <p className="font-body text-xs text-text-secondary mb-6">Earnings breakdown over the last 7 days</p>
+            <div className="h-[220px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={chartData}>
                   <defs>
-                    <linearGradient id="colorEarnings" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4A90E2" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#4A90E2" stopOpacity={0}/>
+                    <linearGradient id="earningsGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#0284c7" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#0284c7" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E5E5" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#8C8C8C', fontSize: 12 }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#8C8C8C', fontSize: 12 }} tickFormatter={(val) => `₦${val/1000}k`} />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #E5E5E5', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    formatter={(value: any) => [`₦${value.toLocaleString()}`, "Earnings"]}
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey="day" stroke="#898989" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#898989" fontSize={11} tickLine={false} tickFormatter={(val) => `₦${val/1000}k`} />
+                  <Tooltip
+                    formatter={(value: any) => [`₦${Number(value).toLocaleString()}`, 'Earnings']}
+                    contentStyle={{
+                      backgroundColor: '#ffffff',
+                      borderColor: '#e5e7eb',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                    }}
                   />
-                  <Area type="monotone" dataKey="earnings" stroke="#4A90E2" strokeWidth={3} fillOpacity={1} fill="url(#colorEarnings)" />
+                  <Area type="monotone" dataKey="earnings" stroke="#0284c7" strokeWidth={2} fillOpacity={1} fill="url(#earningsGrad)" />
                 </AreaChart>
               </ResponsiveContainer>
-            )}
+            </div>
           </div>
         </div>
 
-        {/* Summary Widgets */}
-        <div className="space-y-6">
-          {/* Next Lesson Widget */}
-          <div className="bg-oboe-black rounded-3xl p-6 text-white shadow-lg relative overflow-hidden group">
-            <div className="absolute -top-6 -right-6 p-4 opacity-10 group-hover:opacity-15 transition-all duration-500 transform -rotate-12 group-hover:-rotate-8 group-hover:scale-110">
-              <svg width="0" height="0">
-                <linearGradient id="calGradientTutor" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop stopColor="rgba(255, 255, 255, 0)" offset="30%" />
-                  <stop stopColor="#f5d576" offset="100%" />
-                </linearGradient>
-              </svg>
-              <CalendarIcon className="w-40 h-40" style={{ stroke: "url(#calGradientTutor)" }} />
-            </div>
-            <h3 className="font-heading text-2xl font-bold text-cta-yellow mb-4">Up Next</h3>
-            {loading ? (
-              <div className="animate-pulse h-16 bg-white/10 rounded-xl" />
-            ) : nextLesson ? (
-              <div className="relative z-10">
-                <p className="font-heading text-2xl font-bold mb-1 capitalize">{nextLesson.tier} Tier</p>
-                <p className="font-body text-sm text-gray-300 mb-6">
-                  {new Date(nextLesson.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
-                </p>
-                <Link href="/dashboard/schedule" className="inline-flex items-center gap-2 text-sm font-medium hover:text-cta-yellow transition-colors">
-                  View Full Schedule <ArrowRightIcon className="w-4 h-4" />
-                </Link>
+        {/* Sidebar: Next Class & Lesson Management */}
+        <div className="space-y-8">
+          
+          {/* Next Class Widget */}
+          <div className="bg-white rounded-[24px] p-6 border border-border-light shadow-xs">
+            <h3 className="font-heading text-lg font-bold text-text-primary mb-4">Next Scheduled Class</h3>
+            {nextLesson ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-surface-near-white rounded-2xl border border-border-light">
+                  <span className="px-2.5 py-0.5 text-[10px] font-bold bg-accent-blue/10 text-accent-blue rounded-full capitalize">
+                    {nextLesson.tier} Lesson
+                  </span>
+                  <h4 className="font-heading font-bold text-base text-text-primary mt-2">1-on-1 Student Session</h4>
+                  <p className="font-body text-xs text-text-secondary mt-1">
+                    Date: {new Date(nextLesson.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  {nextLesson.meetLink ? (
+                    <a
+                      href={nextLesson.meetLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full inline-block text-center px-4 py-2.5 bg-accent-blue text-white rounded-full text-xs font-medium hover:bg-blue-600 transition-colors"
+                    >
+                      Start Meeting Room
+                    </a>
+                  ) : (
+                    <button 
+                      onClick={() => toast.info("Create a meet link from your schedule tab.")}
+                      className="w-full text-center px-4 py-2.5 bg-surface-muted text-text-subtle rounded-full text-xs font-medium cursor-not-allowed border border-border-light"
+                    >
+                      Join Meeting (Not Ready)
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={() => setCompleteModalBooking(nextLesson)}
+                    className="w-full text-center px-4 py-2 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full hover:bg-emerald-100 transition-colors"
+                  >
+                    Mark as Completed
+                  </button>
+                </div>
               </div>
             ) : (
-              <div className="relative z-10">
-                <p className="font-body text-sm text-gray-300 mb-6">No upcoming lessons scheduled.</p>
-                <Link href="/dashboard/schedule" className="inline-flex items-center gap-2 text-sm font-medium hover:text-cta-yellow transition-colors">
-                  View Schedule <ArrowRightIcon className="w-4 h-4" />
-                </Link>
-              </div>
+              <p className="font-body text-xs text-text-secondary">No upcoming classes scheduled today.</p>
             )}
           </div>
 
           {/* Recent History Widget */}
-          <div className="bg-white rounded-3xl p-6 border border-border-warm shadow-sm">
+          <div className="bg-white rounded-[24px] p-6 border border-border-light shadow-xs">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-heading text-2xl font-bold text-oboe-black">Recent History</h3>
-              <Link href="/dashboard/history" className="text-sm font-medium text-dark-charcoal underline decoration-border-warm hover:decoration-dark-charcoal underline-offset-4 transition-colors">
+              <h3 className="font-heading text-lg font-bold text-text-primary">Recent Activity</h3>
+              <Link href="/dashboard/schedule" className="text-xs font-medium text-accent-blue hover:underline transition-colors">
                 View All
               </Link>
             </div>
             {loading ? (
               <div className="space-y-3">
-                <div className="h-10 bg-surface-base animate-pulse rounded-lg" />
-                <div className="h-10 bg-surface-base animate-pulse rounded-lg" />
+                <div className="h-10 bg-surface-muted animate-pulse rounded-xl" />
+                <div className="h-10 bg-surface-muted animate-pulse rounded-xl" />
               </div>
             ) : pastLessons.length > 0 ? (
               <div className="space-y-3">
                 {pastLessons.map(lesson => (
-                  <div key={lesson.id} className="flex justify-between items-center p-3 bg-surface-base rounded-xl border border-border-warm/50">
+                  <div key={lesson.id} className="flex justify-between items-center p-3 bg-surface-near-white rounded-xl border border-border-light">
                     <div>
-                      <p className="font-heading font-semibold text-sm text-oboe-black capitalize">{lesson.tier}</p>
-                      <p className="font-body text-xs text-mid-gray-brown">{new Date(lesson.createdAt).toLocaleDateString()}</p>
+                      <p className="font-heading font-bold text-xs text-text-primary capitalize">{lesson.tier}</p>
+                      <p className="font-body text-[11px] text-text-secondary mt-0.5">{new Date(lesson.createdAt).toLocaleDateString()}</p>
                     </div>
-                    <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md ${
-                        lesson.status === "completed" ? "bg-chip-green text-dark-charcoal" : "bg-chip-pink text-dark-charcoal"
+                    <span className={`px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
+                        lesson.status === "completed" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"
                       }`}>
                       {lesson.status}
                     </span>
@@ -255,55 +353,41 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
                 ))}
               </div>
             ) : (
-              <p className="font-body text-sm text-mid-gray-brown text-center py-4">No recent history.</p>
+              <p className="font-body text-xs text-text-subtle text-center py-4">No recent activity.</p>
             )}
           </div>
-          
-          {/* Pending Approvals Widget */}
-          <div className="bg-gradient-to-br from-chip-yellow/20 to-chip-yellow/5 rounded-3xl p-6 border border-chip-yellow/30 shadow-sm relative overflow-hidden group">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-chip-yellow/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3" />
-             <div className="flex justify-between items-center mb-4 relative z-10">
-               <h3 className="font-heading text-2xl font-bold text-oboe-black flex items-center gap-2">
-                 Action Required
-                 {pendingApprovals.length > 0 && (
-                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cta-yellow text-xs font-bold text-oboe-black animate-bounce">
-                     {pendingApprovals.length}
-                   </span>
-                 )}
-               </h3>
-             </div>
-             {loading ? (
-               <div className="space-y-3">
-                 <div className="h-10 bg-white/50 animate-pulse rounded-lg" />
-               </div>
-             ) : pendingApprovals.length > 0 ? (
-               <div className="space-y-3 relative z-10">
-                 {pendingApprovals.map(lesson => (
-                   <div key={lesson.id} className="flex flex-col gap-3 p-4 bg-white rounded-xl border border-border-warm/50 shadow-sm">
-                     <div className="flex justify-between items-start">
-                       <div>
-                         <p className="font-heading font-semibold text-sm text-oboe-black">{lesson.reference}</p>
-                         <p className="font-body text-xs text-mid-gray-brown capitalize">{lesson.tier} Tier</p>
-                       </div>
-                       <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md bg-chip-yellow/40 text-dark-charcoal">
-                         Pending WA
-                       </span>
-                     </div>
-                     <button 
-                       onClick={() => handleApprove(lesson.id)}
-                       className="w-full py-2 bg-oboe-black text-white text-xs font-bold rounded-lg hover:bg-dark-charcoal transition-colors"
-                     >
-                       Approve & Confirm
-                     </button>
-                   </div>
-                 ))}
-               </div>
-             ) : (
-               <p className="font-body text-sm text-mid-gray-brown text-center py-4 relative z-10">No pending approvals.</p>
-             )}
-          </div>
+
         </div>
+
       </div>
+
+      {/* Confirmation Modal for Booking Rejection */}
+      <ConfirmationModal
+        isOpen={!!rejectModalBooking}
+        title="Reject Booking Request?"
+        description={`Are you sure you want to reject this booking (Ref: ${rejectModalBooking?.reference || ""})? If the student has already paid, an automatic refund credit will be issued.`}
+        confirmText="Confirm Rejection"
+        cancelText="Keep Booking"
+        variant="danger"
+        iconName="alert"
+        loading={actionLoading}
+        onConfirm={confirmReject}
+        onCancel={() => setRejectModalBooking(null)}
+      />
+
+      {/* Confirmation Modal for Marking Completed */}
+      <ConfirmationModal
+        isOpen={!!completeModalBooking}
+        title="Mark Lesson Completed?"
+        description="Marking this session as completed will update your earnings and trigger the post-lesson WhatsApp feedback notification to the student."
+        confirmText="Mark Completed"
+        cancelText="Cancel"
+        variant="primary"
+        iconName="sparkles"
+        loading={actionLoading}
+        onConfirm={confirmComplete}
+        onCancel={() => setCompleteModalBooking(null)}
+      />
     </div>
   );
 }

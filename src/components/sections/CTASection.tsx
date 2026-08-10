@@ -1,48 +1,56 @@
 "use client";
-import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+
+import React from "react";
 import Link from "next/link";
+import HugeIcon from "@/components/ui/HugeIcon";
 
 export default function CTASection() {
   return (
-    <section
-      id="booking"
-      className="px-6 pb-[120px] bg-surface-base"
-    >
-      <div 
-        className="max-w-[1200px] mx-auto bg-chip-yellow rounded-b-[32px] max-md:rounded-b-[24px] pt-[80px] pb-[80px] max-md:pt-[60px] max-md:pb-[24px] px-6 max-md:px-10 text-center border-x border-b border-border-warm flex flex-col items-center relative overflow-hidden"
-      >
-        {/* Subtle decorative circles */}
-        <div className="absolute w-[300px] h-[300px] rounded-full bg-white/40 -top-[100px] -right-[50px] blur-[40px]" />
-        <div className="absolute w-[200px] h-[200px] rounded-full bg-white/40 -bottom-[50px] -left-[50px] blur-[40px]" />
+    <section id="booking" className="py-20 px-4 sm:px-6 bg-surface-near-white">
+      <div className="max-w-[1200px] mx-auto w-full">
+        {/* Electric Blue Dark Mode Container */}
+        <div className="bg-gradient-to-b from-[#0a1936] via-[#051026] to-[#030918] border border-blue-900/40 rounded-[24px] md:rounded-[32px] p-8 sm:p-12 md:p-16 text-center w-full shadow-2xl relative overflow-hidden">
+          
+          {/* Subtle Background Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-accent-blue/15 blur-[120px] rounded-full pointer-events-none" />
 
-        <h2 className="font-heading text-[clamp(36px,10vw,120px)] font-bold text-oboe-black leading-[0.9] tracking-[-0.03em] mb-6 uppercase relative z-10">
-          YOUR FIRST LESSON IS <br/>
-          <em className="italic text-white bg-oboe-black pt-2 pb-3 md:pt-0 px-4 md:pl-4 md:pr-[35px] rounded-2xl inline-block mt-3 max-md:mt-4 whitespace-nowrap overflow-hidden max-w-[90vw] text-ellipsis">
-            COMPLETELY FREE!
-          </em>
-        </h2>
+          {/* Badge */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-accent-blue/15 border border-accent-blue/30 rounded-full text-xs font-medium text-accent-blue mb-6 mx-auto relative z-10">
+            <HugeIcon name="tag" size={16} className="text-accent-blue" />
+            <span>Special Offer</span>
+          </div>
 
-        <p className="font-body text-lg font-normal text-mid-gray-brown leading-[1.6] mb-12 max-w-[480px] relative z-10">
-          No commitment. No payment info upfront. Just show up, have a
-          conversation, and see if this is the right fit for you.
-        </p>
+          {/* Heading */}
+          <h2 className="font-heading text-3xl sm:text-5xl md:text-6xl font-bold text-white leading-[1.1] tracking-tight mb-6 w-full max-w-3xl mx-auto text-center relative z-10">
+            YOUR FIRST LESSON IS <br className="hidden sm:block" />
+            <span className="italic text-accent-blue">COMPLETELY FREE!</span>
+          </h2>
 
-        <Link
-          href="/signup"
-          id="cta-whatsapp-btn"
-          className="inline-flex items-center gap-3 py-5 px-12 bg-oboe-black text-white rounded-full font-body text-lg font-semibold transition-all duration-250 ease-in-out cursor-pointer no-underline relative z-10 shadow-brutal hover:bg-chip-pink hover:text-oboe-black"
-        >
-          <ChatBubbleLeftRightIcon className="w-6 h-6" />
-          Book now
-        </Link>
-
-        {/* Policy note */}
-        <div className="mt-16 p-5 md:px-6 bg-white/40 rounded-2xl border border-[#ddd7d5]/40 relative z-10 max-w-[600px]">
-          <p className="font-body text-xs font-normal text-mid-gray-brown leading-[1.6]">
-            Free trial limited to one redemption per student. Paid sessions
-            can be rescheduled free of charge if requested more than 24 hours
-            in advance. No-shows are non-refundable.
+          {/* Subheading */}
+          <p className="font-body text-base sm:text-lg text-slate-300 leading-relaxed mb-10 w-full max-w-xl mx-auto font-normal text-center relative z-10">
+            No commitment. No payment info upfront. Just show up, have a conversation, and see if this is the right fit for you.
           </p>
+
+          {/* CTA Button */}
+          <div className="w-full flex justify-center mb-12 relative z-10">
+            <Link
+              href="/signup?redirect=/dashboard/book"
+              id="cta-whatsapp-btn"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-text-primary rounded-full font-body text-base font-medium hover:bg-slate-100 hover:text-accent-blue transition-all duration-200 shadow-md hover:shadow-lg"
+            >
+              <HugeIcon name="comment" size={20} className="text-accent-blue" />
+              <span>Book now</span>
+              <HugeIcon name="arrow-right" size={18} />
+            </Link>
+          </div>
+
+          {/* Policy Note */}
+          <div className="w-full max-w-2xl mx-auto p-4 sm:p-5 bg-white/5 border border-white/10 rounded-2xl text-center relative z-10">
+            <p className="w-full font-body text-xs text-slate-400 leading-relaxed font-normal text-center">
+              Free trial limited to one redemption per student. Paid sessions can be rescheduled free of charge if requested more than 24 hours in advance. No-shows are non-refundable.
+            </p>
+          </div>
+
         </div>
       </div>
     </section>

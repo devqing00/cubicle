@@ -6,161 +6,190 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import HugeIcon from "@/components/ui/HugeIcon";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import { toast } from "sonner";
-import { 
-  Bars3Icon, 
-  XMarkIcon,
-  HomeIcon,
-  CalendarDaysIcon,
-  ClockIcon,
-  BookOpenIcon,
-  VideoCameraIcon,
-  ArrowLeftOnRectangleIcon,
-  AcademicCapIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon
-} from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { user, userData } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const { user, userData, loading } = useAuth();
 
-  // Protect the entire dashboard
-  React.useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push("/login?redirect=/dashboard");
-      } else if (userData && !userData.onboardingComplete && userData.role !== "tutor") {
-        router.push("/onboarding");
-      }
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  const isTutor = userData?.role === "tutor";
+
+  const handleSignOut = async () => {
+    try {
+      setSigningOut(true);
+      await signOut(auth);
+      toast.success("Successfully signed out.");
+      setShowSignOutModal(false);
+      router.push("/login");
+    } catch (err) {
+      toast.error("Failed to sign out.");
+    } finally {
+      setSigningOut(false);
     }
-  }, [user, userData, loading, router]);
-
-  if (loading || !user || !userData) {
-    return <div className="min-h-screen bg-surface-base flex items-center justify-center font-body text-mid-gray-brown">Loading...</div>;
-  }
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    toast.success("Logged out successfully");
-    router.push("/");
   };
 
-  const isTutor = userData.role === "tutor";
-
-  const tutorLinks = [
-    { name: "Overview", href: "/dashboard", icon: HomeIcon },
-    { name: "My Schedule", href: "/dashboard/schedule", icon: CalendarDaysIcon },
-    { name: "Availability", href: "/dashboard/availability", icon: ClockIcon },
-    { name: "History", href: "/dashboard/history", icon: BookOpenIcon },
-  ];
-
-  const studentLinks = [
-    { name: "Overview", href: "/dashboard", icon: HomeIcon },
-    { name: "Book a Lesson", href: "/dashboard/book", icon: CalendarDaysIcon },
-    { name: "Upcoming", href: "/dashboard/schedule", icon: ClockIcon },
-    { name: "History", href: "/dashboard/history", icon: BookOpenIcon },
-    { name: "Browse Subjects", href: "/dashboard/subjects", icon: AcademicCapIcon },
-    { name: "Test Equipment", href: "/dashboard/equipment", icon: VideoCameraIcon },
-  ];
-
-  const navLinks = isTutor ? tutorLinks : studentLinks;
+  const navItems = isTutor
+    ? [
+        { name: "Overview", href: "/dashboard", icon: "home" as const },
+        { name: "Schedule", href: "/dashboard/schedule", icon: "calendar" as const },
+        { name: "Availability", href: "/dashboard/availability", icon: "clock" as const },
+      ]
+    : [
+        { name: "Dashboard", href: "/dashboard", icon: "home" as const },
+        { name: "Book Session", href: "/dashboard/book", icon: "calendar" as const },
+        { name: "My Schedule", href: "/dashboard/schedule", icon: "clock" as const },
+        { name: "Lesson History", href: "/dashboard/history", icon: "legal" as const },
+      ];
 
   return (
-    <div className="min-h-screen bg-surface-base flex font-body">
-      {/* Mobile Sidebar Overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-oboe-black/60 z-40 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside 
-        className={`fixed lg:static inset-y-0 left-0 z-50 bg-white border-r border-border-warm transform transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        } ${isSidebarCollapsed ? "w-20" : "w-64"} flex flex-col`}
+    <div className="min-h-screen bg-surface-near-white font-body text-text-primary flex">
+      {/* Desktop Sidebar (Fixed Full Height) */}
+      <aside
+        className={`hidden md:flex flex-col justify-between border-r border-border-light bg-white sticky top-0 h-screen shrink-0 z-30 transition-all duration-300 overflow-hidden ${
+          collapsed ? "w-[80px]" : "w-[260px]"
+        }`}
       >
-        <div className={`p-6 flex items-center justify-between border-b border-border-warm ${isSidebarCollapsed ? 'flex-col gap-4 justify-center' : ''}`}>
-          {!isSidebarCollapsed && (
-            <Link href="/" className="font-heading font-bold text-2xl tracking-tighter text-oboe-black hover:text-dark-charcoal transition-colors">
-              Cubicle.
-            </Link>
-          )}
-          {isSidebarCollapsed && (
-            <Link href="/" className="font-heading font-bold text-xl tracking-tighter text-oboe-black hover:text-dark-charcoal transition-colors">
-              C.
-            </Link>
-          )}
-          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-mid-gray-brown hover:text-oboe-black">
-            <XMarkIcon className="w-6 h-6" />
-          </button>
-          <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="hidden lg:block text-mid-gray-brown hover:text-oboe-black bg-surface-base hover:bg-border-warm p-1.5 rounded-md transition-colors">
-            {isSidebarCollapsed ? <ChevronRightIcon className="w-4 h-4" /> : <ChevronLeftIcon className="w-4 h-4" />}
-          </button>
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* Brand Header */}
+          <div className="h-[72px] shrink-0 px-6 flex items-center justify-between border-b border-border-light">
+            {!collapsed && (
+              <Link href="/" className="font-heading text-xl font-bold tracking-tight text-text-primary">
+                Cubicle.
+              </Link>
+            )}
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-colors"
+              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <HugeIcon name={collapsed ? "chevron-right" : "chevron-left"} size={18} />
+            </button>
+          </div>
+
+          {/* Navigation Links */}
+          <div className="p-4 space-y-1.5 flex-1 overflow-y-auto">
+            {navItems.map((item) => {
+              const active = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition-all ${
+                    active
+                      ? "bg-text-primary text-white shadow-xs"
+                      : "text-text-secondary hover:text-text-primary hover:bg-surface-muted"
+                  }`}
+                  title={item.name}
+                >
+                  <HugeIcon
+                    name={item.icon}
+                    size={18}
+                    className={active ? "text-accent-blue" : "text-text-secondary"}
+                  />
+                  {!collapsed && <span>{item.name}</span>}
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href || (link.href !== "/dashboard" && pathname.startsWith(link.href));
-            return (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={() => setIsSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium text-sm ${
-                  isSidebarCollapsed ? "justify-center" : ""
-                } ${
-                  isActive 
-                    ? "bg-oboe-black text-white" 
-                    : "text-mid-gray-brown hover:bg-surface-base hover:text-dark-charcoal"
-                }`}
-                title={isSidebarCollapsed ? link.name : undefined}
-              >
-                <link.icon className={`w-5 h-5 ${isActive ? "text-white" : "text-mid-gray-brown"}`} />
-                {!isSidebarCollapsed && <span>{link.name}</span>}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 border-t border-border-warm">
+        {/* User Profile & Sign Out Button (Sticky Bottom) */}
+        <div className="p-4 border-t border-border-light space-y-2 shrink-0 bg-white">
+          {!collapsed && (
+            <div className="px-3 py-2">
+              <p className="font-heading text-xs font-bold text-text-primary truncate">
+                {userData?.displayName || userData?.fullName || user?.displayName || "User"}
+              </p>
+              <p className="font-body text-[11px] text-text-secondary capitalize truncate">
+                {userData?.role || "Student"}
+              </p>
+            </div>
+          )}
           <button
-            onClick={handleLogout}
-            className={`flex w-full items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium text-sm text-red-600 hover:bg-red-50 ${isSidebarCollapsed ? "justify-center" : ""}`}
-            title={isSidebarCollapsed ? "Log Out" : undefined}
+            onClick={() => setShowSignOutModal(true)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold text-text-secondary hover:text-red-600 hover:bg-red-50 transition-colors"
+            title="Sign Out"
+            aria-label="Sign out of account"
           >
-            <ArrowLeftOnRectangleIcon className="w-5 h-5" />
-            {!isSidebarCollapsed && <span>Log Out</span>}
+            <HugeIcon name="logout" size={18} />
+            {!collapsed && <span>Sign Out</span>}
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         {/* Mobile Header */}
-        <header className="lg:hidden bg-white border-b border-border-warm px-4 py-4 flex items-center justify-between sticky top-0 z-30">
-          <Link href="/" className="font-heading font-bold text-xl tracking-tighter text-oboe-black">
+        <header className="md:hidden h-[64px] bg-white border-b border-border-light px-6 flex items-center justify-between">
+          <Link href="/" className="font-heading text-xl font-bold tracking-tight text-text-primary">
             Cubicle.
           </Link>
-          <button 
-            onClick={() => setIsSidebarOpen(true)}
-            className="text-dark-charcoal p-1 rounded-md hover:bg-surface-base transition-colors"
-          >
-            <Bars3Icon className="w-6 h-6" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSignOutModal(true)}
+              className="p-2 rounded-xl text-text-secondary hover:text-red-600 hover:bg-red-50 transition-colors"
+              title="Sign Out"
+            >
+              <HugeIcon name="logout" size={20} />
+            </button>
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-colors"
+            >
+              <HugeIcon name={mobileOpen ? "cancel" : "menu"} size={22} />
+            </button>
+          </div>
         </header>
 
-        <div className="flex-1 p-6 lg:p-10">
-          <div className="max-w-6xl mx-auto w-full">
-            {children}
+        {/* Mobile Menu Drawer */}
+        {mobileOpen && (
+          <div className="md:hidden bg-white border-b border-border-light p-4 space-y-1">
+            {navItems.map((item) => {
+              const active = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition-all ${
+                    active
+                      ? "bg-text-primary text-white"
+                      : "text-text-secondary hover:text-text-primary hover:bg-surface-muted"
+                  }`}
+                >
+                  <HugeIcon name={item.icon} size={18} className={active ? "text-accent-blue" : "text-text-secondary"} />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
           </div>
-        </div>
-      </main>
+        )}
+
+        <main className="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto">{children}</main>
+      </div>
+
+      {/* Reusable Sign Out Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showSignOutModal}
+        title="Sign Out of Cubicle?"
+        description="Are you sure you want to end your current session? You will need to log back in to access your dashboard."
+        confirmText="Sign Out"
+        cancelText="Stay Logged In"
+        variant="danger"
+        iconName="logout"
+        loading={signingOut}
+        onConfirm={handleSignOut}
+        onCancel={() => setShowSignOutModal(false)}
+      />
     </div>
   );
 }

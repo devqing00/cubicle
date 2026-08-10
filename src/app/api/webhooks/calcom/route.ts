@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminDb as db } from "@/lib/firebase-admin";
 import crypto from "crypto";
+import { issueRefund } from "@/lib/paystack";
 
 export async function POST(req: Request) {
   try {
@@ -25,13 +26,35 @@ export async function POST(req: Request) {
     const triggerEvent = event.triggerEvent;
     const uid = event.payload?.uid;
 
-    if (triggerEvent === "BOOKING_CANCELLED" || triggerEvent === "BOOKING_REJECTED") {
+    if (triggerEvent === "BOOKING_CREATED") {
+      const snapshot = await db.collection("bookings").where("calcomBookingId", "==", uid).get();
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        const { startTime, endTime, videoCallUrl } = event.payload || {};
+        
+        await doc.ref.update({
+          startTime: startTime || null,
+          endTime: endTime || null,
+          meetLink: videoCallUrl || null,
+          updatedAt: new Date().toISOString()
+        });
+        console.log(`Updated booking ${uid} with video link and times.`);
+      }
+    } else if (triggerEvent === "BOOKING_CANCELLED" || triggerEvent === "BOOKING_REJECTED") {
       // 1. Query Firestore for this calcomBookingId
       const snapshot = await db.collection("bookings").where("calcomBookingId", "==", uid).get();
       if (!snapshot.empty) {
         const doc = snapshot.docs[0];
+        const bookingData = doc.data();
+
+        // If it was already paid, issue a refund
+        if (bookingData.status === "paid" && bookingData.paystackReference) {
+          console.log(`Cal.com webhook: Booking ${uid} cancelled. Issuing refund for ${bookingData.paystackReference}`);
+          await issueRefund(bookingData.paystackReference);
+        }
+
         // 2. Update status to 'cancelled'
-        await doc.ref.update({ status: "cancelled" });
+        await doc.ref.update({ status: "cancelled", updatedAt: new Date().toISOString() });
         console.log(`Booking cancelled/rejected in Firestore for Cal.com UID: ${uid}`);
       } else {
         console.warn(`Webhook received for unknown Cal.com UID: ${uid}`);

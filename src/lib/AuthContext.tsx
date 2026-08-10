@@ -9,6 +9,7 @@ export interface UserData {
   uid: string;
   email: string | null;
   displayName: string | null;
+  fullName?: string;
   role: "student" | "tutor";
   createdAt?: string;
   onboardingComplete?: boolean;
@@ -24,9 +25,10 @@ interface AuthContextType {
   user: User | null;
   userData: UserData | null;
   loading: boolean;
+  refreshUserData: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, userData: null, loading: true });
+const AuthContext = createContext<AuthContextType>({ user: null, userData: null, loading: true, refreshUserData: async () => {} });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -88,8 +90,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  const refreshUserData = async () => {
+    if (user) {
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          setUserData(userDoc.data() as UserData);
+        }
+      } catch (error) {
+        console.error("Error refreshing user data:", error);
+      }
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, userData, loading }}>
+    <AuthContext.Provider value={{ user, userData, loading, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );

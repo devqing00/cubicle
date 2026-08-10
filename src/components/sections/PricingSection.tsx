@@ -1,5 +1,7 @@
 "use client";
-import { CheckIcon } from "@heroicons/react/24/outline";
+
+import React from "react";
+import HugeIcon from "@/components/ui/HugeIcon";
 
 const plans = [
   {
@@ -17,7 +19,7 @@ const plans = [
       "Limited to one per student",
     ],
     cta: "Claim free trial",
-    accent: false,
+    highlighted: false,
   },
   {
     id: "standard",
@@ -34,7 +36,7 @@ const plans = [
       "WhatsApp reminder 1hr before",
     ],
     cta: "Book a lesson",
-    accent: true,
+    highlighted: true,
   },
   {
     id: "intensive",
@@ -51,71 +53,72 @@ const plans = [
       "WhatsApp reminder 1hr before",
     ],
     cta: "Book intensive",
-    accent: false,
+    highlighted: false,
   },
 ];
 
 export default function PricingSection() {
   return (
-    <section
-      id="pricing"
-      className="py-[114px] px-6 bg-[#f5f0ec] border-y border-border-warm"
-    >
-      <div className="max-w-[1100px] mx-auto">
-        <div className="text-center mb-[72px]">
-          <h2 className="font-heading text-[clamp(48px,8vw,80px)] font-bold text-dark-charcoal leading-[1.1] tracking-[-0.5px]">
-            Simple,{" "}
-            <span className="bg-[linear-gradient(transparent_65%,var(--color-chip-orange)_65%,var(--color-chip-orange)_100%)] px-1 -mx-1">
-              transparent pricing
-            </span>
+    <section id="pricing" className="py-24 px-4 sm:px-6 bg-surface-near-white">
+      <div className="max-w-[1200px] mx-auto w-full">
+        <div className="text-center mb-16 w-full max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-muted border border-border-light rounded-full text-xs font-medium text-text-secondary mb-4 hover:border-accent-blue/30 transition-colors mx-auto">
+            <HugeIcon name="credit-card" size={16} className="text-accent-blue" />
+            <span>Transparent Pricing</span>
+          </div>
+          <h2 className="font-heading text-3xl sm:text-5xl font-bold text-text-primary leading-tight tracking-tight mb-4 w-full text-center">
+            Simple, <span className="italic text-accent-blue">transparent pricing</span>
           </h2>
+          <p className="font-body text-base text-text-secondary leading-relaxed w-full max-w-xl mx-auto font-normal text-center">
+            Choose the plan that best fits your learning pace. No hidden fees or recurring subscriptions.
+          </p>
         </div>
 
-        <div className="flex flex-col min-[901px]:flex-row gap-6 justify-center items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`flex flex-col gap-0 relative ${
-                plan.id === "standard" 
-                  ? "py-14 px-8 bg-oboe-black border-none z-10 scale-100 min-[901px]:scale-[1.05] shadow-[0_30px_60px_-15px_rgba(42,37,34,0.2)]" 
-                  : (plan.id === "intensive" 
-                      ? "py-12 px-8 bg-surface-base border-2 border-dark-charcoal z-0 scale-100 shadow-brutal" 
-                      : "py-12 px-8 bg-white border border-border-warm z-0 scale-100 shadow-none")
-              } rounded-3xl transition-all duration-250 ease-in-out`}
+              className={`flex flex-col p-8 rounded-[24px] transition-all duration-200 ${
+                plan.highlighted
+                  ? "bg-text-primary text-white border-2 border-text-primary shadow-md relative scale-105 z-10 hover:border-accent-blue"
+                  : "bg-white text-text-primary border border-border-light shadow-sm hover:border-accent-blue/50"
+              }`}
             >
               {plan.tag && (
                 <span
-                  className={`inline-block px-4 py-1.5 rounded-full text-[11px] font-semibold font-body tracking-[0.5px] uppercase mb-6 self-start ${
-                    plan.accent ? "bg-cta-yellow text-oboe-black" : (plan.id === "intensive" ? "bg-dark-charcoal text-white" : "bg-user-bubble text-oboe-black")
+                  className={`inline-block px-3 py-1 rounded-full text-[9px] font-semibold uppercase tracking-wider mb-6 self-start ${
+                    plan.highlighted
+                      ? "bg-white/20 text-white"
+                      : "bg-surface-muted text-text-secondary border border-border-light"
                   }`}
                 >
                   {plan.tag}
                 </span>
               )}
 
-              <h3 className={`font-heading text-2xl font-bold mb-2 ${plan.accent ? "text-white" : "text-dark-charcoal"}`}>
+              <h3 className={`font-heading text-2xl font-bold mb-2 ${plan.highlighted ? "text-white" : "text-text-primary"}`}>
                 {plan.name}
               </h3>
 
               <div className="flex items-baseline gap-1.5 mb-1">
-                <span className={`font-heading text-5xl font-bold leading-none ${plan.accent ? "text-cta-yellow" : "text-oboe-black"}`}>
+                <span className={`font-heading text-4xl font-bold ${plan.highlighted ? "text-white" : "text-text-primary"}`}>
                   {plan.price}
                 </span>
               </div>
 
-              <span className={`font-body text-xs font-light mb-5 text-placeholder-brown`}>
+              <span className={`font-body text-xs mb-6 ${plan.highlighted ? "text-gray-300" : "text-text-secondary"}`}>
                 {plan.duration} session
               </span>
 
-              <p className={`font-body text-sm font-light leading-[1.7] mb-7 ${plan.accent ? "text-[#d6cdc9]" : "text-mid-gray-brown"}`}>
+              <p className={`font-body text-sm leading-relaxed mb-8 ${plan.highlighted ? "text-gray-300" : "text-text-secondary"} font-normal w-full`}>
                 {plan.description}
               </p>
 
-              <ul className="list-none flex flex-col gap-2.5 mb-9 grow">
+              <ul className="space-y-3 mb-10 flex-1">
                 {plan.features.map((feature, i) => (
-                  <li key={i} className={`font-body text-sm font-light flex items-center gap-2.5 ${plan.accent ? "text-[#d6cdc9]" : "text-mid-gray-brown"}`}>
-                    <CheckIcon className={`w-4 h-4 shrink-0 ${plan.accent ? "text-cta-yellow" : "text-placeholder-brown"}`} />
-                    <span className="pt-0.5">{feature}</span>
+                  <li key={i} className={`font-body text-xs sm:text-sm flex items-center gap-2.5 ${plan.highlighted ? "text-gray-200" : "text-text-secondary"}`}>
+                    <HugeIcon name="check" size={16} className="text-accent-blue" />
+                    <span>{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -123,11 +126,10 @@ export default function PricingSection() {
               <a
                 href="/signup?redirect=/dashboard/book"
                 id={`pricing-cta-${plan.id}`}
-                className={`inline-flex items-center justify-center py-[13px] px-6 rounded-full font-body text-sm font-medium transition-all duration-200 cursor-pointer no-underline text-oboe-black border ${
-                  plan.accent ? "bg-cta-yellow border-transparent" : "bg-transparent border-border-warm"
-                } ${
-                  plan.id === "trial" ? "hover:bg-chip-yellow hover:border-border-warm" : 
-                  (plan.id === "standard" ? "hover:bg-chip-pink hover:text-dark-charcoal hover:border-transparent" : "hover:bg-highlight-blue hover:border-dark-charcoal")
+                className={`w-full py-3.5 px-6 rounded-full font-body text-sm font-medium text-center transition-colors duration-200 ${
+                  plan.highlighted
+                    ? "bg-white text-text-primary hover:bg-surface-near-white hover:text-accent-blue"
+                    : "bg-text-primary text-white hover:bg-black"
                 }`}
               >
                 {plan.cta}

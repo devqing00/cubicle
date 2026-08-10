@@ -1,18 +1,38 @@
 import type { Metadata } from "next";
-import { Lora, Dancing_Script } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/lib/AuthContext";
 import { Toaster } from "sonner";
 
-const lora = Lora({
-  subsets: ["latin"],
-  variable: "--font-lora",
-  display: "swap",
-});
-
-const dancingScript = Dancing_Script({
-  subsets: ["latin"],
-  variable: "--font-dancing-script",
+const freigeist = localFont({
+  src: [
+    {
+      path: "../../public/fonts/Freigeist-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/Freigeist-RegularItalic.woff2",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "../../public/fonts/Freigeist-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/Freigeist-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/Freigeist-Black.woff2",
+      weight: "900",
+      style: "normal",
+    },
+  ],
+  variable: "--font-freigeist",
   display: "swap",
 });
 
@@ -28,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${lora.variable} ${dancingScript.variable}`}>
+    <html lang="en" className={freigeist.variable}>
       <body>
         <AuthProvider>
           {children}

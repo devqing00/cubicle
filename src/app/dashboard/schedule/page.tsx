@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { CalendarIcon, AcademicCapIcon } from "@heroicons/react/24/outline";
+import HugeIcon from "@/components/ui/HugeIcon";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -24,17 +25,35 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // Modal State
+  // Manual Booking Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"booking" | "block">("booking");
   const [modalData, setModalData] = useState({ date: "", time: "", studentEmail: "", tier: "standard", reason: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Confirmation Modal State
+  const [confirmModalData, setConfirmModalData] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    confirmText: string;
+    variant: "danger" | "primary" | "warning";
+    iconName: "alert" | "shield" | "sparkles";
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    confirmText: "Confirm",
+    variant: "primary",
+    iconName: "alert",
+    onConfirm: () => {},
+  });
+
   const handleManualBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // In a real app, we'd ping Cal.com or create the document fully here
       await fetch(`/api/tutor/bookings/manual`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -51,7 +70,7 @@ export default function SchedulePage() {
     }
   };
 
-  const handleUpdateStatus = async (id: string, newStatus: string) => {
+  const executeStatusUpdate = async (id: string, newStatus: string) => {
     setActionLoading(id);
     try {
       const res = await fetch(`/api/tutor/bookings/${id}`, {
@@ -61,11 +80,38 @@ export default function SchedulePage() {
       });
       if (!res.ok) throw new Error("Failed to update status");
       toast.success(`Booking ${newStatus} successfully!`);
+      setConfirmModalData(prev => ({ ...prev, isOpen: false }));
     } catch (error) {
       console.error(error);
       toast.error("An error occurred while updating the booking.");
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const promptStatusUpdate = (id: string, newStatus: string, reference: string) => {
+    if (newStatus === "cancelled") {
+      setConfirmModalData({
+        isOpen: true,
+        title: "Cancel / Decline Booking?",
+        description: `Are you sure you want to cancel this booking (Ref: ${reference})? Under our 24-hour policy, this time slot will be reopened.`,
+        confirmText: "Cancel Booking",
+        variant: "danger",
+        iconName: "alert",
+        onConfirm: () => executeStatusUpdate(id, "cancelled"),
+      });
+    } else if (newStatus === "completed") {
+      setConfirmModalData({
+        isOpen: true,
+        title: "Mark Lesson Completed?",
+        description: "Marking this session as completed will update your tutor metrics and trigger post-lesson feedback delivery to the student.",
+        confirmText: "Mark Completed",
+        variant: "primary",
+        iconName: "sparkles",
+        onConfirm: () => executeStatusUpdate(id, "completed"),
+      });
+    } else {
+      executeStatusUpdate(id, newStatus);
     }
   };
 
@@ -78,8 +124,7 @@ export default function SchedulePage() {
     } else {
       q = query(
         collection(db, "bookings"),
-        where("studentId", "==", userData.uid),
-        orderBy("createdAt", "desc")
+        where("studentId", "==", userData.uid)
       );
     }
 
@@ -89,6 +134,9 @@ export default function SchedulePage() {
         ...doc.data(),
       })) as Booking[];
       
+      // Sort client-side
+      fetchedBookings.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
       setBookings(fetchedBookings);
       setLoading(false);
     });
@@ -96,7 +144,16 @@ export default function SchedulePage() {
     return () => unsubscribe();
   }, [userData]);
 
-  if (authLoading) return <div className="animate-pulse">Loading schedule...</div>;
+  if (authLoading) {
+    return (
+      <div className="min-h-[300px] flex items-center justify-center font-body text-text-secondary">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 border-2 border-accent-blue border-t-transparent rounded-full animate-spin" />
+          <span>Loading schedule...</span>
+        </div>
+      </div>
+    );
+  }
 
   const upcomingLessons = bookings.filter(l => l.status === "confirmed");
   const pendingDrafts = bookings.filter(l => l.status === "pending_wa" || l.status === "pending_payment");
@@ -104,42 +161,47 @@ export default function SchedulePage() {
   if (userData?.role === "tutor") {
     return (
       <div className="w-full">
-        <h1 className="font-heading text-4xl font-bold text-oboe-black mb-8">My Schedule</h1>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-border-light">
+          <div>
+            <h1 className="font-heading text-3xl md:text-4xl font-bold text-text-primary">Master Schedule</h1>
+            <p className="font-body text-xs md:text-sm text-text-secondary mt-1">View upcoming sessions and manage student availability.</p>
+          </div>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="px-5 py-2.5 bg-text-primary text-white rounded-full text-xs font-semibold hover:bg-black transition-colors flex items-center gap-2"
+          >
+            <HugeIcon name="sparkles" size={14} className="text-accent-blue" />
+            <span>+ Create Booking</span>
+          </button>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Schedule */}
+          {/* Upcoming Schedule */}
           <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-heading text-2xl font-bold text-oboe-black">Upcoming Lessons</h2>
-              <button 
-                onClick={() => setIsModalOpen(true)}
-                className="px-4 py-2 bg-cta-yellow border border-oboe-black rounded-full text-xs font-bold uppercase tracking-wider text-oboe-black hover:bg-chip-yellow transition-colors"
-              >
-                + Create Booking
-              </button>
-            </div>
-            <div className="bg-white p-8 rounded-3xl border border-border-warm shadow-sm min-h-[350px] flex items-center justify-center">
+            <h2 className="font-heading text-xl font-bold text-text-primary mb-4">Confirmed Sessions</h2>
+            <div className="bg-white p-6 rounded-[24px] border border-border-light shadow-xs min-h-[350px] flex flex-col justify-start">
               {loading ? (
-                <div className="animate-pulse flex flex-col items-center gap-4">
-                  <div className="w-10 h-10 border-4 border-cta-yellow border-t-transparent rounded-full animate-spin"></div>
+                <div className="my-auto flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 border-2 border-accent-blue border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : upcomingLessons.length === 0 ? (
-                <div className="text-center">
-                  <h3 className="font-heading text-lg font-semibold text-oboe-black mb-1">No classes scheduled</h3>
-                  <p className="font-body text-sm text-mid-gray-brown">You have no upcoming sessions right now.</p>
+                <div className="my-auto text-center py-10">
+                  <HugeIcon name="calendar" size={32} className="text-text-subtle mx-auto mb-3" />
+                  <h3 className="font-heading text-lg font-bold text-text-primary mb-1">No classes scheduled</h3>
+                  <p className="font-body text-xs text-text-secondary">You have no upcoming sessions right now.</p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-4 w-full h-full justify-start items-stretch">
+                <div className="flex flex-col gap-3 w-full">
                   {upcomingLessons.map((lesson) => (
-                    <div key={lesson.id} className="bg-surface-base p-4 rounded-xl border border-border-warm flex items-center justify-between">
+                    <div key={lesson.id} className="bg-surface-near-white p-4 rounded-2xl border border-border-light flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="p-3 bg-white rounded-lg border border-border-warm">
-                          <CalendarIcon className="w-5 h-5 text-dark-charcoal" />
+                        <div className="w-9 h-9 bg-white rounded-xl border border-border-light flex items-center justify-center text-accent-blue">
+                          <HugeIcon name="calendar" size={18} />
                         </div>
                         <div>
-                          <h4 className="font-heading font-semibold text-oboe-black">{lesson.tier} Tier</h4>
-                          <p className="font-body text-xs text-mid-gray-brown">
-                            {new Date(lesson.createdAt).toLocaleString()}
+                          <h4 className="font-heading font-bold text-xs text-text-primary capitalize">{lesson.tier} Tier</h4>
+                          <p className="font-body text-[11px] text-text-secondary">
+                            {new Date(lesson.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
                           </p>
                         </div>
                       </div>
@@ -149,29 +211,29 @@ export default function SchedulePage() {
                             href={lesson.videoCallUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-3 py-1.5 bg-cta-yellow border border-oboe-black rounded-full text-xs font-medium text-oboe-black hover:bg-chip-yellow transition-colors"
+                            className="px-3 py-1.5 bg-accent-blue text-white rounded-full text-xs font-semibold hover:bg-blue-600 transition-colors"
                           >
                             Join Call
                           </a>
                         ) : (
                           <button 
                             onClick={() => toast.info("Meeting links will be generated closer to the session.")}
-                            className="px-3 py-1.5 bg-white border border-border-warm rounded-full text-xs font-medium text-mid-gray-brown cursor-not-allowed"
+                            className="px-3 py-1.5 bg-surface-muted border border-border-light rounded-full text-xs font-medium text-text-subtle cursor-not-allowed"
                           >
-                            Join (Pending)
+                            Pending
                           </button>
                         )}
                         <button
-                          onClick={() => handleUpdateStatus(lesson.id, "cancelled")}
+                          onClick={() => promptStatusUpdate(lesson.id, "cancelled", lesson.reference)}
                           disabled={actionLoading === lesson.id}
-                          className="px-3 py-1.5 bg-chip-pink/30 border border-chip-pink text-dark-charcoal rounded-full text-xs font-medium hover:bg-chip-pink transition-colors disabled:opacity-50"
+                          className="px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-full text-xs font-medium hover:bg-red-100 transition-colors disabled:opacity-50"
                         >
                           Cancel
                         </button>
                         <button
-                          onClick={() => handleUpdateStatus(lesson.id, "completed")}
+                          onClick={() => promptStatusUpdate(lesson.id, "completed", lesson.reference)}
                           disabled={actionLoading === lesson.id}
-                          className="px-3 py-1.5 bg-chip-green/30 border border-chip-green text-dark-charcoal rounded-full text-xs font-medium hover:bg-chip-green transition-colors disabled:opacity-50"
+                          className="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-medium hover:bg-emerald-100 transition-colors disabled:opacity-50"
                         >
                           Complete
                         </button>
@@ -185,50 +247,51 @@ export default function SchedulePage() {
 
           {/* Pending Drafts */}
           <div>
-            <h2 className="font-heading text-2xl font-bold text-oboe-black mb-6">Pending Drafts</h2>
-            <div className="bg-white p-8 rounded-3xl border border-border-warm shadow-sm min-h-[350px] flex items-center justify-center">
+            <h2 className="font-heading text-xl font-bold text-text-primary mb-4">Pending Requests</h2>
+            <div className="bg-white p-6 rounded-[24px] border border-border-light shadow-xs min-h-[350px] flex flex-col justify-start">
               {loading ? (
-                <div className="animate-pulse flex flex-col items-center gap-4">
-                  <div className="w-10 h-10 border-4 border-cta-yellow border-t-transparent rounded-full animate-spin"></div>
+                <div className="my-auto flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 border-2 border-accent-blue border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : pendingDrafts.length === 0 ? (
-                <div className="text-center">
-                  <h3 className="font-heading text-lg font-semibold text-oboe-black mb-1">No pending drafts</h3>
-                  <p className="font-body text-sm text-mid-gray-brown">All recent bookings have been paid and confirmed.</p>
+                <div className="my-auto text-center py-10">
+                  <HugeIcon name="check" size={32} className="text-emerald-500 mx-auto mb-3" />
+                  <h3 className="font-heading text-lg font-bold text-text-primary mb-1">No pending requests</h3>
+                  <p className="font-body text-xs text-text-secondary">All recent bookings have been confirmed.</p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-4 w-full h-full justify-start items-stretch">
+                <div className="flex flex-col gap-3 w-full">
                   {pendingDrafts.map((lesson) => (
-                    <div key={lesson.id} className="bg-surface-base p-4 rounded-xl border border-border-warm flex flex-col gap-2">
+                    <div key={lesson.id} className="bg-surface-near-white p-4 rounded-2xl border border-border-light flex flex-col gap-2">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-heading font-semibold text-oboe-black">Student ID: {lesson.studentId?.substring(0,6) || "Unknown"}...</h4>
-                          <p className="font-body text-xs text-mid-gray-brown">
-                            {lesson.tier} Tier
+                          <h4 className="font-heading font-bold text-xs text-text-primary">Student: {lesson.studentId?.substring(0,8)}...</h4>
+                          <p className="font-body text-[11px] text-text-secondary capitalize">
+                            {lesson.tier} Tier Session
                           </p>
                         </div>
-                        <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md ${
-                          lesson.status === "pending_wa" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"
+                        <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
+                          lesson.status === "pending_wa" ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-blue-50 text-blue-700 border-blue-200"
                         }`}>
                           {lesson.status === "pending_wa" ? "Awaiting WA" : "Awaiting Payment"}
                         </span>
                       </div>
-                      <div className="flex justify-between items-end mt-1">
-                        <p className="font-body text-xs text-dark-charcoal">Ref: <strong>{lesson.reference || "N/A"}</strong></p>
+                      <div className="flex justify-between items-center pt-2 border-t border-border-light mt-1">
+                        <p className="font-body text-[11px] text-text-secondary">Ref: <span className="font-mono font-bold text-text-primary">{lesson.reference || "N/A"}</span></p>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => handleUpdateStatus(lesson.id, "cancelled")}
+                            onClick={() => promptStatusUpdate(lesson.id, "cancelled", lesson.reference)}
                             disabled={actionLoading === lesson.id}
-                            className="text-xs font-medium text-mid-gray-brown hover:text-red-600 transition-colors disabled:opacity-50"
+                            className="px-3 py-1 bg-white border border-border-light text-text-primary rounded-full text-xs font-medium hover:bg-surface-muted transition-colors disabled:opacity-50"
                           >
                             Decline
                           </button>
                           <button
-                            onClick={() => handleUpdateStatus(lesson.id, "confirmed")}
+                            onClick={() => promptStatusUpdate(lesson.id, "confirmed", lesson.reference)}
                             disabled={actionLoading === lesson.id}
-                            className="px-3 py-1 bg-oboe-black text-white rounded-full text-xs font-medium hover:bg-dark-charcoal transition-colors disabled:opacity-50"
+                            className="px-3 py-1 bg-accent-blue text-white rounded-full text-xs font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
                           >
-                            Accept
+                            Approve
                           </button>
                         </div>
                       </div>
@@ -240,189 +303,227 @@ export default function SchedulePage() {
           </div>
         </div>
 
-        {/* Manual Booking Modal */}
+        {/* Modal for Manual Booking or Time Block */}
         {isModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="bg-white rounded-3xl w-[90vw] sm:w-[500px] max-w-full shrink-0 p-8 shadow-2xl relative overflow-hidden">
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="absolute top-6 right-6 text-mid-gray-brown hover:text-oboe-black transition-colors"
-              >
-                ✕
-              </button>
-              
-              <h2 className="font-heading text-2xl font-bold text-oboe-black mb-6">
-                Manage Schedule
-              </h2>
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-[28px] max-w-md w-full p-6 sm:p-8 border border-border-light shadow-2xl">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-heading text-xl font-bold text-text-primary">Create Booking Entry</h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-text-subtle hover:text-text-primary">
+                  <HugeIcon name="cancel" size={20} />
+                </button>
+              </div>
 
-              <div className="flex gap-4 mb-6">
+              <div className="flex gap-2 p-1 bg-surface-muted rounded-xl mb-6">
                 <button 
-                  type="button"
                   onClick={() => setModalType("booking")}
-                  className={`flex-1 py-2 font-body text-sm font-semibold rounded-xl transition-colors ${modalType === "booking" ? "bg-oboe-black text-white" : "bg-surface-base text-mid-gray-brown hover:bg-gray-100"}`}
+                  className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                    modalType === "booking" ? "bg-white text-text-primary shadow-xs" : "text-text-secondary hover:text-text-primary"
+                  }`}
                 >
-                  Manual Booking
+                  Student Booking
                 </button>
                 <button 
-                  type="button"
                   onClick={() => setModalType("block")}
-                  className={`flex-1 py-2 font-body text-sm font-semibold rounded-xl transition-colors ${modalType === "block" ? "bg-chip-pink text-dark-charcoal" : "bg-surface-base text-mid-gray-brown hover:bg-gray-100"}`}
+                  className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                    modalType === "block" ? "bg-white text-text-primary shadow-xs" : "text-text-secondary hover:text-text-primary"
+                  }`}
                 >
-                  Block Time
+                  Block Time Slot
                 </button>
               </div>
 
               <form onSubmit={handleManualBooking} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-body text-xs font-bold text-dark-charcoal mb-1 uppercase tracking-wider">Date</label>
-                    <input 
-                      type="date" 
-                      required
-                      value={modalData.date}
-                      onChange={e => setModalData({...modalData, date: e.target.value})}
-                      className="w-full p-3 bg-surface-base border border-border-warm rounded-xl font-body text-sm text-dark-charcoal focus:outline-none focus:ring-2 focus:ring-cta-yellow"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-body text-xs font-bold text-dark-charcoal mb-1 uppercase tracking-wider">Time</label>
-                    <input 
-                      type="time" 
-                      required
-                      value={modalData.time}
-                      onChange={e => setModalData({...modalData, time: e.target.value})}
-                      className="w-full p-3 bg-surface-base border border-border-warm rounded-xl font-body text-sm text-dark-charcoal focus:outline-none focus:ring-2 focus:ring-cta-yellow"
-                    />
-                  </div>
+                <div>
+                  <label className="block font-body text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Date</label>
+                  <input 
+                    type="date" 
+                    required 
+                    value={modalData.date}
+                    onChange={(e) => setModalData({...modalData, date: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-near-white text-xs font-body text-text-primary focus:outline-none focus:border-accent-blue"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-body text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Time</label>
+                  <input 
+                    type="time" 
+                    required 
+                    value={modalData.time}
+                    onChange={(e) => setModalData({...modalData, time: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-near-white text-xs font-body text-text-primary focus:outline-none focus:border-accent-blue"
+                  />
                 </div>
 
                 {modalType === "booking" ? (
                   <>
                     <div>
-                      <label className="block font-body text-xs font-bold text-dark-charcoal mb-1 uppercase tracking-wider">Student Email</label>
+                      <label className="block font-body text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Student Email</label>
                       <input 
                         type="email" 
-                        required
-                        value={modalData.studentEmail}
-                        onChange={e => setModalData({...modalData, studentEmail: e.target.value})}
-                        className="w-full p-3 bg-surface-base border border-border-warm rounded-xl font-body text-sm text-dark-charcoal focus:outline-none focus:ring-2 focus:ring-cta-yellow"
+                        required 
                         placeholder="student@example.com"
+                        value={modalData.studentEmail}
+                        onChange={(e) => setModalData({...modalData, studentEmail: e.target.value})}
+                        className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-near-white text-xs font-body text-text-primary focus:outline-none focus:border-accent-blue"
                       />
                     </div>
                     <div>
-                      <label className="block font-body text-xs font-bold text-dark-charcoal mb-1 uppercase tracking-wider">Tier</label>
+                      <label className="block font-body text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Session Tier</label>
                       <select 
                         value={modalData.tier}
-                        onChange={e => setModalData({...modalData, tier: e.target.value})}
-                        className="w-full p-3 bg-surface-base border border-border-warm rounded-xl font-body text-sm text-dark-charcoal focus:outline-none focus:ring-2 focus:ring-cta-yellow"
+                        onChange={(e) => setModalData({...modalData, tier: e.target.value})}
+                        className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-near-white text-xs font-body text-text-primary focus:outline-none focus:border-accent-blue"
                       >
-                        <option value="trial">Free Trial</option>
-                        <option value="standard">Standard (60m)</option>
-                        <option value="intensive">Intensive (90m)</option>
+                        <option value="trial">Free Trial (30 min)</option>
+                        <option value="standard">Standard (60 min)</option>
+                        <option value="intensive">Intensive (90 min)</option>
                       </select>
                     </div>
                   </>
                 ) : (
                   <div>
-                    <label className="block font-body text-xs font-bold text-dark-charcoal mb-1 uppercase tracking-wider">Reason (Optional)</label>
+                    <label className="block font-body text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Block Reason</label>
                     <input 
                       type="text" 
+                      required 
+                      placeholder="e.g., Doctor appointment, Personal"
                       value={modalData.reason}
-                      onChange={e => setModalData({...modalData, reason: e.target.value})}
-                      className="w-full p-3 bg-surface-base border border-border-warm rounded-xl font-body text-sm text-dark-charcoal focus:outline-none focus:ring-2 focus:ring-cta-yellow"
-                      placeholder="e.g. Doctor's appointment"
+                      onChange={(e) => setModalData({...modalData, reason: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-near-white text-xs font-body text-text-primary focus:outline-none focus:border-accent-blue"
                     />
                   </div>
                 )}
 
-                <div className="pt-4">
+                <div className="pt-4 flex gap-3">
                   <button 
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-3 bg-cta-yellow text-oboe-black rounded-xl font-body font-bold border border-oboe-black hover:bg-chip-yellow transition-colors disabled:opacity-50"
+                    type="button" 
+                    onClick={() => setIsModalOpen(false)}
+                    className="w-1/2 py-3 border border-border-light text-text-secondary rounded-full font-body text-xs font-semibold hover:bg-surface-muted"
                   >
-                    {isSubmitting ? "Processing..." : modalType === "booking" ? "Create Booking" : "Block Time"}
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="w-1/2 py-3 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors"
+                  >
+                    {isSubmitting ? "Creating..." : "Save Entry"}
                   </button>
                 </div>
               </form>
             </div>
           </div>
         )}
+
+        {/* Global Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={confirmModalData.isOpen}
+          title={confirmModalData.title}
+          description={confirmModalData.description}
+          confirmText={confirmModalData.confirmText}
+          variant={confirmModalData.variant}
+          iconName={confirmModalData.iconName}
+          loading={!!actionLoading}
+          onConfirm={confirmModalData.onConfirm}
+          onCancel={() => setConfirmModalData(prev => ({ ...prev, isOpen: false }))}
+        />
       </div>
     );
   }
 
-  // Student Schedule View
-  const activeBookings = bookings.filter(b => b.status !== "completed" && b.status !== "cancelled");
-
+  // Student View
   return (
     <div className="w-full">
-      <h1 className="font-heading text-4xl font-bold text-oboe-black mb-8">Upcoming Lessons</h1>
-      
-      {loading ? (
-        <div className="bg-white p-8 rounded-3xl border border-border-warm shadow-sm min-h-[300px] flex items-center justify-center">
-           <div className="animate-pulse flex flex-col items-center gap-4">
-             <div className="w-12 h-12 border-4 border-cta-yellow border-t-transparent rounded-full animate-spin"></div>
-             <p className="font-body text-mid-gray-brown">Loading lessons...</p>
-           </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-border-light">
+        <div>
+          <h1 className="font-heading text-3xl md:text-4xl font-bold text-text-primary">Your Lessons Schedule</h1>
+          <p className="font-body text-xs md:text-sm text-text-secondary mt-1">Review upcoming classes and join Google Meet sessions.</p>
         </div>
-      ) : activeBookings.length === 0 ? (
-        <div className="bg-white p-8 rounded-3xl border border-border-warm shadow-sm min-h-[300px] flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-surface-base rounded-full flex items-center justify-center mx-auto mb-4 border border-border-warm">
-              <CalendarIcon className="w-8 h-8 text-mid-gray-brown" />
-            </div>
-            <h3 className="font-heading text-xl font-semibold text-oboe-black mb-2">No upcoming lessons</h3>
-            <p className="font-body text-mid-gray-brown mb-6 max-w-sm mx-auto">
-              You haven&apos;t scheduled any tutoring sessions yet. Book your first lesson to get started.
-            </p>
-            <Link href="/dashboard/book" className="inline-block px-6 py-2.5 bg-cta-yellow text-oboe-black rounded-full font-body font-medium border border-oboe-black hover:bg-chip-yellow transition-colors">
-              Book a Lesson
+        <Link 
+          href="/dashboard/book"
+          className="px-5 py-2.5 bg-text-primary text-white rounded-full text-xs font-semibold hover:bg-black transition-colors inline-block"
+        >
+          Book Another Session
+        </Link>
+      </div>
+
+      <div className="bg-white p-6 rounded-[24px] border border-border-light shadow-xs">
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <div className="w-8 h-8 border-2 border-accent-blue border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : bookings.length === 0 ? (
+          <div className="text-center py-12">
+            <HugeIcon name="calendar" size={32} className="text-text-subtle mx-auto mb-3" />
+            <h3 className="font-heading text-lg font-bold text-text-primary mb-1">No lessons scheduled</h3>
+            <p className="font-body text-xs text-text-secondary mb-4">Book your first 1-on-1 language lesson now.</p>
+            <Link href="/dashboard/book" className="px-5 py-2.5 bg-text-primary text-white rounded-full text-xs font-semibold hover:bg-black transition-colors inline-block">
+              Schedule Now
             </Link>
           </div>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {activeBookings.map((booking) => (
-            <div key={booking.id} className="bg-white p-6 rounded-2xl border border-border-warm shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-4">
-                <div className="p-4 bg-highlight-green rounded-xl">
-                  <AcademicCapIcon className="w-6 h-6 text-dark-charcoal" />
-                </div>
+        ) : (
+          <div className="space-y-4">
+            {bookings.map((booking) => (
+              <div key={booking.id} className="p-5 bg-surface-near-white rounded-2xl border border-border-light flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                  <h3 className="font-heading font-semibold text-lg text-oboe-black">{booking.tier} Tier Lesson</h3>
-                  <p className="font-body text-sm text-mid-gray-brown">
-                    {new Date(booking.createdAt).toLocaleDateString()} • {booking.status.replace("_", " ")}
+                  <div className="flex items-center gap-2">
+                    <span className="font-heading font-bold text-sm text-text-primary capitalize">{booking.tier} Session</span>
+                    <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
+                      booking.status === "confirmed" || booking.status === "paid"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        : booking.status === "completed"
+                        ? "bg-blue-50 text-blue-700 border-blue-200"
+                        : "bg-amber-50 text-amber-700 border-amber-200"
+                    }`}>
+                      {booking.status.replace("_", " ")}
+                    </span>
+                  </div>
+                  <p className="font-body text-xs text-text-secondary mt-1">
+                    Date: {new Date(booking.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })} • Ref: {booking.reference}
                   </p>
                 </div>
+
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                  {booking.videoCallUrl && (booking.status === "confirmed" || booking.status === "paid") && (
+                    <a 
+                      href={booking.videoCallUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-accent-blue text-white rounded-full text-xs font-semibold hover:bg-blue-600 transition-colors"
+                    >
+                      Join Google Meet
+                    </a>
+                  )}
+                  {booking.status !== "completed" && booking.status !== "cancelled" && (
+                    <button
+                      onClick={() => promptStatusUpdate(booking.id, "cancelled", booking.reference)}
+                      disabled={actionLoading === booking.id}
+                      className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-red-600 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
+                    >
+                      Cancel Booking
+                    </button>
+                  )}
+                </div>
               </div>
-              {booking.status === "confirmed" ? (
-                booking.videoCallUrl ? (
-                  <a 
-                    href={booking.videoCallUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 bg-cta-yellow border border-oboe-black rounded-full text-sm font-medium text-oboe-black hover:bg-chip-yellow transition-colors"
-                  >
-                    Join Call
-                  </a>
-                ) : (
-                  <button 
-                    onClick={() => toast.info("Meeting links will be generated closer to the session.")}
-                    className="px-4 py-2 bg-surface-base border border-border-warm rounded-full text-sm font-medium text-mid-gray-brown cursor-not-allowed"
-                  >
-                    Join Call (Pending)
-                  </button>
-                )
-              ) : (
-                <Link href="/dashboard/book" className="inline-block px-4 py-2 bg-surface-base border border-border-warm rounded-full text-sm font-medium hover:bg-white transition-colors">
-                  Resume Booking
-                </Link>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Global Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModalData.isOpen}
+        title={confirmModalData.title}
+        description={confirmModalData.description}
+        confirmText={confirmModalData.confirmText}
+        variant={confirmModalData.variant}
+        iconName={confirmModalData.iconName}
+        loading={!!actionLoading}
+        onConfirm={confirmModalData.onConfirm}
+        onCancel={() => setConfirmModalData(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

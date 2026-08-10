@@ -1,87 +1,89 @@
 @import "tailwindcss";
 
-/* Palmore — local font (must come after all @import rules) */
-@font-face {
-  font-family: "Palmore";
-  src: url("/fonts/Palmore Light.ttf") format("truetype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Palmore";
-  src: url("/fonts/Palmore Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Palmore";
-  src: url("/fonts/Palmore Semibold.ttf") format("truetype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Palmore";
-  src: url("/fonts/Palmore Bold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 @theme {
   /* Colors */
-  --color-surface-base: #fcfaf8;
-  --color-oboe-black: #2a2522;
-  --color-dark-charcoal: #242929;
-  --color-mid-gray-brown: #374151;
-  --color-border-warm: #ddd7d5;
-  --color-user-bubble: #eee7e2;
-  --color-cta-yellow: #fff1c7;
-  --color-placeholder-brown: #aba39c;
-  --color-pure-white: #ffffff;
+  --color-surface-white: #ffffff;
+  --color-surface-muted: #f3f4f6;
+  --color-surface-near-white: #f9fafb;
+  --color-text-primary: #111827;
+  --color-text-dark: #292929;
+  --color-text-secondary: #898989;
+  --color-text-tertiary: #374151;
+  --color-text-subtle: #9ca3af;
+  --color-border-subtle: #e1e2e3;
+  --color-border-light: #e5e7eb;
+  --color-action-primary: #000000;
+  --color-accent-cyan: var(--color-accent-blue);
+  --color-accent-amber: var(--color-accent-blue);
+  --color-accent-purple: var(--color-accent-blue);
   
-  /* Form & Highlight Colors */
-  --color-highlight-blue: #d9ebf9;
-  --color-highlight-green: #abc6b6;
-  --color-chip-yellow: #fef1cc;
-  --color-chip-blue: #d9ebf9;
-  --color-chip-green: #abc6b6;
-  --color-chip-orange: #fac8aa;
-  --color-chip-pink: #fab8b0;
+  /* Fallbacks for existing variables mapped to minimalist theme */
+  --color-surface-base: var(--color-surface-white);
+  --color-oboe-black: var(--color-text-primary);
+  --color-dark-charcoal: var(--color-text-primary);
+  --color-mid-gray-brown: var(--color-text-secondary);
+  --color-border-warm: var(--color-border-light);
+  --color-user-bubble: var(--color-surface-muted);
+  --color-cta-yellow: var(--color-text-primary);
+  --color-placeholder-brown: var(--color-text-subtle);
+  --color-pure-white: #ffffff;
+  --color-primary-dark-blue: var(--color-accent-blue);
+  --color-primary-light-blue: var(--color-accent-blue);
+  --color-highlight-blue: var(--color-surface-muted);
+  --color-highlight-green: var(--color-surface-muted);
+  --color-chip-yellow: var(--color-surface-muted);
+  --color-chip-blue: var(--color-accent-blue);
+  --color-chip-green: var(--color-surface-muted);
+  --color-chip-orange: var(--color-surface-muted);
+  --color-chip-pink: var(--color-surface-muted);
 
   /* Spacing */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-2xl: 20px;
-  --spacing-input-min: 1px;
-  --spacing-sidebar-icon: 12px;
-  --spacing-sidebar-width: 250px;
-  --spacing-sidebar-width-expanded: 258px;
-  --spacing-section-gap: 114px;
+  --spacing-space-1: 2px;
+  --spacing-space-2: 4px;
+  --spacing-space-3: 6px;
+  --spacing-space-4: 8px;
+  --spacing-space-5: 10px;
+  --spacing-space-6: 12px;
+  --spacing-space-7: 16px;
+  --spacing-space-8: 20px;
+  --spacing-space-9: 24px;
+  --spacing-space-10: 32px;
+  --spacing-space-11: 40px;
+  --spacing-space-12: 48px;
+  --spacing-space-13: 80px;
+  --spacing-space-14: 96px;
+  
 
   /* Border Radius */
-  --radius-sm: 0.25rem;
-  --radius-md: 8px;
-  --radius-lg: 10px;
-  --radius-pill: 32px;
-  --radius-jumbo: 7rem;
-  --radius-4xl: 2rem;
+  --radius-radius-xs: 2px;
+  --radius-radius-sm: 4px;
+  --radius-radius-md: 6px;
+  --radius-radius-lg: 7px;
+  --radius-radius-xl: 8px;
+  --radius-radius-2xl: 12px;
+  --radius-radius-3xl: 16px;
+  --radius-radius-pill: 100px;
+  --radius-radius-full: 9999px;
+  
+  /* Fallbacks for existing radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-pill: 100px;
+  --radius-jumbo: 16px;
+  --radius-4xl: 16px;
 
   /* Shadows */
-  --shadow-brutal: 8px 8px 0px rgba(36, 41, 41, 0.1);
-  --shadow-brutal-hover: 12px 12px 0px rgba(36, 41, 41, 0.15);
+  --shadow-brutal: 0 4px 12px rgba(0, 0, 0, 0.05); /* Softened from brutalist */
+  --shadow-brutal-hover: 0 6px 16px rgba(0, 0, 0, 0.08); /* Softened */
+
+  /* Accent Blue */
+  --color-accent-blue: #0284c7;
 
   /* Fonts */
-  --font-palmore: "Palmore", serif;
-  --font-lora: "Lora", serif;
-  --font-heading: "Palmore", serif;
-  --font-body: "Lora", serif;
-  --font-signature: var(--font-dancing-script), cursive;
+  --font-heading: var(--font-freigeist), sans-serif;
+  --font-body: var(--font-freigeist), sans-serif;
+  --font-signature: var(--font-freigeist), sans-serif;
 }
 
 @layer base {
@@ -96,205 +98,62 @@
   }
 
   body {
-    background-color: var(--color-surface-base);
-    color: var(--color-oboe-black);
+    background-color: var(--color-surface-near-white);
+    color: var(--color-text-primary);
     font-family: var(--font-body);
     font-size: 16px;
     font-weight: 400;
-    line-height: 28px;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    color: var(--color-dark-charcoal);
-    line-height: 1.2;
+    color: var(--color-text-primary);
+    line-height: 1.1;
+    font-weight: 600;
   }
 
   a {
     color: inherit;
     text-decoration: none;
   }
+
+  p {
+    width: 100%;
+  }
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--color-surface-base); }
+::-webkit-scrollbar-track { background: var(--color-surface-white); }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border-warm);
+  background: var(--color-border-subtle);
   border-radius: 3px;
 }
 
 /* Focus ring */
 *:focus-visible {
-  outline: 3px solid oklch(88% 0.005 20 / 0.5);
-  outline-offset: 0px;
+  outline: 2px solid var(--color-accent-blue);
+  outline-offset: 2px;
 }
 
-/* Animated Highlight */
-.animated-highlight {
-  position: relative;
-  display: inline-block;
-  padding: 0 8px 0 0px;
-  margin: 0 3px 0 -2px;
-  z-index: 1;
+input:focus, textarea:focus, select:focus {
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+
+/* Hugeicons WebFont */
+.huff {
+  font-family: 'hugeicons' !important;
   font-style: normal;
-  color: #2a2522;
-}
-
-.animated-highlight::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 5%; /* Sit slightly above the baseline for the nice highlight look */
-  width: 100%;
-  height: 45%;
-  z-index: -1;
-  background-color: var(--color-chip-yellow);
-  transform: skewX(-12deg);
-  clip-path: inset(0 100% 0 0);
-  animation: reveal-and-cycle 15s infinite ease-in-out;
-}
-
-@keyframes reveal-and-cycle {
-  /* Yellow Cycle */
-  0% {
-    background-color: var(--color-chip-yellow);
-    clip-path: inset(0 100% 0 0);
-  }
-  6% {
-    background-color: var(--color-chip-yellow);
-    clip-path: inset(0 0 0 0);
-  }
-  14% {
-    background-color: var(--color-chip-yellow);
-    clip-path: inset(0 0 0 0);
-  }
-  19.99% {
-    background-color: var(--color-chip-yellow);
-    clip-path: inset(0 0 0 100%);
-  }
-
-  /* Blue Cycle */
-  20% {
-    background-color: var(--color-chip-blue);
-    clip-path: inset(0 100% 0 0);
-  }
-  26% {
-    background-color: var(--color-chip-blue);
-    clip-path: inset(0 0 0 0);
-  }
-  34% {
-    background-color: var(--color-chip-blue);
-    clip-path: inset(0 0 0 0);
-  }
-  39.99% {
-    background-color: var(--color-chip-blue);
-    clip-path: inset(0 0 0 100%);
-  }
-
-  /* Green Cycle */
-  40% {
-    background-color: var(--color-chip-green);
-    clip-path: inset(0 100% 0 0);
-  }
-  46% {
-    background-color: var(--color-chip-green);
-    clip-path: inset(0 0 0 0);
-  }
-  54% {
-    background-color: var(--color-chip-green);
-    clip-path: inset(0 0 0 0);
-  }
-  59.99% {
-    background-color: var(--color-chip-green);
-    clip-path: inset(0 0 0 100%);
-  }
-
-  /* Pink Cycle */
-  60% {
-    background-color: var(--color-chip-pink);
-    clip-path: inset(0 100% 0 0);
-  }
-  66% {
-    background-color: var(--color-chip-pink);
-    clip-path: inset(0 0 0 0);
-  }
-  74% {
-    background-color: var(--color-chip-pink);
-    clip-path: inset(0 0 0 0);
-  }
-  79.99% {
-    background-color: var(--color-chip-pink);
-    clip-path: inset(0 0 0 100%);
-  }
-
-  /* Orange Cycle */
-  80% {
-    background-color: var(--color-chip-orange);
-    clip-path: inset(0 100% 0 0);
-  }
-  86% {
-    background-color: var(--color-chip-orange);
-    clip-path: inset(0 0 0 0);
-  }
-  94% {
-    background-color: var(--color-chip-orange);
-    clip-path: inset(0 0 0 0);
-  }
-  99.99% {
-    background-color: var(--color-chip-orange);
-    clip-path: inset(0 0 0 100%);
-  }
-  100% {
-    background-color: var(--color-chip-yellow);
-    clip-path: inset(0 100% 0 0);
-  }
-}
-
-
-
-/* Animated Pastel Mesh Gradient */
-.animated-mesh-bg {
-  background: linear-gradient(
-    -45deg,
-    var(--color-chip-yellow),
-    var(--color-chip-pink),
-    var(--color-chip-blue),
-    var(--color-chip-green),
-    var(--color-chip-yellow)
-  );
-  background-size: 400% 400%;
-  animation: waveMesh 12s ease-in-out infinite;
-}
-
-/* Animated Pastel Mesh Text Gradient */
-.animated-mesh-text {
-  background: linear-gradient(
-    -45deg,
-    #9d3844, /* dark pink/red */
-    #c26521, /* dark orange */
-    #2a618f, /* dark blue */
-    #34704b, /* dark green */
-    #9d3844  /* dark pink/red */
-  );
-  background-size: 400% 400%;
-  animation: waveMesh 12s ease-in-out infinite;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
-}
-
-@keyframes waveMesh {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: inline-block;
+  vertical-align: middle;
 }
