@@ -5,40 +5,58 @@ import Link from "next/link";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
-export default function LoginPage() {
+import { Suspense } from "react";
+
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      
+      const idToken = await result.user.getIdToken();
+      await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+      
       router.push(redirectPath);
-    } catch (err: any) {
-      setError(err.message || "Failed to log in");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to log in";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    setError("");
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      
+      const idToken = await result.user.getIdToken();
+      await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+      
       router.push(redirectPath);
-    } catch (err: any) {
-      setError(err.message || "Failed to log in with Google");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to log in with Google";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -48,12 +66,6 @@ export default function LoginPage() {
     <div className="bg-white p-8 rounded-3xl shadow-brutal border border-border-warm relative z-10">
       <h1 className="font-heading text-3xl font-bold text-dark-charcoal mb-2">Welcome back</h1>
       <p className="font-body text-[15px] text-mid-gray-brown mb-8">Enter your details to access your account.</p>
-
-      {error && (
-        <div className="p-3 mb-6 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-body">
-          {error}
-        </div>
-      )}
 
       <form onSubmit={handleEmailLogin} className="flex flex-col gap-5">
         <div>
@@ -115,5 +127,13 @@ export default function LoginPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="bg-white p-8 rounded-3xl shadow-brutal border border-border-warm relative z-10 min-h-[400px] flex items-center justify-center">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

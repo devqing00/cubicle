@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { SparklesIcon } from "@heroicons/react/24/solid";
+import { SparklesIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
+import Link from "next/link";
 
 const positions = [
   "left-[15%] max-[900px]:left-[5%] max-sm:-left-[15%] translate-x-0 top-[60px] w-[280px] h-[360px] -rotate-6 z-10 p-4 opacity-90 shadow-[0_20px_40px_-10px_rgba(42,37,34,0.06)] border border-border-warm rounded-2xl gap-3",
@@ -17,11 +18,11 @@ export default function HeroSection() {
     const cycleInterval = setInterval(() => {
       setCycle((c) => c + 1);
     }, 3000);
-    
+
     const tickInterval = setInterval(() => {
       setTick((t) => t + 1);
     }, 1500);
-    
+
     return () => {
       clearInterval(cycleInterval);
       clearInterval(tickInterval);
@@ -34,14 +35,14 @@ export default function HeroSection() {
       content: (
         <>
           <div className="w-full h-[160px] bg-chip-yellow rounded-xl transition-all duration-500 overflow-hidden relative">
-             {/* Moving block inside */}
-             <div 
-               className="absolute top-1/4 h-1/2 bg-white/40 rounded-lg transition-all duration-[1500ms] ease-in-out"
-               style={{ 
-                 left: tick % 2 === 0 ? '10%' : '30%',
-                 right: tick % 2 === 0 ? '40%' : '10%'
-               }} 
-             />
+            {/* Moving block inside */}
+            <div
+              className="absolute top-1/4 h-1/2 bg-white/40 rounded-lg transition-all duration-[1500ms] ease-in-out"
+              style={{
+                left: tick % 2 === 0 ? '10%' : '30%',
+                right: tick % 2 === 0 ? '40%' : '10%'
+              }}
+            />
           </div>
           <div className="h-4 bg-user-bubble rounded mt-3 transition-all duration-[1500ms]" style={{ width: tick % 3 === 0 ? '60%' : tick % 3 === 1 ? '80%' : '50%' }} />
           <div className="h-3 bg-surface-base rounded mt-2 transition-all duration-[1500ms]" style={{ width: tick % 2 === 0 ? '40%' : '65%' }} />
@@ -56,9 +57,9 @@ export default function HeroSection() {
           <div className="w-full h-[260px] bg-highlight-green rounded-xl relative overflow-hidden transition-all duration-500">
             {/* Pulsing indicator */}
             <div className={`absolute top-4 left-4 w-3 h-3 rounded-full bg-[#e8b835] transition-opacity duration-1000 ${tick % 2 === 0 ? 'opacity-100' : 'opacity-20'}`} />
-            
+
             {/* PIP View Floating */}
-            <div 
+            <div
               className="absolute w-[80px] h-[110px] bg-white rounded-lg border border-border-warm flex items-center justify-center transition-all duration-[1500ms] ease-in-out shadow-sm"
               style={{
                 bottom: tick % 2 === 0 ? '16px' : '24px',
@@ -68,7 +69,7 @@ export default function HeroSection() {
               <SparklesIcon className={`w-5 h-5 text-[#e8b835] transition-all duration-1000 ${tick % 2 === 0 ? 'scale-110 rotate-12' : 'scale-90 -rotate-12'}`} />
             </div>
           </div>
-          
+
           <div className="flex justify-between items-center mt-3">
             <div className="flex flex-col items-start gap-1 w-full">
               <div className="h-4 bg-user-bubble rounded transition-all duration-[1500ms]" style={{ width: tick % 2 === 0 ? '100px' : '140px' }} />
@@ -92,13 +93,13 @@ export default function HeroSection() {
       content: (
         <>
           <div className="w-full h-[160px] bg-chip-orange rounded-xl transition-all duration-500 relative overflow-hidden">
-             {/* Chart bars mock */}
-             <div className="absolute bottom-4 left-4 flex gap-2 items-end h-[100px]">
-               <div className="w-6 bg-white/50 rounded-t-sm transition-all duration-[1500ms]" style={{ height: tick % 3 === 0 ? '40%' : '60%' }} />
-               <div className="w-6 bg-white/60 rounded-t-sm transition-all duration-[1500ms]" style={{ height: tick % 2 === 0 ? '70%' : '40%' }} />
-               <div className="w-6 bg-white/70 rounded-t-sm transition-all duration-[1500ms]" style={{ height: tick % 3 === 1 ? '50%' : '90%' }} />
-               <div className="w-6 bg-white/80 rounded-t-sm transition-all duration-[1500ms]" style={{ height: tick % 2 === 1 ? '80%' : '50%' }} />
-             </div>
+            {/* Chart bars mock */}
+            <div className="absolute bottom-4 left-4 flex gap-2 items-end h-[100px]">
+              <div className="w-6 bg-white/50 rounded-t-sm transition-all duration-[1500ms]" style={{ height: tick % 3 === 0 ? '40%' : '60%' }} />
+              <div className="w-6 bg-white/60 rounded-t-sm transition-all duration-[1500ms]" style={{ height: tick % 2 === 0 ? '70%' : '40%' }} />
+              <div className="w-6 bg-white/70 rounded-t-sm transition-all duration-[1500ms]" style={{ height: tick % 3 === 1 ? '50%' : '90%' }} />
+              <div className="w-6 bg-white/80 rounded-t-sm transition-all duration-[1500ms]" style={{ height: tick % 2 === 1 ? '80%' : '50%' }} />
+            </div>
           </div>
           <div className="h-4 bg-user-bubble rounded mt-3 transition-all duration-[1500ms]" style={{ width: tick % 2 === 0 ? '80%' : '65%' }} />
           <div className="h-3 bg-surface-base rounded mt-2 transition-all duration-[1500ms]" style={{ width: tick % 3 === 0 ? '60%' : '45%' }} />
@@ -118,6 +119,7 @@ export default function HeroSection() {
         backgroundImage: "linear-gradient(to bottom, transparent 0%, var(--color-surface-base) 80%, var(--color-surface-base) 100%), url('/images/hero_bg.webp')",
         backgroundSize: "cover",
         backgroundPosition: "center top",
+        backgroundRepeat: "no-repeat"
       }}
     >
       {/* Subtle radial glow */}
@@ -130,12 +132,20 @@ export default function HeroSection() {
           FEELS <em className="animated-highlight font-signature capitalize font-normal tracking-normal text-[0.8em] ml-2">personal</em>.
         </h1>
 
+        <Link
+          href="/signup?redirect=/dashboard/book"
+          className="inline-flex items-center gap-3 px-8 py-4 bg-oboe-black text-white rounded-full font-body text-xl font-medium border border-oboe-black hover:border-cta-yellow transition-all duration-300 cursor-pointer shadow-brutal hover:bg-cta-yellow hover:text-oboe-black hover:-translate-y-1 mb-16 z-30"
+        >
+          Start Learning Today
+          <ArrowRightIcon className="w-5 h-5" />
+        </Link>
+
         {/* Cascading Cards Container */}
         <div className="relative w-full h-[460px] mt-4 mb-6 transform scale-100 max-[900px]:scale-[0.8] max-sm:scale-[0.55] max-sm:-mt-[100px] max-sm:-mb-[80px]">
           {cards.map((card, idx) => {
             const posIndex = (idx + cycle) % 3;
             const posClass = positions[posIndex];
-            
+
             return (
               <div
                 key={card.id}

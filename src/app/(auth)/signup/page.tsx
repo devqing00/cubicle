@@ -1,13 +1,15 @@
 "use client";
 
+import { Suspense } from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "/dashboard";
@@ -15,14 +17,10 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"student" | "tutor">("student");
-  
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -34,37 +32,52 @@ export default function SignupPage() {
         uid: user.uid,
         displayName: name,
         email: user.email,
-        role,
+        role: "student",
         createdAt: new Date().toISOString(),
+      });
+      // Explicitly set the session cookie before redirecting
+      const idToken = await user.getIdToken();
+      await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
       });
       
       router.push(redirectPath);
-    } catch (err: any) {
-      setError(err.message || "Failed to create account");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to create account";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignup = async () => {
-    setError("");
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      const user = userCredential.user;
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
       
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
-        displayName: user.displayName || "User",
+        displayName: user.displayName || "Student",
         email: user.email,
-        role, 
+        role: "student", 
         createdAt: new Date().toISOString(),
       }, { merge: true });
+      // Explicitly set the session cookie before redirecting
+      const idToken = await user.getIdToken();
+      await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
 
       router.push(redirectPath);
-    } catch (err: any) {
-      setError(err.message || "Failed to sign up with Google");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to sign up with Google";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -73,74 +86,38 @@ export default function SignupPage() {
   return (
     <div className="bg-white p-8 rounded-3xl shadow-brutal border border-border-warm relative z-10">
       <h1 className="font-heading text-3xl font-bold text-dark-charcoal mb-2">Create an account</h1>
-      <p className="font-body text-[15px] text-mid-gray-brown mb-6">Join Cubicle and start your journey.</p>
+      <p className="font-body text-[15px] text-mid-gray-brown mb-8">Join Cubicle to start learning music with pros.</p>
 
-      {error && (
-        <div className="p-3 mb-6 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-body">
-          {error}
-        </div>
-      )}
-
-      {/* Role Toggle */}
-      <div className="flex gap-2 bg-surface-base p-1.5 rounded-2xl mb-6 border border-border-warm shadow-inner">
-        <button
-          type="button"
-          onClick={() => setRole("student")}
-          className={`flex-1 py-3 rounded-xl font-body text-[15px] font-medium transition-all duration-300 relative ${
-            role === "student" 
-            ? "bg-chip-orange text-dark-charcoal border border-black" 
-            : "text-mid-gray-brown hover:text-dark-charcoal hover:bg-white/50"
-          }`}
-        >
-          <div className="flex items-center justify-center gap-2">
-            I'm a Student
-          </div>
-        </button>
-        <button
-          type="button"
-          onClick={() => setRole("tutor")}
-          className={`flex-1 py-3 rounded-xl font-body text-[15px] font-medium transition-all duration-300 relative ${
-            role === "tutor" 
-            ? "bg-chip-blue text-dark-charcoal border border-black" 
-            : "text-mid-gray-brown hover:text-dark-charcoal hover:bg-white/50"
-          }`}
-        >
-          <div className="flex items-center justify-center gap-2">
-            I'm a Tutor
-          </div>
-        </button>
-      </div>
-
-      <form onSubmit={handleEmailSignup} className="flex flex-col gap-4">
+      <form onSubmit={handleEmailSignup} className="flex flex-col gap-5">
         <div>
-          <label className="block font-body text-sm font-medium text-dark-charcoal mb-1.5">Full Name</label>
+          <label className="block font-body text-sm font-medium text-dark-charcoal mb-2">Full Name</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-xl border border-border-warm bg-surface-base focus:bg-chip-green/20 focus:outline-none focus:ring-2 focus:ring-chip-green focus:border-chip-green transition-all duration-300 font-body text-dark-charcoal placeholder:text-gray-400 hover:bg-chip-green/10"
+            className="w-full px-4 py-3.5 rounded-xl border border-border-warm bg-surface-base focus:bg-chip-blue/20 focus:outline-none focus:ring-2 focus:ring-chip-blue focus:border-chip-blue transition-all duration-300 font-body text-dark-charcoal placeholder:text-gray-400 hover:bg-chip-blue/10"
             placeholder="John Doe"
             required
           />
         </div>
         <div>
-          <label className="block font-body text-sm font-medium text-dark-charcoal mb-1.5">Email address</label>
+          <label className="block font-body text-sm font-medium text-dark-charcoal mb-2">Email address</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-xl border border-border-warm bg-surface-base focus:bg-chip-green/20 focus:outline-none focus:ring-2 focus:ring-chip-green focus:border-chip-green transition-all duration-300 font-body text-dark-charcoal placeholder:text-gray-400 hover:bg-chip-green/10"
+            className="w-full px-4 py-3.5 rounded-xl border border-border-warm bg-surface-base focus:bg-chip-blue/20 focus:outline-none focus:ring-2 focus:ring-chip-blue focus:border-chip-blue transition-all duration-300 font-body text-dark-charcoal placeholder:text-gray-400 hover:bg-chip-blue/10"
             placeholder="you@example.com"
             required
           />
         </div>
         <div>
-          <label className="block font-body text-sm font-medium text-dark-charcoal mb-1.5">Password</label>
+          <label className="block font-body text-sm font-medium text-dark-charcoal mb-2">Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-xl border border-border-warm bg-surface-base focus:bg-chip-green/20 focus:outline-none focus:ring-2 focus:ring-chip-green focus:border-chip-green transition-all duration-300 font-body text-dark-charcoal placeholder:text-gray-400 hover:bg-chip-green/10"
+            className="w-full px-4 py-3.5 rounded-xl border border-border-warm bg-surface-base focus:bg-chip-blue/20 focus:outline-none focus:ring-2 focus:ring-chip-blue focus:border-chip-blue transition-all duration-300 font-body text-dark-charcoal placeholder:text-gray-400 hover:bg-chip-blue/10"
             placeholder="••••••••"
             required
             minLength={6}
@@ -150,13 +127,13 @@ export default function SignupPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full mt-3 py-4 bg-oboe-black text-white rounded-full font-body text-[15px] font-medium hover:bg-chip-green hover:text-oboe-black transition-all duration-300 shadow-[0_4px_10px_-2px_rgba(0,0,0,0.15)] disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full mt-2 py-4 bg-oboe-black text-white rounded-full font-body text-[15px] font-medium hover:bg-chip-blue hover:text-oboe-black transition-all duration-300 shadow-[0_4px_10px_-2px_rgba(0,0,0,0.15)] disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          {loading ? "Creating account..." : "Create account"}
+          {loading ? "Creating account..." : "Sign up"}
         </button>
       </form>
 
-      <div className="my-7 flex items-center gap-4">
+      <div className="my-8 flex items-center gap-4">
         <div className="flex-1 h-px bg-border-warm"></div>
         <span className="font-body text-xs text-mid-gray-brown uppercase tracking-widest font-medium">Or</span>
         <div className="flex-1 h-px bg-border-warm"></div>
@@ -165,7 +142,7 @@ export default function SignupPage() {
       <button
         onClick={handleGoogleSignup}
         disabled={loading}
-        className="w-full py-4 bg-white text-dark-charcoal border border-border-warm rounded-full font-body text-[15px] font-medium flex items-center justify-center gap-3 hover:bg-chip-blue hover:border-chip-blue transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
+        className="w-full py-4 bg-white text-dark-charcoal border border-border-warm rounded-full font-body text-[15px] font-medium flex items-center justify-center gap-3 hover:bg-chip-pink/30 hover:border-chip-pink transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -185,3 +162,12 @@ export default function SignupPage() {
     </div>
   );
 }
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="bg-white p-8 rounded-3xl shadow-brutal border border-border-warm relative z-10 min-h-[400px] flex items-center justify-center">Loading...</div>}>
+      <SignupForm />
+    </Suspense>
+  );
+}
+

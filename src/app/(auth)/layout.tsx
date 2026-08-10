@@ -17,8 +17,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </Link>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center items-center p-6 relative z-10">
-        <div className="w-full max-w-[420px]">
+      <div className="flex-1 flex flex-col justify-center p-6 relative z-10 w-screen max-w-full">
+        <div className="w-full max-w-[420px] mx-auto">
           <div className="text-center mb-8">
             <Link href="/" className="inline-block no-underline">
               <span className="font-heading text-[32px] font-bold text-oboe-black tracking-[-0.3px]">

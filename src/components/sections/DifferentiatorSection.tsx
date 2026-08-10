@@ -7,7 +7,7 @@ export default function DifferentiatorSection() {
   return (
     <section
       id="about"
-      className="pt-[60px] pb-[120px] max-md:pb-[60px] px-6 bg-surface-base relative z-10"
+      className="-mt-[5px] pt-[150px] pb-[120px] max-md:pb-[60px] px-6 bg-surface-base relative z-10"
     >
       <div className="max-w-[1100px] mx-auto">
         

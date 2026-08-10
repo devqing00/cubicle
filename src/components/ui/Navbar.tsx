@@ -145,7 +145,7 @@ export default function Navbar() {
               <Link
                 href="/signup"
                 onClick={() => setMenuOpen(false)}
-                className="inline-flex items-center px-10 py-4 bg-oboe-black text-white rounded-full font-body text-lg font-medium no-underline shadow-brutal hover:bg-oboe-black/90 transition-colors"
+                className="inline-flex items-center px-10 py-4 bg-oboe-black text-white rounded-full font-body text-lg font-medium no-underline shadow-brutal hover:bg-oboe-black/90 hover:border hover:border-1px transition-colors"
               >
                 Sign up
               </Link>

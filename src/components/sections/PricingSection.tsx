@@ -121,7 +121,7 @@ export default function PricingSection() {
               </ul>
 
               <a
-                href="#booking"
+                href="/signup?redirect=/dashboard/book"
                 id={`pricing-cta-${plan.id}`}
                 className={`inline-flex items-center justify-center py-[13px] px-6 rounded-full font-body text-sm font-medium transition-all duration-200 cursor-pointer no-underline text-oboe-black border ${
                   plan.accent ? "bg-cta-yellow border-transparent" : "bg-transparent border-border-warm"
