@@ -15,6 +15,17 @@ export async function POST(request: Request) {
     }
 
     const ref = `MAN-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
+    const meetLink = process.env.NEXT_PUBLIC_TUTOR_MEET_LINK && process.env.NEXT_PUBLIC_TUTOR_MEET_LINK.trim().length > 0
+      ? process.env.NEXT_PUBLIC_TUTOR_MEET_LINK.trim()
+      : "";
+
+    if (!meetLink) {
+      return NextResponse.json({ error: "No tutor Google Meet link configured. Please set your meeting link in Settings." }, { status: 400 });
+    }
+
+    const meetingCode = meetLink.includes("meet.google.com/")
+      ? meetLink.split("meet.google.com/")[1]?.split("?")[0]
+      : meetLink.split("/").pop() || ref;
 
     const newDoc = {
       type, // 'booking' or 'block'
@@ -24,6 +35,8 @@ export async function POST(request: Request) {
       tier: tier || null,
       reason: reason || null,
       reference: ref,
+      meetLink: type === "booking" ? meetLink : null,
+      meetingCode: type === "booking" ? meetingCode : null,
       status: type === "booking" ? "confirmed" : "blocked",
       createdAt: new Date().toISOString(),
     };

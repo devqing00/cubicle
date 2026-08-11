@@ -8,16 +8,22 @@ import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Link from "next/link";
 import EquipmentTestModal from "./EquipmentTestModal";
+import FeedbackModal from "@/components/ui/FeedbackModal";
 
 export interface Booking {
   id: string;
   studentId: string;
   reference: string;
   tier: string;
+  scheduledDate?: string;
+  scheduledTime?: string;
+  formattedSchedule?: string;
   calcomBookingId?: number;
   status: "pending_wa" | "pending_payment" | "confirmed" | "paid" | "completed" | "cancelled";
   createdAt: string;
   meetLink?: string;
+  meetingCode?: string;
+  hasFeedback?: boolean;
 }
 
 export default function StudentDashboard({ userData }: { userData: UserData }) {
@@ -27,6 +33,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
   const [payingBookingId, setPayingBookingId] = useState<string | null>(null);
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   const [modalBookingToCancel, setModalBookingToCancel] = useState<Booking | null>(null);
+  const [feedbackBooking, setFeedbackBooking] = useState<Booking | null>(null);
 
   const handlePayment = async (bookingId: string) => {
     setPayingBookingId(bookingId);
@@ -115,8 +122,68 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
     { day: "Sun", hours: 0 },
   ];
 
+  const tutorWhatsApp = (process.env.NEXT_PUBLIC_TUTOR_WHATSAPP || "2348000000000").replace(/[^0-9]/g, '');
+
   return (
     <div className="space-y-8 font-body">
+
+      {/* Next Lesson Starting Soon Hero Countdown Banner */}
+      {nextLesson && (
+        <div className="bg-gradient-to-r from-text-primary via-neutral-900 to-accent-blue/90 text-white p-6 sm:p-8 rounded-[28px] shadow-lg border border-white/10 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-2 relative z-10">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-3 py-0.5 bg-accent-blue text-white rounded-full text-[10px] font-bold uppercase tracking-wider shadow-xs">
+                Upcoming Live Lesson
+              </span>
+              <span className="text-xs text-white/80 font-medium">
+                Ref: {nextLesson.reference}
+              </span>
+              {nextLesson.meetLink && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const code = nextLesson.meetLink?.split("/").pop() || nextLesson.reference;
+                    navigator.clipboard.writeText(code);
+                    toast.success(`Meeting code "${code}" copied!`);
+                  }}
+                  className="px-2.5 py-0.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-md text-[10px] font-mono text-white/90 transition-colors flex items-center gap-1"
+                >
+                  <span>Code: {nextLesson.meetLink?.split("/").pop()}</span>
+                  <span className="text-[9px] opacity-75 font-sans">📋</span>
+                </button>
+              )}
+            </div>
+            <h2 className="font-heading text-xl sm:text-2xl font-bold text-white tracking-tight">
+              {nextLesson.tier.charAt(0).toUpperCase() + nextLesson.tier.slice(1)} Session with Instructor
+            </h2>
+            <p className="font-body text-xs sm:text-sm text-white/80 flex items-center gap-2">
+              <HugeIcon name="calendar" size={14} className="text-accent-blue" />
+              <span>Scheduled: {nextLesson.formattedSchedule || nextLesson.scheduledDate || "Upcoming"}</span>
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 relative z-10 shrink-0 w-full sm:w-auto flex-wrap">
+            {nextLesson.meetLink && (
+              <a
+                href={nextLesson.meetLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-accent-blue hover:bg-accent-blue-hover text-white rounded-full font-body text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+              >
+                <HugeIcon name="video" size={16} />
+                <span>Join Meeting Room</span>
+              </a>
+            )}
+            <Link
+              href="/dashboard/chat"
+              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-body text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+            >
+              <HugeIcon name="comment" size={16} />
+              <span>Chat</span>
+            </Link>
+          </div>
+        </div>
+      )}
       
       {/* Welcome Banner */}
       <div className="bg-white p-8 rounded-[28px] border border-border-light shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-6 w-full">
@@ -155,20 +222,20 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
         </Link>
 
         <Link
-          href="/dashboard/subjects"
+          href="/dashboard/chat"
           className="p-5 bg-white rounded-2xl border border-border-light hover:border-accent-blue/40 transition-colors group flex items-center gap-4"
         >
           <div className="w-10 h-10 rounded-xl bg-surface-muted flex items-center justify-center text-text-primary group-hover:scale-105 transition-transform">
-            <HugeIcon name="brain" size={20} />
+            <HugeIcon name="comment" size={20} />
           </div>
           <div>
-            <h4 className="font-heading font-bold text-sm text-text-primary">Browse Subjects</h4>
-            <p className="font-body text-[11px] text-text-secondary">Spanish, French, English</p>
+            <h4 className="font-heading font-bold text-sm text-text-primary">Chat with Tutor</h4>
+            <p className="font-body text-[11px] text-text-secondary">Live messaging & notes</p>
           </div>
         </Link>
 
-        <button
-          onClick={() => setIsTestModalOpen(true)}
+        <Link
+          href="/dashboard/equipment"
           className="p-5 bg-white rounded-2xl border border-border-light hover:border-accent-blue/40 transition-colors group flex items-center gap-4 text-left w-full"
         >
           <div className="w-10 h-10 rounded-xl bg-surface-muted flex items-center justify-center text-text-primary group-hover:scale-105 transition-transform">
@@ -178,7 +245,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
             <h4 className="font-heading font-bold text-sm text-text-primary">Test Equipment</h4>
             <p className="font-body text-[11px] text-text-secondary">Check mic & camera</p>
           </div>
-        </button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -204,57 +271,79 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                 {activeBookings.map((b) => (
                   <div
                     key={b.id}
-                    className="p-5 bg-surface-near-white rounded-2xl border border-border-light flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-border-subtle transition-colors"
+                    className="p-5 bg-surface-near-white rounded-2xl border border-border-light flex flex-col justify-between items-start gap-4 hover:border-border-subtle transition-colors"
                   >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-heading font-bold text-sm text-text-primary capitalize">
-                          {b.tier} Session
-                        </span>
-                        <span
-                          className={`px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
-                            b.status === "confirmed" || b.status === "paid"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-amber-50 text-amber-700 border-amber-200"
-                          }`}
-                        >
-                          {b.status.replace("_", " ")}
-                        </span>
+                    <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-heading font-bold text-sm text-text-primary capitalize">
+                            {b.tier} Session
+                          </span>
+                          <span
+                            className={`px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
+                              b.status === "confirmed" || b.status === "paid"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : "bg-amber-50 text-amber-700 border-amber-200"
+                            }`}
+                          >
+                            {b.status === "paid" ? "Paid & Confirmed" : b.status.replace("_", " ")}
+                          </span>
+                        </div>
+                        <p className="font-body text-xs text-text-secondary mt-1">
+                          Ref: <span className="font-mono">{b.reference}</span> • Scheduled: {b.createdAt ? new Date(b.createdAt).toLocaleDateString() : "Active"}
+                        </p>
                       </div>
-                      <p className="font-body text-xs text-text-secondary mt-1">
-                        Ref: <span className="font-mono">{b.reference}</span> • Created: {new Date(b.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
 
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                      {b.status === "pending_payment" && (
-                        <button
-                          onClick={() => handlePayment(b.id)}
-                          disabled={payingBookingId === b.id}
-                          className="px-4 py-2 bg-accent-blue text-white rounded-full text-xs font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
+                      {/* Action buttons */}
+                      <div className="flex items-center flex-wrap gap-2 pt-2 sm:pt-0">
+                        {b.status === "pending_payment" && (
+                          <button
+                            onClick={() => handlePayment(b.id)}
+                            disabled={payingBookingId === b.id}
+                            className="px-4 py-2 bg-accent-blue text-white rounded-full text-xs font-semibold hover:bg-blue-600 transition-colors disabled:opacity-50 shadow-2xs"
+                          >
+                            {payingBookingId === b.id ? "Redirecting..." : "Pay with Paystack"}
+                          </button>
+                        )}
+
+                        {b.meetLink && (
+                          <a
+                            href={b.meetLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 bg-text-primary text-white rounded-full text-xs font-semibold hover:bg-black transition-colors flex items-center gap-1.5 shadow-2xs"
+                          >
+                            <HugeIcon name="sparkles" size={14} />
+                            <span>Join Meet</span>
+                          </a>
+                        )}
+
+                        <Link
+                          href="/dashboard/chat"
+                          className="px-3.5 py-2 bg-white text-text-primary border border-border-light rounded-full text-xs font-semibold hover:bg-surface-muted transition-colors flex items-center gap-1.5"
                         >
-                          {payingBookingId === b.id ? "Redirecting..." : "Pay Now"}
-                        </button>
-                      )}
+                          <HugeIcon name="comment" size={14} />
+                          <span>Chat</span>
+                        </Link>
 
-                      {b.meetLink && (
                         <a
-                          href={b.meetLink}
+                          href={`https://wa.me/${tutorWhatsApp}?text=${encodeURIComponent(`Hi, I have a question about my booking ${b.reference}`)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-4 py-2 bg-text-primary text-white rounded-full text-xs font-medium hover:bg-black transition-colors"
+                          className="p-2 text-[#25D366] hover:bg-emerald-50 rounded-full transition-colors"
+                          title="WhatsApp Tutor"
                         >
-                          Join Meet
+                          <HugeIcon name="comment" size={16} />
                         </a>
-                      )}
 
-                      <button
-                        onClick={() => setModalBookingToCancel(b)}
-                        disabled={cancellingBookingId === b.id}
-                        className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
-                      >
-                        Cancel
-                      </button>
+                        <button
+                          onClick={() => setModalBookingToCancel(b)}
+                          disabled={cancellingBookingId === b.id}
+                          className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -371,11 +460,22 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                       <p className="font-heading font-bold text-xs text-text-primary capitalize">{lesson.tier}</p>
                       <p className="font-body text-[11px] text-text-secondary mt-0.5">{new Date(lesson.createdAt).toLocaleDateString()}</p>
                     </div>
-                    <span className={`px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
-                        lesson.status === "completed" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"
-                      }`}>
-                      {lesson.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
+                          lesson.status === "completed" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"
+                        }`}>
+                        {lesson.status}
+                      </span>
+                      {lesson.status === "completed" && !lesson.hasFeedback && (
+                        <button
+                          onClick={() => setFeedbackBooking(lesson)}
+                          className="px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 rounded-full text-[10px] font-bold flex items-center gap-1 transition-colors"
+                        >
+                          <HugeIcon name="star" size={10} />
+                          <span>Review</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -387,6 +487,24 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
       </div>
 
       <EquipmentTestModal isOpen={isTestModalOpen} onClose={() => setIsTestModalOpen(false)} />
+
+      {/* Post-Lesson Feedback Modal */}
+      {feedbackBooking && (
+        <FeedbackModal
+          isOpen={Boolean(feedbackBooking)}
+          bookingId={feedbackBooking.id}
+          studentId={userData.uid}
+          studentName={userData.displayName || userData.fullName || "Student"}
+          tier={feedbackBooking.tier}
+          scheduledDate={feedbackBooking.formattedSchedule || feedbackBooking.scheduledDate}
+          onClose={() => setFeedbackBooking(null)}
+          onSubmitted={() => {
+            setBookings((prev) =>
+              prev.map((b) => (b.id === feedbackBooking.id ? { ...b, hasFeedback: true } : b))
+            );
+          }}
+        />
+      )}
 
       {/* Confirmation Modal for Booking Cancellation */}
       <ConfirmationModal

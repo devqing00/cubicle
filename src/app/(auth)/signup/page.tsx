@@ -2,24 +2,33 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile, signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import HugeIcon from "@/components/ui/HugeIcon";
+import { getCleanErrorMessage } from "@/lib/firebaseErrors";
+import Logo from "@/components/ui/Logo";
 
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "/dashboard";
 
-  const [role, setRole] = useState<"student" | "tutor">("student");
+  const role = "student";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Modal state for when user tries to sign up with Google/Email but profile already exists
+  const [existingModal, setExistingModal] = useState<{
+    email: string;
+    idToken?: string;
+  } | null>(null);
+  const [loggingIn, setLoggingIn] = useState(false);
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +44,7 @@ function SignupForm() {
         displayName: name,
         fullName: name,
         email: user.email,
-        role: role,
+        role: "student",
         createdAt: new Date().toISOString(),
       });
       
@@ -46,11 +55,16 @@ function SignupForm() {
         body: JSON.stringify({ idToken }),
       });
       
-      toast.success("Account created successfully!");
-      router.push(role === "tutor" ? "/dashboard" : "/onboarding");
+      toast.success("Student account created successfully!");
+      router.push("/onboarding");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to create account";
-      toast.error(msg);
+      const rawMsg = err instanceof Error ? err.message : "";
+      const code = (err as { code?: string })?.code || "";
+      if (code === "auth/email-already-in-use" || rawMsg.includes("email-already-in-use")) {
+        setExistingModal({ email });
+      } else {
+        toast.error(getCleanErrorMessage(err, "Failed to create account"));
+      }
     } finally {
       setLoading(false);
     }
@@ -63,12 +77,23 @@ function SignupForm() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
+      // Check if user document already exists in Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        const idToken = await user.getIdToken();
+        setExistingModal({
+          email: user.email || "",
+          idToken,
+        });
+        return;
+      }
+      
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         displayName: user.displayName || "Student",
         fullName: user.displayName || "Student",
         email: user.email,
-        role: role, 
+        role: "student", 
         createdAt: new Date().toISOString(),
       }, { merge: true });
       
@@ -80,13 +105,43 @@ function SignupForm() {
       });
 
       toast.success("Signed in with Google!");
-      router.push(role === "tutor" ? "/dashboard" : "/onboarding");
+      router.push("/onboarding");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to sign up with Google";
-      toast.error(msg);
+      toast.error(getCleanErrorMessage(err, "Failed to sign up with Google"));
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDirectLogin = async () => {
+    if (!existingModal) return;
+    setLoggingIn(true);
+    try {
+      if (existingModal.idToken) {
+        await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken: existingModal.idToken }),
+        });
+        toast.success("Welcome back! Logged in successfully.");
+        setExistingModal(null);
+        router.push(redirectPath);
+      } else {
+        setExistingModal(null);
+        router.push(`/login?email=${encodeURIComponent(existingModal.email)}`);
+      }
+    } catch (err) {
+      toast.error(getCleanErrorMessage(err, "Failed to log in"));
+    } finally {
+      setLoggingIn(false);
+    }
+  };
+
+  const handleCancelExisting = async () => {
+    if (existingModal?.idToken) {
+      await signOut(auth);
+    }
+    setExistingModal(null);
   };
 
   return (
@@ -94,45 +149,18 @@ function SignupForm() {
       
       {/* Header */}
       <div>
+        <div className="mb-4">
+          <Logo variant="blue" size={26} />
+        </div>
         <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20 mb-3 inline-block">
-          New Registration
+          Student Registration
         </span>
         <h1 className="font-heading text-2xl sm:text-3xl font-bold text-text-primary tracking-tight mb-1">
-          Create an account
+          Create student account
         </h1>
         <p className="font-body text-xs text-text-secondary">
-          Join Cubicle to schedule 1-on-1 language lessons.
+          Join Cubicle to schedule 1-on-1 language lessons with your instructor.
         </p>
-      </div>
-
-      {/* Role Switcher */}
-      <div className="flex p-1 bg-surface-muted rounded-xl border border-border-light" role="tablist" aria-label="Account role selection">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={role === "student"}
-          onClick={() => setRole("student")}
-          className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
-            role === "student"
-              ? "bg-white text-text-primary shadow-xs"
-              : "text-text-secondary hover:text-text-primary"
-          }`}
-        >
-          I am a Student
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={role === "tutor"}
-          onClick={() => setRole("tutor")}
-          className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
-            role === "tutor"
-              ? "bg-white text-text-primary shadow-xs"
-              : "text-text-secondary hover:text-text-primary"
-          }`}
-        >
-          I am a Tutor
-        </button>
       </div>
 
       {/* Form */}
@@ -235,6 +263,46 @@ function SignupForm() {
           Log in
         </Link>
       </p>
+
+      {/* Existing Account Modal */}
+      {existingModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-border-light shadow-xl space-y-5">
+            <div className="w-12 h-12 rounded-2xl bg-accent-blue/10 border border-accent-blue/20 flex items-center justify-center text-accent-blue">
+              <HugeIcon name="sparkles" size={24} />
+            </div>
+
+            <div>
+              <span className="px-2.5 py-0.5 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20 mb-2 inline-block">
+                Account Already Exists
+              </span>
+              <h3 className="font-heading text-xl font-bold text-text-primary">
+                Log in to your account?
+              </h3>
+              <p className="font-body text-xs text-text-secondary mt-1.5 leading-relaxed">
+                An account for <strong className="text-text-primary">{existingModal.email}</strong> is already registered on Cubicle. Would you like to log in now?
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-2 font-body text-xs">
+              <button
+                onClick={handleDirectLogin}
+                disabled={loggingIn}
+                className="w-full py-3 bg-text-primary text-white rounded-full font-semibold hover:bg-black transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-xs flex items-center justify-center gap-2"
+              >
+                {loggingIn ? "Logging in..." : "Log In Now"}
+              </button>
+              <button
+                onClick={handleCancelExisting}
+                disabled={loggingIn}
+                className="w-full py-2.5 bg-surface-near-white text-text-secondary border border-border-light rounded-full font-medium hover:text-text-primary transition-colors"
+              >
+                Use Different Email
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

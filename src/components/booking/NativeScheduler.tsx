@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import HugeIcon from "@/components/ui/HugeIcon";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface NativeSchedulerProps {
   selectedTier: "trial" | "standard" | "intensive";
@@ -17,11 +19,47 @@ const MONTH_NAMES = [
 
 const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// Standard slot offerings per tier
+// Helper to format local Date into YYYY-MM-DD without UTC timezone rollback
+function formatYMD(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+// Helper to check if a slot is in the past for the selected date (with 15 min buffer)
+function isSlotInPast(date: Date, slotTimeStr: string): boolean {
+  const now = new Date();
+  const targetDate = new Date(date);
+
+  const isToday =
+    targetDate.getFullYear() === now.getFullYear() &&
+    targetDate.getMonth() === now.getMonth() &&
+    targetDate.getDate() === now.getDate();
+
+  if (!isToday) {
+    return targetDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
+  }
+
+  const match = slotTimeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match) return false;
+
+  let hour = parseInt(match[1], 10);
+  const minute = parseInt(match[2], 10);
+  const modifier = match[3]?.toUpperCase();
+
+  if (modifier === "PM" && hour < 12) hour += 12;
+  if (modifier === "AM" && hour === 12) hour = 0;
+
+  targetDate.setHours(hour, minute, 0, 0);
+  return targetDate.getTime() < now.getTime() + 15 * 60 * 1000;
+}
+
+// Standard slot offerings per tier aligned with tutor working hours (WAT)
 const SLOTS_BY_TIER: Record<string, string[]> = {
-  trial: ["09:00 AM", "10:30 AM", "01:00 PM", "03:30 PM", "05:00 PM"],
-  standard: ["09:00 AM", "11:00 AM", "02:00 PM", "04:00 PM", "06:00 PM"],
-  intensive: ["09:00 AM", "11:30 AM", "02:30 PM", "05:00 PM"],
+  trial: ["09:30 AM", "10:30 AM", "11:30 AM", "02:30 PM", "03:30 PM", "04:30 PM"],
+  standard: ["09:30 AM", "10:30 AM", "11:30 AM", "02:00 PM", "03:30 PM", "04:30 PM"],
+  intensive: ["09:30 AM", "11:00 AM", "02:00 PM", "03:30 PM"],
 };
 
 export default function NativeScheduler({
@@ -36,6 +74,32 @@ export default function NativeScheduler({
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
 
+  // Tutor Availability state
+  const [tutorSchedule, setTutorSchedule] = useState<Record<number, { active: boolean; startTime: string; endTime: string }>>({
+    1: { active: true, startTime: "09:00", endTime: "17:00" },
+    2: { active: true, startTime: "09:00", endTime: "17:00" },
+    3: { active: true, startTime: "09:00", endTime: "17:00" },
+    4: { active: true, startTime: "09:00", endTime: "17:00" },
+    5: { active: true, startTime: "09:00", endTime: "17:00" },
+    6: { active: false, startTime: "09:00", endTime: "17:00" },
+    0: { active: false, startTime: "09:00", endTime: "17:00" },
+  });
+  const [tutorOverrides, setTutorOverrides] = useState<string[]>([]);
+  const [bookedTimesForSelectedDate, setBookedTimesForSelectedDate] = useState<string[]>([]);
+
+  // Load tutor availability
+  useEffect(() => {
+    fetch("/api/tutor/availability")
+      .then(res => res.json())
+      .then(data => {
+        if (data?.schedule) setTutorSchedule(data.schedule);
+        if (data?.overrides) {
+          setTutorOverrides(data.overrides.map((o: { date: string }) => o.date));
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   // Selected date & time
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     const nextDay = new Date();
@@ -44,10 +108,34 @@ export default function NativeScheduler({
   });
   const [selectedTime, setSelectedTime] = useState<string>("10:30 AM");
 
+  // Real-time conflict detector for selected date
+  useEffect(() => {
+    const isoDate = formatYMD(selectedDate);
+    const q = query(
+      collection(db, "bookings"),
+      where("scheduledDate", "==", isoDate)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const taken: string[] = [];
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.status !== "cancelled" && data.scheduledTime) {
+          taken.push(data.scheduledTime);
+        }
+      });
+      setBookedTimesForSelectedDate(taken);
+    }, (err) => {
+      console.warn("Bookings listener error:", err);
+    });
+
+    return () => unsubscribe();
+  }, [selectedDate]);
+
   // Timezone display
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Africa/Lagos";
 
-  // Calculate calendar grid days
+  // Calculate calendar grid days with tutor schedule awareness
   const calendarDays = useMemo(() => {
     const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
     // Adjust Sunday (0) to index 6 for Mon-Sun layout
@@ -59,20 +147,24 @@ export default function NativeScheduler({
     // Current month days
     for (let d = 1; d <= daysInMonth; d++) {
       const dateObj = new Date(currentYear, currentMonth, d);
+      const isoDateStr = formatYMD(dateObj);
       // Strip time for exact date comparison
       const isPast = dateObj.setHours(0,0,0,0) < new Date().setHours(0,0,0,0);
-      const isSunday = dateObj.getDay() === 0;
+      const dayOfWeek = dateObj.getDay(); // 0 is Sunday, 1 is Monday
+      const isTutorWorkingDay = tutorSchedule[dayOfWeek]?.active ?? (dayOfWeek !== 0);
+      const isOverrideOff = tutorOverrides.includes(isoDateStr);
+
       days.push({
         day: d,
         isCurrentMonth: true,
         dateObj,
         isPast,
-        isAvailable: !isPast && !isSunday,
+        isAvailable: !isPast && isTutorWorkingDay && !isOverrideOff,
       });
     }
 
     return { days, startOffset };
-  }, [currentMonth, currentYear]);
+  }, [currentMonth, currentYear, tutorSchedule, tutorOverrides]);
 
   const handlePrevMonth = () => {
     if (currentMonth === 0) {
@@ -113,7 +205,7 @@ export default function NativeScheduler({
   const availableSlots = SLOTS_BY_TIER[selectedTier] || SLOTS_BY_TIER.standard;
 
   const handleConfirm = () => {
-    const isoDate = selectedDate.toISOString().split("T")[0];
+    const isoDate = formatYMD(selectedDate);
     onSelectSlot({
       date: isoDate,
       time: selectedTime,
@@ -245,24 +337,47 @@ export default function NativeScheduler({
             {/* Slot Buttons Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5">
               {availableSlots.map(time => {
-                const isTimeSelected = selectedTime === time;
+                const isPastTime = isSlotInPast(selectedDate, time);
+                const isAlreadyBooked = bookedTimesForSelectedDate.includes(time);
+                const isDisabled = isAlreadyBooked || isPastTime;
+                const isTimeSelected = selectedTime === time && !isDisabled;
+
                 return (
                   <button
                     key={time}
                     type="button"
+                    disabled={isDisabled}
                     onClick={() => setSelectedTime(time)}
                     className={`px-4 py-3 rounded-2xl border text-xs font-heading font-bold transition-all flex items-center justify-between group ${
-                      isTimeSelected
+                      isDisabled
+                        ? "border-border-light bg-surface-muted/60 text-text-subtle/50 cursor-not-allowed line-through"
+                        : isTimeSelected
                         ? "border-text-primary bg-text-primary text-white shadow-xs"
                         : "border-border-light bg-surface-near-white text-text-primary hover:border-accent-blue hover:bg-white"
                     }`}
                   >
                     <span className="flex items-center gap-2">
-                      <HugeIcon name="clock" size={14} className={isTimeSelected ? "text-accent-blue" : "text-text-secondary group-hover:text-accent-blue"} />
+                      <HugeIcon
+                        name="clock"
+                        size={14}
+                        className={
+                          isDisabled
+                            ? "text-text-subtle/40"
+                            : isTimeSelected
+                            ? "text-accent-blue"
+                            : "text-text-secondary group-hover:text-accent-blue"
+                        }
+                      />
                       {time}
                     </span>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isTimeSelected ? "text-accent-blue" : "text-text-subtle"}`}>
-                      {isTimeSelected ? "Selected" : "Select"}
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                      isDisabled
+                        ? "text-red-400 no-underline"
+                        : isTimeSelected
+                        ? "text-accent-blue"
+                        : "text-text-subtle"
+                    }`}>
+                      {isAlreadyBooked ? "Booked" : isPastTime ? "Passed" : isTimeSelected ? "Selected" : "Select"}
                     </span>
                   </button>
                 );

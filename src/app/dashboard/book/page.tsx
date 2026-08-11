@@ -9,15 +9,26 @@ import { db } from "@/lib/firebase";
 import Link from "next/link";
 import HugeIcon from "@/components/ui/HugeIcon";
 import NativeScheduler from "@/components/booking/NativeScheduler";
+import { getUserLocalTimeZone } from "@/lib/timezone";
+
+interface BookingResult {
+  reference: string;
+  tier: "trial" | "standard" | "intensive";
+  scheduledDate: string;
+  scheduledTime: string;
+  formattedSchedule: string;
+  meetLink: string;
+  meetingCode?: string;
+  status: "confirmed" | "paid" | "pending_payment";
+}
 
 export default function BookingPage() {
   const { user, userData, loading } = useAuth();
   const router = useRouter();
 
   const [selectedTier, setSelectedTier] = useState<"trial" | "standard" | "intensive" | null>(null);
-  const [bookingRef, setBookingRef] = useState<string | null>(null);
-  const [phone, setPhone] = useState("");
-  const [bookingStatus, setBookingStatus] = useState<"tier_selection" | "calendar" | "whatsapp_verification">("tier_selection");
+  const [bookingResult, setBookingResult] = useState<BookingResult | null>(null);
+  const [bookingStatus, setBookingStatus] = useState<"tier_selection" | "calendar" | "confirmation">("tier_selection");
   const [hasClaimedTrial, setHasClaimedTrial] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -25,15 +36,18 @@ export default function BookingPage() {
     if (!loading) {
       if (!user) {
         router.push("/login?redirect=/dashboard/book");
-      } else if (userData && !userData.onboardingComplete && userData.role !== "tutor") {
+      } else if (userData?.role === "tutor") {
+        toast.error("Tutors cannot book sessions for themselves. Redirecting to tutor overview.");
+        router.replace("/dashboard");
+      } else if (userData && !userData.onboardingComplete) {
         router.push("/onboarding");
       }
     }
   }, [user, userData, loading, router]);
 
-  // Restore state on mount if they refreshed the page
+  // Check if student already claimed a trial session
   useEffect(() => {
-    const checkExistingDraft = async () => {
+    const checkTrialStatus = async () => {
       if (user) {
         try {
           const q = query(
@@ -42,59 +56,89 @@ export default function BookingPage() {
           );
           const snapshot = await getDocs(q);
           const docs = snapshot.docs.map(d => d.data());
-
-          // Find latest pending whatsapp verification draft
-          const pendingDraft = docs
-            .filter(d => d.status === "pending_wa")
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-
-          if (pendingDraft) {
-            setBookingRef(pendingDraft.reference);
-            setBookingStatus("whatsapp_verification");
-          }
-
-          // Check if user already claimed a trial session
           const hasTrial = docs.some(d => d.tier === "trial");
           if (hasTrial) {
             setHasClaimedTrial(true);
           }
         } catch (error) {
-          console.error("Error checking for existing drafts or trials:", error);
+          console.error("Error checking trial eligibility:", error);
         }
       }
     };
-    checkExistingDraft();
-  }, [user, bookingStatus]);
+    checkTrialStatus();
+  }, [user]);
 
   const handleSlotConfirmed = async (slot: { date: string; time: string; formattedDate: string }) => {
     if (!user || !selectedTier) return;
     setIsSubmitting(true);
 
     try {
-      const array = new Uint8Array(3);
-      window.crypto.getRandomValues(array);
-      const hex = Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-      const ref = `CUB-${hex}`;
+      const studentName = userData?.displayName || userData?.fullName || user.displayName || "Student";
+      const studentEmail = user.email || "";
 
-      await addDoc(collection(db, "bookings"), {
-        studentId: user.uid,
-        studentName: userData?.displayName || userData?.fullName || user.displayName || "Student",
-        studentEmail: user.email,
-        reference: ref,
+      // Call our backend API to programmatically provision real Cal.com Google Meet room
+      const res = await fetch("/api/bookings/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: user.uid,
+          studentName,
+          studentEmail,
+          tier: selectedTier,
+          scheduledDate: slot.date,
+          scheduledTime: slot.time,
+          formattedSchedule: slot.formattedDate,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Failed to create booking");
+      }
+
+      const resultData: BookingResult = {
+        reference: data.reference,
         tier: selectedTier,
         scheduledDate: slot.date,
         scheduledTime: slot.time,
         formattedSchedule: slot.formattedDate,
-        status: "pending_wa",
-        createdAt: new Date().toISOString(),
-      });
+        meetLink: data.meetLink,
+        status: data.status,
+      };
 
-      setBookingRef(ref);
-      setBookingStatus("whatsapp_verification");
-      toast.success(`Reserved for ${slot.formattedDate}!`);
-    } catch (error) {
-      console.error("Failed to create draft booking", error);
-      toast.error("Failed to reserve session. Please try again.");
+      if (selectedTier === "trial") {
+        setBookingResult(resultData);
+        setBookingStatus("confirmation");
+        toast.success("Free trial booked successfully!");
+      } else {
+        // Paid lesson flow: Initialize Paystack checkout
+        try {
+          const payRes = await fetch("/api/paystack/initialize", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ bookingId: data.id })
+          });
+
+          const payData = await payRes.json();
+          if (payData.authorization_url) {
+            // Redirect to Paystack secure checkout
+            window.location.href = payData.authorization_url;
+            return;
+          }
+        } catch (e) {
+          console.warn("Paystack initialize skipped, showing confirmation:", e);
+        }
+
+        // On-platform confirmation fallback
+        setBookingResult(resultData);
+        setBookingStatus("confirmation");
+        toast.success(`Lesson reserved for ${slot.formattedDate}!`);
+      }
+    } catch (error: unknown) {
+      console.error("Failed to create booking", error);
+      const msg = error instanceof Error ? error.message : "Failed to reserve session";
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -111,6 +155,8 @@ export default function BookingPage() {
     );
   }
 
+  const tutorWhatsAppNumber = (process.env.NEXT_PUBLIC_TUTOR_WHATSAPP || "2348000000000").replace(/[^0-9]/g, '');
+
   return (
     <div className="min-h-screen bg-surface-near-white pt-24 pb-16 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto w-full">
@@ -120,9 +166,16 @@ export default function BookingPage() {
           <span>Back to Dashboard</span>
         </Link>
 
+        {/* Step 1: Tier Selection */}
         {bookingStatus === "tier_selection" && (
           <div>
-            <h1 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary mb-3">Select your lesson type</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              <h1 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary">Select your lesson type</h1>
+              <span className="px-3 py-1 bg-surface-muted text-text-secondary rounded-full text-xs font-semibold self-start sm:self-auto flex items-center gap-1.5">
+                <HugeIcon name="clock" size={13} className="text-accent-blue" />
+                <span>Timezone: Africa/Lagos (WAT) • Local: {getUserLocalTimeZone()}</span>
+              </span>
+            </div>
             <p className="font-body text-sm sm:text-base text-text-secondary mb-10">Choose the session that fits your goals. You&apos;ll pick a time slot on the next step.</p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -164,6 +217,7 @@ export default function BookingPage() {
           </div>
         )}
 
+        {/* Step 2: Native Calendar Date/Time Picker */}
         {bookingStatus === "calendar" && selectedTier && (
           <NativeScheduler
             selectedTier={selectedTier}
@@ -173,61 +227,110 @@ export default function BookingPage() {
           />
         )}
 
-        {bookingStatus === "whatsapp_verification" && (
-          <div className="bg-white p-8 sm:p-12 rounded-[28px] border border-border-light shadow-md text-center max-w-2xl mx-auto">
-            <div className="w-12 h-12 rounded-2xl bg-accent-blue/10 border border-accent-blue/20 text-accent-blue flex items-center justify-center mx-auto mb-6">
-              <HugeIcon name="comment" size={24} />
-            </div>
-            <h2 className="font-heading text-3xl font-bold text-text-primary mb-3">Almost there!</h2>
-            <p className="font-body text-text-secondary mb-8 text-sm sm:text-base leading-relaxed">
-              To prevent spam and ensure you get a personal instructor response, we require a quick WhatsApp verification.
-            </p>
+        {/* Step 3: Instant On-Platform Booking Confirmation */}
+        {bookingStatus === "confirmation" && bookingResult && (
+          <div className="bg-white p-8 sm:p-12 rounded-[28px] border border-border-light shadow-md max-w-2xl mx-auto text-center space-y-6">
             
-            <div className="bg-surface-near-white p-6 rounded-2xl border border-border-light mb-8 text-center">
-              <p className="font-body text-xs text-text-secondary mb-1 uppercase tracking-wider font-semibold">Your Booking Reference</p>
-              <p className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-widest">{bookingRef}</p>
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto">
+              <HugeIcon name="check" size={28} />
             </div>
 
-            <div className="text-left mb-6">
-              <label htmlFor="student-wa-number" className="block font-body text-xs font-semibold text-text-primary mb-2 uppercase tracking-wider">
-                Your WhatsApp Number (for updates)
-              </label>
-              <input
-                id="student-wa-number"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+234..."
-                className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-near-white font-body text-sm transition-colors focus:border-accent-blue"
-              />
+            <div>
+              <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold uppercase tracking-wider border border-emerald-200 mb-2 inline-block">
+                Session Confirmed
+              </span>
+              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
+                You&apos;re All Set!
+              </h2>
+              <p className="font-body text-xs sm:text-sm text-text-secondary mt-1">
+                Your 1-on-1 language session is officially scheduled.
+              </p>
             </div>
 
-            <button 
-              onClick={async () => {
-                if (phone) {
-                  try {
-                    const q = query(collection(db, "bookings"), where("reference", "==", bookingRef));
-                    const snapshot = await getDocs(q);
-                    if (!snapshot.empty) {
-                      const docRef = doc(db, "bookings", snapshot.docs[0].id);
-                      await updateDoc(docRef, { studentWhatsApp: phone });
-                    }
-                  } catch (e) {}
-                }
-                const platformNumber = process.env.NEXT_PUBLIC_PLATFORM_WHATSAPP_NUMBER || "2348000000000";
-                const cleanPlatformNumber = platformNumber.replace(/[^0-9]/g, '');
-                window.open(`https://wa.me/${cleanPlatformNumber}?text=Hi, I want to confirm my lesson. My booking reference is ${bookingRef}`, '_blank');
-              }}
-              className="inline-flex items-center justify-center gap-2 w-full py-4 bg-[#25D366] text-white rounded-full font-body text-sm font-semibold hover:opacity-90 transition-opacity shadow-xs mb-4"
-            >
-              <HugeIcon name="comment" size={20} />
-              <span>Verify via WhatsApp</span>
-            </button>
-            <p className="font-body text-xs text-text-secondary text-center">
-              We&apos;ll review your information and verify your identity on WhatsApp. Once verified, you&apos;ll receive a Paystack link to confirm your slot.
-            </p>
+            {/* Booking Details Box */}
+            <div className="bg-surface-near-white p-6 rounded-2xl border border-border-light text-left space-y-3">
+              <div className="flex justify-between items-center pb-3 border-b border-border-light">
+                <span className="font-body text-xs text-text-secondary">Booking Reference</span>
+                <span className="font-heading font-bold text-sm text-text-primary">{bookingResult.reference}</span>
+              </div>
+              <div className="flex justify-between items-center pb-3 border-b border-border-light">
+                <span className="font-body text-xs text-text-secondary">Scheduled Time</span>
+                <span className="font-heading font-bold text-sm text-accent-blue">{bookingResult.formattedSchedule}</span>
+              </div>
+              <div className="flex justify-between items-center pb-3 border-b border-border-light">
+                <span className="font-body text-xs text-text-secondary">Lesson Type</span>
+                <span className="font-heading font-bold text-sm text-text-primary capitalize">{bookingResult.tier} Lesson</span>
+              </div>
+              <div className="flex justify-between items-center pb-3 border-b border-border-light">
+                <span className="font-body text-xs text-text-secondary">Meeting Room Code</span>
+                <div className="flex items-center gap-2">
+                  <code className="px-2.5 py-1 bg-white border border-border-light rounded-lg font-mono font-bold text-xs text-text-primary">
+                    {bookingResult.meetingCode || bookingResult.meetLink.split("/").pop()}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const code = bookingResult.meetingCode || bookingResult.meetLink.split("/").pop() || "";
+                      navigator.clipboard.writeText(code);
+                      toast.success(`Meeting code "${code}" copied!`);
+                    }}
+                    className="px-2.5 py-1 bg-surface-muted hover:bg-surface-near-white border border-border-light rounded-md text-[10px] font-semibold text-text-secondary transition-colors"
+                  >
+                    Copy Code
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pt-1">
+                <span className="font-body text-xs text-text-secondary">Meeting Room URL</span>
+                <a 
+                  href={bookingResult.meetLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-heading font-bold text-xs text-accent-blue hover:underline break-all"
+                >
+                  {bookingResult.meetLink}
+                </a>
+              </div>
+            </div>
+
+            {/* In-App Actions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <Link
+                href={bookingResult.meetLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-3.5 px-4 bg-accent-blue text-white rounded-full font-body text-xs font-semibold hover:bg-accent-blue-hover transition-colors flex items-center justify-center gap-2 shadow-xs"
+              >
+                <HugeIcon name="sparkles" size={16} />
+                <span>{bookingResult.meetLink.includes("meet.google.com") ? "Join Google Meet" : "Join Video Room"}</span>
+              </Link>
+
+              <Link
+                href="/dashboard/chat"
+                className="py-3.5 px-4 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors flex items-center justify-center gap-2 shadow-xs"
+              >
+                <HugeIcon name="comment" size={16} />
+                <span>Chat with Instructor</span>
+              </Link>
+            </div>
+
+            {/* Optional WhatsApp Inquiry Link */}
+            <div className="pt-4 border-t border-border-light flex items-center justify-center gap-2 text-xs text-text-secondary">
+              <span>Have a question?</span>
+              <a
+                href={`https://wa.me/${tutorWhatsAppNumber}?text=${encodeURIComponent(`Hi, I have a question about my booking ${bookingResult.reference} (${bookingResult.formattedSchedule})`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#25D366] font-semibold hover:underline flex items-center gap-1"
+              >
+                <span>WhatsApp Tutor Directly</span>
+                <HugeIcon name="arrow-up-right" size={12} />
+              </a>
+            </div>
+
           </div>
         )}
+
       </div>
     </div>
   );

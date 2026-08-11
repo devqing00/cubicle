@@ -2,28 +2,49 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
-import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
+import { collection, query, where, onSnapshot, orderBy, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import HugeIcon from "@/components/ui/HugeIcon";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import { toast } from "sonner";
 import Link from "next/link";
+import { formatDualTime } from "@/lib/timezone";
+import { sendAppNotification } from "@/lib/notifications";
+
+function formatYMD(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 interface Booking {
   id: string;
   studentId: string;
+  studentName?: string;
   reference: string;
   tier: string;
+  scheduledDate?: string;
+  scheduledTime?: string;
+  formattedSchedule?: string;
   status: string;
   createdAt: string;
+  meetLink?: string;
+  meetingCode?: string;
   videoCallUrl?: string;
 }
 
 export default function SchedulePage() {
-  const { userData, loading: authLoading } = useAuth();
+  const { userData, user, loading: authLoading } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Reschedule Modal State
+  const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null);
+  const [newDate, setNewDate] = useState("");
+  const [newTime, setNewTime] = useState("10:00");
+  const [rescheduling, setRescheduling] = useState(false);
 
   // Manual Booking Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -86,6 +107,62 @@ export default function SchedulePage() {
       toast.error("An error occurred while updating the booking.");
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handleOpenReschedule = (booking: Booking) => {
+    // Check 24-hour policy
+    const sessionTimeStr = booking.scheduledDate
+      ? `${booking.scheduledDate}T${booking.scheduledTime || "10:00"}:00`
+      : booking.createdAt;
+    const sessionTime = new Date(sessionTimeStr).getTime();
+    const hoursLeft = (sessionTime - Date.now()) / (1000 * 60 * 60);
+
+    if (hoursLeft < 24) {
+      toast.error(
+        "Notice: Changes within 24 hours cannot be self-rescheduled. Please contact your instructor directly via In-App Chat or WhatsApp.",
+        { duration: 6000 }
+      );
+      return;
+    }
+
+    setRescheduleBooking(booking);
+    setNewDate(booking.scheduledDate || formatYMD(new Date(Date.now() + 86400000 * 2)));
+    setNewTime(booking.scheduledTime || "10:00");
+  };
+
+  const handleRescheduleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rescheduleBooking || !newDate || !newTime) return;
+
+    setRescheduling(true);
+    try {
+      const formattedSchedule = `${newDate} at ${newTime}`;
+      const bookingRef = doc(db, "bookings", rescheduleBooking.id);
+
+      await updateDoc(bookingRef, {
+        scheduledDate: newDate,
+        scheduledTime: newTime,
+        formattedSchedule,
+        rescheduledAt: new Date().toISOString(),
+      });
+
+      // Dispatch real-time notification to instructor
+      await sendAppNotification({
+        userId: "tutor_cubicle",
+        title: `Session Rescheduled: ${rescheduleBooking.studentName || "Student"}`,
+        message: `${rescheduleBooking.studentName || "Student"} rescheduled their ${rescheduleBooking.tier} lesson (Ref: ${rescheduleBooking.reference}) to ${formattedSchedule}.`,
+        type: "booking",
+        link: "/dashboard/schedule",
+      });
+
+      toast.success(`Lesson successfully rescheduled for ${formattedSchedule}!`);
+      setRescheduleBooking(null);
+    } catch (err) {
+      console.error("Failed to reschedule:", err);
+      toast.error("Failed to reschedule lesson. Please try again.");
+    } finally {
+      setRescheduling(false);
     }
   };
 
@@ -155,8 +232,8 @@ export default function SchedulePage() {
     );
   }
 
-  const upcomingLessons = bookings.filter(l => l.status === "confirmed");
-  const pendingDrafts = bookings.filter(l => l.status === "pending_wa" || l.status === "pending_payment");
+  const upcomingLessons = bookings.filter(l => l.status === "confirmed" || l.status === "paid");
+  const pendingDrafts = bookings.filter(l => l.status === "pending_payment");
 
   if (userData?.role === "tutor") {
     return (
@@ -270,10 +347,8 @@ export default function SchedulePage() {
                             {lesson.tier} Tier Session
                           </p>
                         </div>
-                        <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
-                          lesson.status === "pending_wa" ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-blue-50 text-blue-700 border-blue-200"
-                        }`}>
-                          {lesson.status === "pending_wa" ? "Awaiting WA" : "Awaiting Payment"}
+                        <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border bg-blue-50 text-blue-700 border-blue-200">
+                          Awaiting Payment
                         </span>
                       </div>
                       <div className="flex justify-between items-center pt-2 border-t border-border-light mt-1">
@@ -465,52 +540,167 @@ export default function SchedulePage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {bookings.map((booking) => (
-              <div key={booking.id} className="p-5 bg-surface-near-white rounded-2xl border border-border-light flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-heading font-bold text-sm text-text-primary capitalize">{booking.tier} Session</span>
-                    <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
-                      booking.status === "confirmed" || booking.status === "paid"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : booking.status === "completed"
-                        ? "bg-blue-50 text-blue-700 border-blue-200"
-                        : "bg-amber-50 text-amber-700 border-amber-200"
-                    }`}>
-                      {booking.status.replace("_", " ")}
-                    </span>
-                  </div>
-                  <p className="font-body text-xs text-text-secondary mt-1">
-                    Date: {new Date(booking.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })} • Ref: {booking.reference}
-                  </p>
-                </div>
+            {bookings.map((booking) => {
+              const dateStr = booking.scheduledDate || booking.createdAt.split("T")[0];
+              const timeStr = booking.scheduledTime || "10:00";
+              const dualTime = formatDualTime(dateStr, timeStr, userData?.timeZone);
+              const isActionable = booking.status === "confirmed" || booking.status === "paid";
 
-                <div className="flex items-center gap-2 w-full md:w-auto">
-                  {booking.videoCallUrl && (booking.status === "confirmed" || booking.status === "paid") && (
-                    <a 
-                      href={booking.videoCallUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2 bg-accent-blue text-white rounded-full text-xs font-semibold hover:bg-blue-600 transition-colors"
-                    >
-                      Join Google Meet
-                    </a>
-                  )}
-                  {booking.status !== "completed" && booking.status !== "cancelled" && (
-                    <button
-                      onClick={() => promptStatusUpdate(booking.id, "cancelled", booking.reference)}
-                      disabled={actionLoading === booking.id}
-                      className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-red-600 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
-                    >
-                      Cancel Booking
-                    </button>
-                  )}
+              return (
+                <div key={booking.id} className="p-5 bg-surface-near-white rounded-2xl border border-border-light flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-heading font-bold text-sm text-text-primary capitalize">{booking.tier} Session</span>
+                      <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
+                        booking.status === "confirmed" || booking.status === "paid"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : booking.status === "completed"
+                          ? "bg-blue-50 text-blue-700 border-blue-200"
+                          : "bg-amber-50 text-amber-700 border-amber-200"
+                      }`}>
+                        {booking.status.replace("_", " ")}
+                      </span>
+                    </div>
+
+                    <p className="font-body text-xs text-text-secondary flex items-center gap-1.5 flex-wrap">
+                      <HugeIcon name="clock" size={13} className="text-accent-blue" />
+                      <span className="font-semibold text-text-primary">{dateStr} at {dualTime.watFormatted}</span>
+                      {dualTime.isDifferent && (
+                        <span className="px-2 py-0.5 bg-accent-blue/10 text-accent-blue rounded-md text-[10px] font-bold">
+                          {dualTime.localFormatted} (Your Time)
+                        </span>
+                      )}
+                      <span className="text-text-subtle">• Ref: {booking.reference}</span>
+                      {booking.meetLink && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const code = booking.meetingCode || booking.meetLink?.split("/").pop() || "";
+                            navigator.clipboard.writeText(code);
+                            toast.success(`Meeting code "${code}" copied!`);
+                          }}
+                          className="px-2 py-0.5 bg-surface-muted hover:bg-surface-near-white border border-border-light rounded-md text-[10px] font-mono text-text-primary transition-colors flex items-center gap-1"
+                        >
+                          <span>Room Code: {booking.meetingCode || booking.meetLink?.split("/").pop()}</span>
+                          <span className="text-[9px] opacity-75 font-sans">📋</span>
+                        </button>
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
+                    {(booking.meetLink || booking.videoCallUrl) && isActionable && (
+                      <a 
+                        href={booking.meetLink || booking.videoCallUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-accent-blue text-white rounded-full text-xs font-semibold hover:bg-accent-blue-hover transition-colors flex items-center gap-1.5 shadow-xs"
+                      >
+                        <HugeIcon name="video" size={14} />
+                        <span>Join Room</span>
+                      </a>
+                    )}
+
+                    {isActionable && (
+                      <button
+                        onClick={() => handleOpenReschedule(booking)}
+                        className="px-3.5 py-2 text-xs font-semibold text-text-primary bg-white hover:bg-surface-muted border border-border-light rounded-full transition-colors flex items-center gap-1"
+                      >
+                        <HugeIcon name="calendar" size={14} />
+                        <span>Reschedule</span>
+                      </button>
+                    )}
+
+                    {booking.status !== "completed" && booking.status !== "cancelled" && (
+                      <button
+                        onClick={() => promptStatusUpdate(booking.id, "cancelled", booking.reference)}
+                        disabled={actionLoading === booking.id}
+                        className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-red-600 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
+
+      {/* Reschedule Session Modal */}
+      {rescheduleBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <form
+            onSubmit={handleRescheduleSubmit}
+            className="bg-white rounded-[28px] max-w-md w-full p-6 sm:p-8 border border-border-light shadow-2xl space-y-4 font-body"
+          >
+            <div className="flex items-center justify-between border-b border-border-light pb-4">
+              <div>
+                <h3 className="font-heading text-lg font-bold text-text-primary">
+                  Reschedule {rescheduleBooking.tier} Lesson
+                </h3>
+                <p className="text-xs text-text-secondary">
+                  Ref: {rescheduleBooking.reference} • Free under 24h policy.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRescheduleBooking(null)}
+                className="p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary"
+              >
+                <HugeIcon name="cancel" size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-semibold text-text-primary mb-1">New Date</label>
+                <input
+                  type="date"
+                  required
+                  min={new Date().toISOString().split("T")[0]}
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border-light bg-surface-near-white text-xs text-text-primary focus:border-accent-blue"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-text-primary mb-1">New Time Slot (WAT)</label>
+                <input
+                  type="time"
+                  required
+                  value={newTime}
+                  onChange={(e) => setNewTime(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border-light bg-surface-near-white text-xs text-text-primary focus:border-accent-blue"
+                />
+              </div>
+
+              <div className="p-3 bg-accent-blue/5 rounded-xl border border-accent-blue/10 text-[11px] text-text-secondary">
+                💡 Your instructor will be notified immediately of this time adjustment.
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-3 border-t border-border-light">
+              <button
+                type="button"
+                onClick={() => setRescheduleBooking(null)}
+                className="px-4 py-2 rounded-full border border-border-light text-xs font-semibold text-text-secondary hover:bg-surface-muted"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={rescheduling}
+                className="px-5 py-2 rounded-full bg-accent-blue text-white text-xs font-semibold hover:bg-accent-blue-hover transition-colors disabled:opacity-50"
+              >
+                {rescheduling ? "Updating..." : "Confirm New Slot"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Global Confirmation Modal */}
       <ConfirmationModal

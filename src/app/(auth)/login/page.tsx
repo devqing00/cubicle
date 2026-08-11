@@ -2,11 +2,14 @@
 
 import { useState, Suspense } from "react";
 import Link from "next/link";
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import HugeIcon from "@/components/ui/HugeIcon";
+import { getCleanErrorMessage } from "@/lib/firebaseErrors";
+import Logo from "@/components/ui/Logo";
 
 function LoginForm() {
   const router = useRouter();
@@ -18,13 +21,34 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Modal state for when user logs in with Google/Email but has no registered Cubicle profile
+  const [unregisteredModal, setUnregisteredModal] = useState<{
+    uid: string;
+    email: string;
+    displayName: string;
+    idToken: string;
+  } | null>(null);
+  const [registering, setRegistering] = useState(false);
+
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
-      
       const idToken = await result.user.getIdToken();
+      
+      // Verify account document exists in Firestore
+      const userDoc = await getDoc(doc(db, "users", result.user.uid));
+      if (!userDoc.exists()) {
+        setUnregisteredModal({
+          uid: result.user.uid,
+          email: result.user.email || email,
+          displayName: result.user.displayName || "Student",
+          idToken,
+        });
+        return;
+      }
+
       await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -34,8 +58,7 @@ function LoginForm() {
       toast.success("Welcome back!");
       router.push(redirectPath);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to log in";
-      toast.error(msg);
+      toast.error(getCleanErrorMessage(err, "Failed to log in"));
     } finally {
       setLoading(false);
     }
@@ -46,8 +69,20 @@ function LoginForm() {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      
       const idToken = await result.user.getIdToken();
+      
+      // Verify account document exists in Firestore
+      const userDoc = await getDoc(doc(db, "users", result.user.uid));
+      if (!userDoc.exists()) {
+        setUnregisteredModal({
+          uid: result.user.uid,
+          email: result.user.email || "",
+          displayName: result.user.displayName || "Student",
+          idToken,
+        });
+        return;
+      }
+
       await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -57,11 +92,44 @@ function LoginForm() {
       toast.success("Logged in with Google!");
       router.push(redirectPath);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to log in with Google";
-      toast.error(msg);
+      toast.error(getCleanErrorMessage(err, "Failed to log in with Google"));
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRegisterUnregistered = async () => {
+    if (!unregisteredModal) return;
+    setRegistering(true);
+    try {
+      await setDoc(doc(db, "users", unregisteredModal.uid), {
+        uid: unregisteredModal.uid,
+        displayName: unregisteredModal.displayName,
+        fullName: unregisteredModal.displayName,
+        email: unregisteredModal.email,
+        role: "student",
+        createdAt: new Date().toISOString(),
+      }, { merge: true });
+
+      await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: unregisteredModal.idToken }),
+      });
+
+      toast.success("Account created successfully! Welcome to Cubicle.");
+      setUnregisteredModal(null);
+      router.push("/onboarding");
+    } catch (err) {
+      toast.error(getCleanErrorMessage(err, "Failed to create account"));
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  const handleCancelUnregistered = async () => {
+    await signOut(auth);
+    setUnregisteredModal(null);
   };
 
   return (
@@ -69,6 +137,9 @@ function LoginForm() {
       
       {/* Header */}
       <div>
+        <div className="mb-4">
+          <Logo variant="blue" size={26} />
+        </div>
         <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20 mb-3 inline-block">
           Account Login
         </span>
@@ -163,6 +234,46 @@ function LoginForm() {
           Sign up
         </Link>
       </p>
+
+      {/* Unregistered Account Modal */}
+      {unregisteredModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-border-light shadow-xl space-y-5">
+            <div className="w-12 h-12 rounded-2xl bg-accent-blue/10 border border-accent-blue/20 flex items-center justify-center text-accent-blue">
+              <HugeIcon name="sparkles" size={24} />
+            </div>
+
+            <div>
+              <span className="px-2.5 py-0.5 bg-amber-500/10 text-amber-600 rounded-full text-[10px] font-bold uppercase tracking-wider border border-amber-500/20 mb-2 inline-block">
+                Account Not Found
+              </span>
+              <h3 className="font-heading text-xl font-bold text-text-primary">
+                Create a student profile?
+              </h3>
+              <p className="font-body text-xs text-text-secondary mt-1.5 leading-relaxed">
+                No registered Cubicle account was found for <strong className="text-text-primary">{unregisteredModal.email}</strong>. Would you like to create a new student account with this email now?
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <button
+                onClick={handleRegisterUnregistered}
+                disabled={registering}
+                className="w-full py-3 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-xs flex items-center justify-center gap-2"
+              >
+                {registering ? "Creating Account..." : "Create Account & Continue"}
+              </button>
+              <button
+                onClick={handleCancelUnregistered}
+                disabled={registering}
+                className="w-full py-2.5 bg-surface-near-white text-text-secondary border border-border-light rounded-full font-body text-xs font-medium hover:text-text-primary transition-colors"
+              >
+                Use Different Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

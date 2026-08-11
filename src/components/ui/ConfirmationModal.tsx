@@ -10,7 +10,7 @@ interface ConfirmationModalProps {
   confirmText?: string;
   cancelText?: string;
   variant?: "danger" | "primary" | "warning";
-  iconName?: "alert" | "shield" | "logout" | "calendar" | "sparkles";
+  iconName?: "alert" | "shield" | "logout" | "calendar" | "sparkles" | "trash" | "cancel";
   loading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;

@@ -48,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={freigeist.variable}>
+    <html lang="en" className={freigeist.variable} data-scroll-behavior="smooth">
       <body>
         <AuthProvider>
           {children}

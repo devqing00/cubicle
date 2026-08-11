@@ -26,8 +26,8 @@ export async function POST(request: Request) {
 
     const bookingData = bookingDoc.data();
     
-    // Ensure the booking is confirmed and not yet paid
-    if (bookingData?.status !== "confirmed") {
+    // Ensure the booking is pending payment or confirmed
+    if (bookingData?.status !== "confirmed" && bookingData?.status !== "pending_payment") {
       return NextResponse.json({ error: "Booking is not in a valid state for payment" }, { status: 400 });
     }
 

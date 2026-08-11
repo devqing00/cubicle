@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
+import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
 export interface UserData {
@@ -16,9 +16,18 @@ export interface UserData {
   firstName?: string;
   age?: number;
   whatsappNumber?: string;
+  whatsapp?: string;
+  phoneNumber?: string;
   learningGoals?: string;
+  learningGoal?: string;
+  targetLanguage?: string;
+  experienceLevel?: string;
+  level?: string;
+  timeZone?: string;
   guardianName?: string;
   guardianContact?: string;
+  tutorNotes?: string;
+  meetLink?: string;
 }
 
 interface AuthContextType {
@@ -36,58 +45,85 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      
-      if (user) {
-        try {
-          let fetchedData = null;
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            fetchedData = userDoc.data() as UserData;
-          } else {
-            // Auto-create a basic student profile if they signed in via Google on the login page instead of signup
-            fetchedData = {
-              uid: user.uid,
-              displayName: user.displayName || "Student",
-              email: user.email,
-              role: "student",
-              createdAt: new Date().toISOString(),
-            } as UserData;
-            await setDoc(doc(db, "users", user.uid), fetchedData);
+    let userDocUnsubscribe: (() => void) | null = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (authUser) => {
+      // Clean up previous Firestore listener if user changes
+      if (userDocUnsubscribe) {
+        userDocUnsubscribe();
+        userDocUnsubscribe = null;
+      }
+
+      setUser(authUser);
+
+      if (authUser) {
+        // Setup real-time listener for user profile document in Firestore
+        userDocUnsubscribe = onSnapshot(doc(db, "users", authUser.uid), async (userSnap) => {
+          if (!userSnap.exists()) {
+            const isAuthRoute = typeof window !== "undefined" && (
+              window.location.pathname.startsWith("/login") ||
+              window.location.pathname.startsWith("/signup") ||
+              window.location.pathname.startsWith("/onboarding")
+            );
+
+            if (!isAuthRoute) {
+              console.warn("User document deleted or not found. Force signing out.");
+              await signOut(auth);
+              await fetch("/api/auth/logout", { method: "POST" });
+              setUser(null);
+              setUserData(null);
+              setLoading(false);
+              if (typeof window !== "undefined") {
+                window.location.href = "/login";
+              }
+              return;
+            }
+
+            setUserData(null);
+            setLoading(false);
+            return;
           }
 
+          let fetchedData = userSnap.data() as UserData;
+
           // Auto-promote to Tutor if email matches
-          if (user.email && process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email.toLowerCase() === process.env.NEXT_PUBLIC_ADMIN_EMAIL.toLowerCase()) {
+          if (authUser.email && process.env.NEXT_PUBLIC_ADMIN_EMAIL && authUser.email.toLowerCase() === process.env.NEXT_PUBLIC_ADMIN_EMAIL.toLowerCase()) {
             if (fetchedData.role !== "tutor" || !fetchedData.onboardingComplete) {
               fetchedData.role = "tutor";
               fetchedData.onboardingComplete = true;
-              await setDoc(doc(db, "users", user.uid), { role: "tutor", onboardingComplete: true }, { merge: true });
+              await setDoc(doc(db, "users", authUser.uid), { role: "tutor", onboardingComplete: true }, { merge: true });
             }
           }
 
           setUserData(fetchedData);
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-
-        // Automatically sync the session cookie with the server when client logs in
-        const idToken = await user.getIdToken();
-        await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ idToken }),
+          setLoading(false);
+        }, (err) => {
+          console.error("Firestore user doc listener error:", err);
+          setLoading(false);
         });
+
+        // Sync session cookie with server
+        try {
+          const idToken = await authUser.getIdToken();
+          await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken }),
+          });
+        } catch (e) {
+          console.warn("Session login sync warning:", e);
+        }
       } else {
         setUserData(null);
-        // Clear session cookie when client logs out
         await fetch("/api/auth/logout", { method: "POST" });
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      if (userDocUnsubscribe) userDocUnsubscribe();
+    };
   }, []);
 
   const refreshUserData = async () => {

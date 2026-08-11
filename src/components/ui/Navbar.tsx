@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import HugeIcon from "@/components/ui/HugeIcon";
 import { useAuth } from "@/lib/AuthContext";
+import Logo from "@/components/ui/Logo";
 
 export default function Navbar() {
   const { user, loading } = useAuth();
@@ -35,11 +36,7 @@ export default function Navbar() {
           }`}
         >
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <span className="font-heading text-xl font-bold text-text-primary tracking-tight">
-              Cubicle.
-            </span>
-          </Link>
+          <Logo variant="blue" size={24} />
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-8">

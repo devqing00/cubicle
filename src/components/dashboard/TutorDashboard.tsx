@@ -50,7 +50,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
   const nextLesson = upcomingLessons[0];
 
   const pastLessons = bookings.filter(l => l.status === "completed" || l.status === "cancelled").slice(0, 3);
-  const pendingApprovals = bookings.filter(l => l.status === "pending_wa");
+  const pendingApprovals = bookings.filter(l => l.status === "pending_payment");
 
   const handleApprove = async (id: string) => {
     setActionLoading(true);
@@ -131,6 +131,64 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
 
   return (
     <div className="space-y-8 font-body">
+
+      {/* Next Upcoming Live Lesson Hero Countdown Banner */}
+      {nextLesson && (
+        <div className="bg-gradient-to-r from-text-primary via-neutral-900 to-accent-blue/90 text-white p-6 sm:p-8 rounded-[28px] shadow-lg border border-white/10 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-2 relative z-10">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-3 py-0.5 bg-accent-blue text-white rounded-full text-[10px] font-bold uppercase tracking-wider shadow-xs">
+                Next Upcoming Class
+              </span>
+              <span className="text-xs text-white/80 font-medium">
+                Ref: {nextLesson.reference}
+              </span>
+              {nextLesson.meetLink && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const code = nextLesson.meetLink?.split("/").pop() || nextLesson.reference;
+                    navigator.clipboard.writeText(code);
+                    toast.success(`Meeting code "${code}" copied!`);
+                  }}
+                  className="px-2.5 py-0.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-md text-[10px] font-mono text-white/90 transition-colors flex items-center gap-1"
+                >
+                  <span>Code: {nextLesson.meetLink?.split("/").pop()}</span>
+                  <span className="text-[9px] opacity-75 font-sans">📋</span>
+                </button>
+              )}
+            </div>
+            <h2 className="font-heading text-xl sm:text-2xl font-bold text-white tracking-tight">
+              {nextLesson.tier.charAt(0).toUpperCase() + nextLesson.tier.slice(1)} Session with Student
+            </h2>
+            <p className="font-body text-xs sm:text-sm text-white/80 flex items-center gap-2">
+              <HugeIcon name="calendar" size={14} className="text-accent-blue" />
+              <span>Scheduled: {nextLesson.formattedSchedule || nextLesson.scheduledDate || "Upcoming"}</span>
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 relative z-10 shrink-0 w-full sm:w-auto flex-wrap">
+            {nextLesson.meetLink && (
+              <a
+                href={nextLesson.meetLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-accent-blue hover:bg-accent-blue-hover text-white rounded-full font-body text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+              >
+                <HugeIcon name="video" size={16} />
+                <span>Join Meeting Room</span>
+              </a>
+            )}
+            <Link
+              href="/dashboard/chat"
+              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-body text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+            >
+              <HugeIcon name="comment" size={16} />
+              <span>Chat</span>
+            </Link>
+          </div>
+        </div>
+      )}
       
       {/* Welcome Banner */}
       <div className="bg-white p-8 rounded-[28px] border border-border-light shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-6 w-full">

@@ -19,12 +19,15 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     
     const bookingData = bookingDoc.data();
 
-    // Ensure we only delete unfinalized drafts
-    if (bookingData?.status !== "pending_wa" && bookingData?.status !== "pending_payment") {
-      return NextResponse.json({ error: "Cannot delete a finalized booking" }, { status: 400 });
+    // Allow student to cancel pending_payment or confirmed bookings
+    if (bookingData?.status === "completed") {
+      return NextResponse.json({ error: "Cannot cancel a completed booking" }, { status: 400 });
     }
 
-    await bookingRef.delete();
+    await bookingRef.update({
+      status: "cancelled",
+      cancelledAt: new Date().toISOString()
+    });
     
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

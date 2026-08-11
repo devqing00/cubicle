@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import HugeIcon from "@/components/ui/HugeIcon";
+import Logo from "@/components/ui/Logo";
 
 const platformNumber = (process.env.NEXT_PUBLIC_PLATFORM_WHATSAPP_NUMBER || "2348000000000").replace(/[^0-9]/g, '');
 
@@ -22,9 +23,7 @@ export default function Footer() {
           
           {/* Brand & Copyright */}
           <div className="flex flex-col gap-4">
-            <Link href="/" className="font-heading text-2xl font-bold text-text-primary tracking-tight">
-              Cubicle.
-            </Link>
+            <Logo variant="blue" size={26} />
             <p className="font-body text-[15px] font-normal text-text-secondary max-w-[280px] leading-[1.7] block">
               A softer, smarter way to learn. Real conversations, entirely built around your pace and goals.
             </p>

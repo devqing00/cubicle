@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import HugeIcon from "@/components/ui/HugeIcon";
 
 // Pure 3D Composite-only transform styles (Zero Layout Reflows & 100% GPU Hardware Accelerated)
@@ -352,8 +353,21 @@ export default function HeroSection() {
   return (
     <section
       id="hero"
-      className="pt-[140px] pb-[80px] max-md:pt-[100px] relative overflow-hidden bg-surface-near-white"
+      className="pt-[140px] pb-[80px] max-md:pt-[100px] relative overflow-hidden bg-surface-near-white min-h-[640px]"
     >
+      {/* Background Mesh Gradient (Landscape for all viewports) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <Image
+          src="/images/hero_bg_land.png"
+          alt="Hero Background"
+          fill
+          className="object-cover object-center opacity-90"
+          priority
+        />
+        {/* Soft Bottom Fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-surface-near-white via-surface-near-white/60 to-transparent" />
+      </div>
+
       {/* Inline Scoped AE Viral Motion Keyframes */}
       <style jsx global>{`
         @keyframes eqWave {
