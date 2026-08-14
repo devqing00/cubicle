@@ -27,6 +27,31 @@ export async function POST(req: Request) {
       if (!snapshot.empty) {
         const doc = snapshot.docs[0];
         const data = doc.data();
+
+        // IDEMPOTENCY GUARD: Check if already paid
+        if (data.status === "paid") {
+          console.log(`Booking ${reference} already marked as paid. Ignoring duplicate webhook.`);
+          return new NextResponse("Already processed", { status: 200 });
+        }
+
+        // AMOUNT & CURRENCY SECURITY VALIDATION
+        const expectedCurrency = "NGN";
+        let expectedAmount = 0;
+        if (data.tier === "standard") {
+          expectedAmount = 15000 * 100;
+        } else if (data.tier === "intensive") {
+          expectedAmount = 25000 * 100;
+        }
+
+        if (event.data.currency !== expectedCurrency) {
+          console.error(`Currency mismatch for ${reference}. Expected ${expectedCurrency}, got ${event.data.currency}`);
+          return new NextResponse("Invalid Currency", { status: 400 });
+        }
+
+        if (event.data.amount !== expectedAmount) {
+          console.error(`Amount mismatch for ${reference}. Expected ${expectedAmount}, got ${event.data.amount}`);
+          return new NextResponse("Invalid Amount", { status: 400 });
+        }
         
         // 2. Call Cal.com API to officially accept/confirm the booking
         // Only do this if we actually have an API key and the booking ID

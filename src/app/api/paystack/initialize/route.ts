@@ -51,6 +51,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         email: bookingData.studentEmail || "student@example.com",
         amount,
+        reference: bookingData.reference,
         callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/history?payment=success`,
         metadata: {
           bookingId: bookingId,
