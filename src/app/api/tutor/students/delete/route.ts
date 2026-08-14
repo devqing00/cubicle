@@ -24,28 +24,28 @@ export async function POST(request: Request) {
 
     // 3. Delete all Notifications for this student
     const notifsSnap = await db.collection("notifications").where("userId", "==", studentId).get();
-    notifsSnap.docs.forEach((doc) => batch.delete(doc.ref));
+    notifsSnap.docs.forEach((doc: any) => batch.delete(doc.ref));
 
     // 4. Delete all Reviews submitted by this student
     const reviewsSnap = await db.collection("reviews").where("studentId", "==", studentId).get();
-    reviewsSnap.docs.forEach((doc) => batch.delete(doc.ref));
+    reviewsSnap.docs.forEach((doc: any) => batch.delete(doc.ref));
 
     // 5. Delete Chat Thread & Messages
     const chatDocId = `chat_${studentId}_tutor_cubicle`;
     const chatRef = db.collection("chats").doc(chatDocId);
     const messagesSnap = await chatRef.collection("messages").get();
-    messagesSnap.docs.forEach((doc) => batch.delete(doc.ref));
+    messagesSnap.docs.forEach((doc: any) => batch.delete(doc.ref));
     batch.delete(chatRef);
 
     // Also check for any generic chats where studentId matches
     const extraChatsSnap = await db.collection("chats").where("studentId", "==", studentId).get();
-    extraChatsSnap.docs.forEach((doc) => {
+    extraChatsSnap.docs.forEach((doc: any) => {
       if (doc.id !== chatDocId) batch.delete(doc.ref);
     });
 
     // 6. Process Bookings: Preserve Financial Audits & Anonymize PII; Delete Unpaid/Pending
     const bookingsSnap = await db.collection("bookings").where("studentId", "==", studentId).get();
-    bookingsSnap.docs.forEach((doc) => {
+    bookingsSnap.docs.forEach((doc: any) => {
       const data = doc.data();
       const isPaidOrCompleted = data.status === "paid" || data.status === "completed" || !!data.paidAt;
 
