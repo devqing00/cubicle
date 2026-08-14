@@ -16,12 +16,28 @@ export const createFirebaseAdminApp = () => {
 
   if (!firebaseAdminConfig.privateKey || !firebaseAdminConfig.clientEmail) {
     console.warn("Missing Firebase Admin credentials. Falling back to application default.");
-    return initializeApp();
+    try {
+      return initializeApp();
+    } catch (error) {
+      console.error("Failed to initialize default Firebase app", error);
+      throw error;
+    }
   }
 
-  return initializeApp({
-    credential: cert(firebaseAdminConfig),
-  });
+  try {
+    // Robust parsing for Vercel environments where quotes might be retained
+    const formattedPrivateKey = firebaseAdminConfig.privateKey.replace(/"/g, "").replace(/\\n/g, "\n");
+    return initializeApp({
+      credential: cert({
+        projectId: firebaseAdminConfig.projectId,
+        clientEmail: firebaseAdminConfig.clientEmail,
+        privateKey: formattedPrivateKey,
+      }),
+    });
+  } catch (error) {
+    console.error("Firebase admin initialization error. Check private key format:", error);
+    throw error;
+  }
 };
 
 const adminApp = createFirebaseAdminApp();
