@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { adminAuth } from "@/lib/firebase-admin";
 import { SESSION_COOKIE_NAME } from "@/lib/auth-utils";
 
@@ -31,8 +31,16 @@ export async function POST(request: Request) {
     });
 
     return response;
-  } catch (error) {
-    console.error("Login route error:", error);
-    return NextResponse.json({ error: "Failed to create session" }, { status: 401 });
+  } catch (error: any) {
+    console.error("Login route FATAL error:", error);
+    // Return a 500 with the exact error message to help debug on Vercel
+    return NextResponse.json(
+      { 
+        error: "Failed to create session", 
+        details: error?.message || String(error),
+        stack: error?.stack
+      }, 
+      { status: 500 }
+    );
   }
 }

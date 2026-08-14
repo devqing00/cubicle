@@ -9,37 +9,47 @@ const firebaseAdminConfig = {
   privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
 };
 
-export const createFirebaseAdminApp = () => {
+let adminAppInstance: ReturnType<typeof initializeApp> | null = null;
+
+export const getFirebaseAdminApp = () => {
   if (getApps().length > 0) {
     return getApps()[0];
   }
 
+  if (adminAppInstance) return adminAppInstance;
+
   if (!firebaseAdminConfig.privateKey || !firebaseAdminConfig.clientEmail) {
-    console.warn("Missing Firebase Admin credentials. Falling back to application default.");
-    try {
-      return initializeApp();
-    } catch (error) {
-      console.error("Failed to initialize default Firebase app", error);
-      throw error;
-    }
+    console.warn("Missing Firebase Admin credentials. Using fallback...");
+    adminAppInstance = initializeApp();
+    return adminAppInstance;
   }
 
   try {
-    // Robust parsing for Vercel environments where quotes might be retained
     const formattedPrivateKey = firebaseAdminConfig.privateKey.replace(/"/g, "").replace(/\\n/g, "\n");
-    return initializeApp({
+    adminAppInstance = initializeApp({
       credential: cert({
         projectId: firebaseAdminConfig.projectId,
         clientEmail: firebaseAdminConfig.clientEmail,
         privateKey: formattedPrivateKey,
       }),
     });
+    return adminAppInstance;
   } catch (error) {
-    console.error("Firebase admin initialization error. Check private key format:", error);
-    throw error;
+    console.error("Firebase admin initialization error:", error);
+    // Fallback to prevent immediate crash, though subsequent calls will likely fail
+    adminAppInstance = initializeApp();
+    return adminAppInstance;
   }
 };
 
-const adminApp = createFirebaseAdminApp();
-export const adminAuth = getAuth(adminApp);
-export const adminDb = getFirestore(adminApp);
+export const adminAuth = new Proxy({} as any, {
+  get: (target, prop) => {
+    return (getAuth(getFirebaseAdminApp()) as any)[prop];
+  }
+});
+
+export const adminDb = new Proxy({} as any, {
+  get: (target, prop) => {
+    return (getFirestore(getFirebaseAdminApp()) as any)[prop];
+  }
+});
