@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { getAdminAuth } from "@/lib/firebase-admin";
 import { SESSION_COOKIE_NAME } from "@/lib/auth-utils";
 
 export async function POST(request: Request) {
   try {
+    const { getAdminAuth } = await import("@/lib/firebase-admin");
     const { idToken } = await request.json();
 
     if (!idToken) {

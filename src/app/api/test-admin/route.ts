@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { getAdminAuth, getAdminDb, getFirebaseAdminApp } from "@/lib/firebase-admin";
 
 export async function GET() {
   try {
+    const { getFirebaseAdminApp, getAdminDb } = await import("@/lib/firebase-admin");
     const app = getFirebaseAdminApp();
     
     // Try to access a small operation
@@ -19,7 +19,8 @@ export async function GET() {
       success: false,
       error: error?.message || String(error),
       stack: error?.stack,
-      code: error?.code
+      code: error?.code,
+      type: typeof error
     }, { status: 500 });
   }
 }
