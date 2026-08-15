@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDb as db } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -14,7 +14,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     // In a real app, we would verify the tutor's session token here.
     // For this prototype, we'll assume the request is authenticated since the UI only shows this to tutors.
     
-    await db.collection("bookings").doc(id).update({
+    await getAdminDb().collection("bookings").doc(id).update({
       status,
       updatedAt: new Date().toISOString()
     });

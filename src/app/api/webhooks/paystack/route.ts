@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDb as db } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 import crypto from "crypto";
 
 export async function POST(req: Request) {
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       const reference = event.data.reference; // Could contain our booking CUB-XXXXX reference
 
       // 1. Query Firestore for this booking
-      const snapshot = await db.collection("bookings").where("reference", "==", reference).get();
+      const snapshot = await getAdminDb().collection("bookings").where("reference", "==", reference).get();
       if (!snapshot.empty) {
         const doc = snapshot.docs[0];
         const data = doc.data();

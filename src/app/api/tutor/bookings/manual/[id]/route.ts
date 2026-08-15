@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDb as db } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 import { issueRefund } from "@/lib/paystack";
 
 async function sendWhatsAppMessage(to: string, text: string) {
@@ -49,7 +49,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     // Fetch booking to get details
-    const bookingRef = db.collection("bookings").doc(id);
+    const bookingRef = getAdminDb().collection("bookings").doc(id);
     const bookingDoc = await bookingRef.get();
     
     if (!bookingDoc.exists) {

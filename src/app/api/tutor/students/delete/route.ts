@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDb as db, adminAuth as auth } from "@/lib/firebase-admin";
+import { getAdminDb, getAdminAuth } from "@/lib/firebase-admin";
 
 export async function POST(request: Request) {
   try {
@@ -11,40 +11,40 @@ export async function POST(request: Request) {
 
     // 1. Delete from Firebase Auth if user exists
     try {
-      await auth.deleteUser(studentId);
+      await getAdminAuth().deleteUser(studentId);
     } catch (authErr) {
       console.warn(`Auth user ${studentId} delete notice:`, authErr);
     }
 
-    const batch = db.batch();
+    const batch = getAdminDb().batch();
 
     // 2. Delete User Profile Document from Firestore
-    const userRef = db.collection("users").doc(studentId);
+    const userRef = getAdminDb().collection("users").doc(studentId);
     batch.delete(userRef);
 
     // 3. Delete all Notifications for this student
-    const notifsSnap = await db.collection("notifications").where("userId", "==", studentId).get();
+    const notifsSnap = await getAdminDb().collection("notifications").where("userId", "==", studentId).get();
     notifsSnap.docs.forEach((doc: any) => batch.delete(doc.ref));
 
     // 4. Delete all Reviews submitted by this student
-    const reviewsSnap = await db.collection("reviews").where("studentId", "==", studentId).get();
+    const reviewsSnap = await getAdminDb().collection("reviews").where("studentId", "==", studentId).get();
     reviewsSnap.docs.forEach((doc: any) => batch.delete(doc.ref));
 
     // 5. Delete Chat Thread & Messages
     const chatDocId = `chat_${studentId}_tutor_cubicle`;
-    const chatRef = db.collection("chats").doc(chatDocId);
+    const chatRef = getAdminDb().collection("chats").doc(chatDocId);
     const messagesSnap = await chatRef.collection("messages").get();
     messagesSnap.docs.forEach((doc: any) => batch.delete(doc.ref));
     batch.delete(chatRef);
 
     // Also check for any generic chats where studentId matches
-    const extraChatsSnap = await db.collection("chats").where("studentId", "==", studentId).get();
+    const extraChatsSnap = await getAdminDb().collection("chats").where("studentId", "==", studentId).get();
     extraChatsSnap.docs.forEach((doc: any) => {
       if (doc.id !== chatDocId) batch.delete(doc.ref);
     });
 
     // 6. Process Bookings: Preserve Financial Audits & Anonymize PII; Delete Unpaid/Pending
-    const bookingsSnap = await db.collection("bookings").where("studentId", "==", studentId).get();
+    const bookingsSnap = await getAdminDb().collection("bookings").where("studentId", "==", studentId).get();
     bookingsSnap.docs.forEach((doc: any) => {
       const data = doc.data();
       const isPaidOrCompleted = data.status === "paid" || data.status === "completed" || !!data.paidAt;

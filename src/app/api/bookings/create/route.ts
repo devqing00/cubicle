@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDb as db } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 
 const CALCOM_API_KEY = process.env.CALCOM_API_KEY;
 
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
     const initialStatus = isTrial ? "confirmed" : "pending_payment";
 
     // 3. Store booking record in Firestore with guaranteed meetingCode
-    const docRef = await db.collection("bookings").add({
+    const docRef = await getAdminDb().collection("bookings").add({
       studentId,
       studentName: studentName || "Student",
       studentEmail: studentEmail || "",
@@ -170,7 +170,7 @@ export async function POST(request: Request) {
     // 3. Dispatch in-app notifications
     try {
       // Notify Student
-      await db.collection("notifications").add({
+      await getAdminDb().collection("notifications").add({
         userId: studentId,
         title: "Session Booked",
         message: `Your ${tier} session has been scheduled for ${formattedSchedule || scheduledDate}. Ref: ${ref}`,
@@ -181,7 +181,7 @@ export async function POST(request: Request) {
       });
 
       // Notify Tutor
-      await db.collection("notifications").add({
+      await getAdminDb().collection("notifications").add({
         userId: "tutor_cubicle",
         title: `New Booking: ${studentName || "Student"}`,
         message: `${studentName || "Student"} booked a ${tier} session for ${formattedSchedule || scheduledDate}. Ref: ${ref}`,

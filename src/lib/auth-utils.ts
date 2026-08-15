@@ -1,6 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { adminAuth } from "./firebase-admin";
+import { getAdminAuth } from "./firebase-admin";
 
 export const SESSION_COOKIE_NAME = "cubicle-session";
 
@@ -17,7 +17,7 @@ export async function getCurrentUser() {
   }
 
   try {
-    const decodedToken = await adminAuth.verifySessionCookie(sessionCookie, true);
+    const decodedToken = await getAdminAuth().verifySessionCookie(sessionCookie, true);
     return decodedToken;
   } catch (error) {
     console.error("Failed to verify session cookie:", error);

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDb as db } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 import crypto from "crypto";
 import { issueRefund } from "@/lib/paystack";
 
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const uid = event.payload?.uid;
 
     if (triggerEvent === "BOOKING_CREATED") {
-      const snapshot = await db.collection("bookings").where("calcomBookingId", "==", uid).get();
+      const snapshot = await getAdminDb().collection("bookings").where("calcomBookingId", "==", uid).get();
       if (!snapshot.empty) {
         const doc = snapshot.docs[0];
         const { startTime, endTime, videoCallUrl } = event.payload || {};
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       }
     } else if (triggerEvent === "BOOKING_CANCELLED" || triggerEvent === "BOOKING_REJECTED") {
       // 1. Query Firestore for this calcomBookingId
-      const snapshot = await db.collection("bookings").where("calcomBookingId", "==", uid).get();
+      const snapshot = await getAdminDb().collection("bookings").where("calcomBookingId", "==", uid).get();
       if (!snapshot.empty) {
         const doc = snapshot.docs[0];
         const bookingData = doc.data();

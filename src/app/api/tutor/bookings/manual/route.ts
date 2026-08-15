@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDb as db } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 import crypto from "crypto";
 
 export async function POST(request: Request) {
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     };
 
-    await db.collection("bookings").add(newDoc);
+    await getAdminDb().collection("bookings").add(newDoc);
 
     // If CALCOM_API_KEY is present, we would also push this to Cal.com API
     // e.g. creating an override or booking via API

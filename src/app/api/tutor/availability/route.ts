@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { adminDb as db } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 
 export async function GET() {
   try {
-    const doc = await db.collection("availability").doc("tutor_cubicle").get();
+    const doc = await getAdminDb().collection("availability").doc("tutor_cubicle").get();
     if (doc.exists) {
       return NextResponse.json(doc.data());
     }
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const { schedule, overrides } = await request.json();
 
     // 1. Persist to Firestore availability document
-    await db.collection("availability").doc("tutor_cubicle").set({
+    await getAdminDb().collection("availability").doc("tutor_cubicle").set({
       schedule,
       overrides: overrides || [],
       updatedAt: new Date().toISOString(),

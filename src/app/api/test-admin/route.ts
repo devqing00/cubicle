@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { adminAuth, adminDb, getFirebaseAdminApp } from "@/lib/firebase-admin";
+import { getAdminAuth, getAdminDb, getFirebaseAdminApp } from "@/lib/firebase-admin";
 
 export async function GET() {
   try {
     const app = getFirebaseAdminApp();
     
     // Try to access a small operation
-    const testDoc = await adminDb.collection("users").limit(1).get();
+    const testDoc = await getAdminDb().collection("users").limit(1).get();
     
     return NextResponse.json({ 
       success: true, 

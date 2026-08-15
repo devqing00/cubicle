@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDb as db } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -10,7 +10,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       return NextResponse.json({ error: "Missing booking ID" }, { status: 400 });
     }
 
-    const bookingRef = db.collection("bookings").doc(id);
+    const bookingRef = getAdminDb().collection("bookings").doc(id);
     const bookingDoc = await bookingRef.get();
     
     if (!bookingDoc.exists) {

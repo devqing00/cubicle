@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDb as db } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     // Fetch booking details
-    const bookingRef = db.collection("bookings").doc(bookingId);
+    const bookingRef = getAdminDb().collection("bookings").doc(bookingId);
     const bookingDoc = await bookingRef.get();
 
     if (!bookingDoc.exists) {
