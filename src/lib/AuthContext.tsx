@@ -105,11 +105,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Sync session cookie with server
         try {
           const idToken = await authUser.getIdToken();
-          await fetch("/api/auth/login", {
+          const response = await fetch("/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ idToken }),
           });
+          if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            console.error("AuthContext Session login sync failed:", err);
+          }
         } catch (e) {
           console.warn("Session login sync warning:", e);
         }

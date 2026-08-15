@@ -83,15 +83,22 @@ function LoginForm() {
         return;
       }
 
-      await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),
       });
       
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Server Login Error Details:", errorData);
+        throw new Error(errorData.details || errorData.error || "Server failed to create session.");
+      }
+      
       toast.success("Logged in with Google!");
       router.push(redirectPath);
-    } catch (err: unknown) {
+    } catch (err: any) {
+      console.error("Login exception:", err);
       toast.error(getCleanErrorMessage(err, "Failed to log in with Google"));
     } finally {
       setLoading(false);
