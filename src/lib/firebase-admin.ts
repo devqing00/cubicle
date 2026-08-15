@@ -19,9 +19,10 @@ export const getFirebaseAdminApp = () => {
   if (adminAppInstance) return adminAppInstance;
 
   if (!firebaseAdminConfig.privateKey || !firebaseAdminConfig.clientEmail) {
-    console.warn("Missing Firebase Admin credentials. Using fallback...");
-    adminAppInstance = initializeApp();
-    return adminAppInstance;
+    console.error("CRITICAL: Missing Firebase Admin credentials. Check Vercel Environment Variables.");
+    // If we call initializeApp() without args on Vercel, it hangs trying to reach the GCP metadata server, 
+    // causing a 500 timeout. So we throw an explicit error instead to fail fast.
+    throw new Error("Firebase Admin credentials missing. Cannot initialize application.");
   }
 
   try {
@@ -36,20 +37,22 @@ export const getFirebaseAdminApp = () => {
     return adminAppInstance;
   } catch (error) {
     console.error("Firebase admin initialization error:", error);
-    // Fallback to prevent immediate crash, though subsequent calls will likely fail
-    adminAppInstance = initializeApp();
-    return adminAppInstance;
+    throw error;
   }
 };
 
 export const adminAuth = new Proxy({} as any, {
   get: (target, prop) => {
-    return (getAuth(getFirebaseAdminApp()) as any)[prop];
+    const auth = getAuth(getFirebaseAdminApp());
+    const val = (auth as any)[prop];
+    return typeof val === "function" ? val.bind(auth) : val;
   }
 });
 
 export const adminDb = new Proxy({} as any, {
   get: (target, prop) => {
-    return (getFirestore(getFirebaseAdminApp()) as any)[prop];
+    const db = getFirestore(getFirebaseAdminApp());
+    const val = (db as any)[prop];
+    return typeof val === "function" ? val.bind(db) : val;
   }
 });
