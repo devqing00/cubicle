@@ -94,17 +94,33 @@ export default function SchedulePage() {
   const executeStatusUpdate = async (id: string, newStatus: string) => {
     setActionLoading(id);
     try {
-      const res = await fetch(`/api/tutor/bookings/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus })
-      });
-      if (!res.ok) throw new Error("Failed to update status");
+      const isTutor = userData?.role === "tutor";
+      let res: Response;
+
+      if (newStatus === "cancelled" && !isTutor) {
+        // Student cancelling their own booking via student cancellation API
+        res = await fetch(`/api/student/bookings/${id}/cancel`, {
+          method: "DELETE",
+        });
+      } else {
+        // Tutor status update
+        res = await fetch(`/api/tutor/bookings/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus })
+        });
+      }
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update status");
+      }
+
       toast.success(`Booking ${newStatus} successfully!`);
       setConfirmModalData(prev => ({ ...prev, isOpen: false }));
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error("An error occurred while updating the booking.");
+      toast.error(error?.message || "An error occurred while updating the booking.");
     } finally {
       setActionLoading(null);
     }
