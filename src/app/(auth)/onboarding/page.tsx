@@ -25,6 +25,12 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { user, userData, refreshUserData } = useAuth();
   
+  React.useEffect(() => {
+    if (userData?.role === "tutor" || userData?.onboardingComplete) {
+      router.push("/dashboard");
+    }
+  }, [userData, router]);
+
   const [targetLanguage, setTargetLanguage] = useState("Spanish");
   const [experienceLevel, setExperienceLevel] = useState("Beginner (A1)");
   const [age, setAge] = useState("");

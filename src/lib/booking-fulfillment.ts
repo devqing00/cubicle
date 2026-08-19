@@ -82,7 +82,7 @@ export async function fulfillPaidBooking(bookingDoc: FirebaseFirestore.DocumentS
             start: utcDate.toISOString(),
             attendee: {
               name: data.studentName || "Student",
-              email: data.studentEmail || "student@example.com",
+              email: data.studentEmail || "",
               timeZone,
             },
             eventTypeSlug: "30min",

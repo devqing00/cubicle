@@ -38,6 +38,8 @@ interface ChatThread {
   tutorName: string;
   lastMessage?: string;
   lastMessageTime?: any;
+  archived?: boolean;
+  isDeletedStudent?: boolean;
 }
 
 export default function ChatPage() {
@@ -49,6 +51,9 @@ export default function ChatPage() {
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [chatTab, setChatTab] = useState<"active" | "archived">("active");
+  const [actionLoading, setActionLoading] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -80,9 +85,6 @@ export default function ChatPage() {
           })) as ChatThread[];
 
           setThreads(fetched);
-          if (!activeThreadId && fetched.length > 0) {
-            setActiveThreadId(fetched[0].id);
-          }
         },
         (error) => {
           console.warn("Chat threads snapshot error (check Firestore Security Rules):", error);
@@ -110,9 +112,36 @@ export default function ChatPage() {
     }
   }, [user, userData, isTutor]);
 
+  // Filter threads by active tab & search
+  const activeThreads = threads.filter(t => !t.archived);
+  const archivedThreads = threads.filter(t => Boolean(t.archived));
+  const currentTabThreads = chatTab === "active" ? activeThreads : archivedThreads;
+
+  const filteredThreads = currentTabThreads.filter(t => 
+    t.studentName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.studentEmail?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Auto-select first thread in active tab if current selection is invalid
+  useEffect(() => {
+    if (isTutor) {
+      const isCurrentInTab = filteredThreads.some(t => t.id === activeThreadId);
+      if (!isCurrentInTab) {
+        if (filteredThreads.length > 0) {
+          setActiveThreadId(filteredThreads[0].id);
+        } else {
+          setActiveThreadId(null);
+        }
+      }
+    }
+  }, [chatTab, threads, isTutor]);
+
   // Listen to messages for the active thread
   useEffect(() => {
-    if (!activeThreadId) return;
+    if (!activeThreadId) {
+      setMessages([]);
+      return;
+    }
 
     const messagesQuery = query(
       collection(db, "chats", activeThreadId, "messages"),
@@ -136,6 +165,47 @@ export default function ChatPage() {
     return () => unsubscribe();
   }, [activeThreadId]);
 
+  const handleToggleArchive = async (threadId: string, isCurrentlyArchived: boolean) => {
+    setActionLoading(true);
+    try {
+      const res = await fetch("/api/tutor/chat/archive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ threadId, archived: !isCurrentlyArchived }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update thread archive state");
+
+      toast.success(!isCurrentlyArchived ? "Thread moved to Archived tab" : "Thread restored to Active Messages");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update thread");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeletePermanently = async () => {
+    if (!activeThreadId) return;
+    setActionLoading(true);
+    try {
+      const res = await fetch("/api/tutor/chat/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ threadId: activeThreadId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete thread");
+
+      toast.success("Chat thread and message history permanently deleted!");
+      setDeleteConfirmOpen(false);
+      setActiveThreadId(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete thread");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || !user || !activeThreadId) return;
@@ -157,10 +227,11 @@ export default function ChatPage() {
         createdAt: new Date().toISOString(),
       });
 
-      // 2. Update thread lastMessage
+      // 2. Update thread lastMessage & timestamp
       await setDoc(doc(db, "chats", activeThreadId), {
         lastMessage: messageText,
         lastMessageTime: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       }, { merge: true });
 
       // 3. Dispatch in-app notification to recipient
@@ -200,11 +271,6 @@ export default function ChatPage() {
     ? (activeThread?.studentName || "Student")
     : "Certified Language Instructor";
 
-  const filteredThreads = threads.filter(t => 
-    t.studentName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.studentEmail?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
     <div className="space-y-6">
       
@@ -239,7 +305,32 @@ export default function ChatPage() {
         {/* Left: Tutor Student Thread List (Only shown for Tutor) */}
         {isTutor && (
           <div className="md:col-span-4 border-r border-border-light flex flex-col h-full bg-surface-near-white">
-            <div className="p-4 border-b border-border-light">
+            
+            {/* Active vs Archived Tab Controls */}
+            <div className="p-3 border-b border-border-light flex items-center justify-between gap-1 bg-white">
+              <button
+                onClick={() => setChatTab("active")}
+                className={`flex-1 py-1.5 px-3 rounded-xl font-body text-xs font-semibold transition-all ${
+                  chatTab === "active"
+                    ? "bg-accent-blue text-white shadow-xs"
+                    : "text-text-secondary hover:text-text-primary hover:bg-surface-near-white"
+                }`}
+              >
+                Active ({activeThreads.length})
+              </button>
+              <button
+                onClick={() => setChatTab("archived")}
+                className={`flex-1 py-1.5 px-3 rounded-xl font-body text-xs font-semibold transition-all ${
+                  chatTab === "archived"
+                    ? "bg-accent-blue text-white shadow-xs"
+                    : "text-text-secondary hover:text-text-primary hover:bg-surface-near-white"
+                }`}
+              >
+                Archived ({archivedThreads.length})
+              </button>
+            </div>
+
+            <div className="p-3 border-b border-border-light">
               <input
                 type="text"
                 value={searchQuery}
@@ -252,7 +343,7 @@ export default function ChatPage() {
             <div className="flex-1 overflow-y-auto divide-y divide-border-light">
               {filteredThreads.length === 0 ? (
                 <div className="p-8 text-center text-text-secondary text-xs">
-                  No active student conversations yet.
+                  {chatTab === "active" ? "No active student conversations." : "No archived or deleted student conversations."}
                 </div>
               ) : (
                 filteredThreads.map((thread) => {
@@ -269,9 +360,16 @@ export default function ChatPage() {
                         {thread.studentName?.charAt(0) || "S"}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-heading font-bold text-xs text-text-primary truncate">
-                          {thread.studentName}
-                        </p>
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="font-heading font-bold text-xs text-text-primary truncate">
+                            {thread.studentName}
+                          </p>
+                          {thread.isDeletedStudent && (
+                            <span className="px-1.5 py-0.5 bg-red-500/10 text-red-600 rounded text-[9px] font-bold uppercase shrink-0">
+                              Deleted
+                            </span>
+                          )}
+                        </div>
                         <p className="font-body text-[11px] text-text-secondary truncate mt-0.5">
                           {thread.lastMessage || "No messages yet"}
                         </p>
@@ -294,22 +392,53 @@ export default function ChatPage() {
                 {recipientName.charAt(0)}
               </div>
               <div>
-                <h3 className="font-heading font-bold text-sm text-text-primary">
-                  {recipientName}
+                <h3 className="font-heading font-bold text-sm text-text-primary flex items-center gap-2">
+                  <span>{recipientName}</span>
+                  {activeThread?.isDeletedStudent && (
+                    <span className="px-2 py-0.5 bg-red-500/10 text-red-600 rounded-full text-[10px] font-bold">
+                      Account Deleted
+                    </span>
+                  )}
                 </h3>
                 <p className="font-body text-[11px] text-text-secondary">
-                  {isTutor ? "Student Discussion Thread" : "Official Tutor Communication Channel"}
+                  {isTutor ? (activeThread?.archived ? "Archived Discussion Thread" : "Student Discussion Thread") : "Official Tutor Communication Channel"}
                 </p>
               </div>
             </div>
 
-            <Link
-              href="/dashboard/schedule"
-              className="text-xs font-semibold text-text-secondary hover:text-accent-blue flex items-center gap-1"
-            >
-              <HugeIcon name="calendar" size={14} />
-              <span className="hidden sm:inline">View Schedule</span>
-            </Link>
+            {/* Action Buttons for Tutor */}
+            {isTutor && activeThread && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleToggleArchive(activeThread.id, Boolean(activeThread.archived))}
+                  disabled={actionLoading}
+                  className="px-3 py-1.5 bg-white border border-border-light rounded-xl font-body text-xs font-semibold text-text-secondary hover:text-accent-blue hover:border-accent-blue/30 transition-all flex items-center gap-1.5"
+                  title={activeThread.archived ? "Move back to Active Messages" : "Archive Thread"}
+                >
+                  <HugeIcon name="archive" size={14} />
+                  <span className="hidden sm:inline">{activeThread.archived ? "Unarchive" : "Archive"}</span>
+                </button>
+                <button
+                  onClick={() => setDeleteConfirmOpen(true)}
+                  disabled={actionLoading}
+                  className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-xl font-body text-xs font-semibold hover:bg-red-600 hover:text-white transition-all flex items-center gap-1.5"
+                  title="Delete Thread Permanently"
+                >
+                  <HugeIcon name="trash" size={14} />
+                  <span className="hidden sm:inline">Delete</span>
+                </button>
+              </div>
+            )}
+
+            {!isTutor && (
+              <Link
+                href="/dashboard/schedule"
+                className="text-xs font-semibold text-text-secondary hover:text-accent-blue flex items-center gap-1"
+              >
+                <HugeIcon name="calendar" size={14} />
+                <span className="hidden sm:inline">View Schedule</span>
+              </Link>
+            )}
           </div>
 
           {/* Messages Stream */}
@@ -388,6 +517,43 @@ export default function ChatPage() {
         </div>
 
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[24px] border border-border-light max-w-md w-full p-6 space-y-4 shadow-xl">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-600 flex items-center justify-center">
+              <HugeIcon name="trash" size={24} />
+            </div>
+            <div>
+              <h3 className="font-heading text-lg font-bold text-text-primary">
+                Delete Chat Thread Permanently?
+              </h3>
+              <p className="font-body text-xs text-text-secondary mt-1 leading-relaxed">
+                Are you sure you want to delete this thread with <strong className="text-text-primary">{recipientName}</strong>? All message logs and history will be permanently erased. This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmOpen(false)}
+                disabled={actionLoading}
+                className="px-4 py-2 bg-surface-near-white border border-border-light rounded-xl font-body text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeletePermanently}
+                disabled={actionLoading}
+                className="px-4 py-2 bg-red-600 text-white rounded-xl font-body text-xs font-semibold hover:bg-red-700 transition-colors shadow-xs"
+              >
+                {actionLoading ? "Deleting..." : "Yes, Delete Permanently"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

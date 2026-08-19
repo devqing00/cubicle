@@ -1,18 +1,17 @@
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { requireTutorUser } from "@/lib/auth-utils";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const tutorUser = await requireTutorUser();
+    if (!tutorUser) {
+      return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+    }
+
     const { status } = await request.json();
     const resolvedParams = await params;
     const id = resolvedParams.id;
-
-    if (!id || !status) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    // In a real app, we would verify the tutor's session token here.
-    // For this prototype, we'll assume the request is authenticated since the UI only shows this to tutors.
     
     await getAdminDb().collection("bookings").doc(id).update({
       status,

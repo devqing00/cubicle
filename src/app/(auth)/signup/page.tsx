@@ -11,6 +11,15 @@ import HugeIcon from "@/components/ui/HugeIcon";
 import { getCleanErrorMessage } from "@/lib/firebaseErrors";
 import Logo from "@/components/ui/Logo";
 
+const isAdminEmail = (emailStr?: string | null) => {
+  if (!emailStr) return false;
+  const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "")
+    .split(",")
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+  return adminEmails.includes(emailStr.trim().toLowerCase());
+};
+
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,12 +48,14 @@ function SignupForm() {
       
       await updateProfile(user, { displayName: name });
       
+      const isAdmin = isAdminEmail(user.email || email);
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         displayName: name,
         fullName: name,
-        email: user.email,
-        role: "student",
+        email: user.email || email,
+        role: isAdmin ? "tutor" : "student",
+        onboardingComplete: isAdmin,
         createdAt: new Date().toISOString(),
       });
       
@@ -55,8 +66,8 @@ function SignupForm() {
         body: JSON.stringify({ idToken }),
       });
       
-      toast.success("Student account created successfully!");
-      router.push("/onboarding");
+      toast.success(isAdmin ? "Instructor/Admin account created!" : "Student account created successfully!");
+      router.push(isAdmin ? "/dashboard" : "/onboarding");
     } catch (err: unknown) {
       const rawMsg = err instanceof Error ? err.message : "";
       const code = (err as { code?: string })?.code || "";
@@ -88,12 +99,14 @@ function SignupForm() {
         return;
       }
       
+      const isAdmin = isAdminEmail(user.email);
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
-        displayName: user.displayName || "Student",
-        fullName: user.displayName || "Student",
+        displayName: user.displayName || (isAdmin ? "Instructor" : "Student"),
+        fullName: user.displayName || (isAdmin ? "Instructor" : "Student"),
         email: user.email,
-        role: "student", 
+        role: isAdmin ? "tutor" : "student", 
+        onboardingComplete: isAdmin,
         createdAt: new Date().toISOString(),
       }, { merge: true });
       
@@ -105,7 +118,7 @@ function SignupForm() {
       });
 
       toast.success("Signed in with Google!");
-      router.push("/onboarding");
+      router.push(isAdmin ? "/dashboard" : "/onboarding");
     } catch (err: unknown) {
       toast.error(getCleanErrorMessage(err, "Failed to sign up with Google"));
     } finally {

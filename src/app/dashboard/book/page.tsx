@@ -10,6 +10,7 @@ import Link from "next/link";
 import HugeIcon from "@/components/ui/HugeIcon";
 import NativeScheduler from "@/components/booking/NativeScheduler";
 import { getUserLocalTimeZone } from "@/lib/timezone";
+import { getOrCreateDeviceFingerprint } from "@/lib/device-fingerprint";
 
 interface BookingResult {
   reference: string;
@@ -79,7 +80,10 @@ export default function BookingPage() {
       // Call our backend API to programmatically provision real Cal.com Google Meet room
       const res = await fetch("/api/bookings/create", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-device-fingerprint": getOrCreateDeviceFingerprint(),
+        },
         body: JSON.stringify({
           studentId: user.uid,
           studentName,
@@ -89,6 +93,7 @@ export default function BookingPage() {
           scheduledTime: slot.time,
           formattedSchedule: slot.formattedDate,
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          deviceId: getOrCreateDeviceFingerprint(),
         }),
       });
 

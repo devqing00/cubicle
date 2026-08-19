@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { getAdminDb, getAdminAuth } from "@/lib/firebase-admin";
+import { requireTutorUser } from "@/lib/auth-utils";
 
 export async function POST(request: Request) {
   try {
+    const tutorUser = await requireTutorUser();
+    if (!tutorUser) {
+      return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+    }
+
     const { studentId } = await request.json();
 
     if (!studentId || typeof studentId !== "string") {
@@ -30,17 +36,31 @@ export async function POST(request: Request) {
     const reviewsSnap = await getAdminDb().collection("reviews").where("studentId", "==", studentId).get();
     reviewsSnap.docs.forEach((doc: any) => batch.delete(doc.ref));
 
-    // 5. Delete Chat Thread & Messages
-    const chatDocId = `chat_${studentId}_tutor_cubicle`;
-    const chatRef = getAdminDb().collection("chats").doc(chatDocId);
-    const messagesSnap = await chatRef.collection("messages").get();
-    messagesSnap.docs.forEach((doc: any) => batch.delete(doc.ref));
-    batch.delete(chatRef);
+    // 5. Archive Chat Threads (Move to Archived tab for Tutor review & permanent deletion option)
+    const chatDocIds = [`chat_${studentId}`, `chat_${studentId}_tutor_cubicle`];
+    for (const docId of chatDocIds) {
+      const cRef = getAdminDb().collection("chats").doc(docId);
+      const cSnap = await cRef.get();
+      if (cSnap.exists) {
+        batch.set(cRef, {
+          archived: true,
+          isDeletedStudent: true,
+          studentName: "[Deleted Student] (Archived)",
+          updatedAt: new Date().toISOString(),
+          archivedAt: new Date().toISOString(),
+        }, { merge: true });
+      }
+    }
 
-    // Also check for any generic chats where studentId matches
     const extraChatsSnap = await getAdminDb().collection("chats").where("studentId", "==", studentId).get();
-    extraChatsSnap.docs.forEach((doc: any) => {
-      if (doc.id !== chatDocId) batch.delete(doc.ref);
+    extraChatsSnap.docs.forEach((cDoc: any) => {
+      batch.set(cDoc.ref, {
+        archived: true,
+        isDeletedStudent: true,
+        studentName: "[Deleted Student] (Archived)",
+        updatedAt: new Date().toISOString(),
+        archivedAt: new Date().toISOString(),
+      }, { merge: true });
     });
 
     // 6. Process Bookings: Preserve Financial Audits & Anonymize PII; Delete Unpaid/Pending
@@ -63,6 +83,9 @@ export async function POST(request: Request) {
         batch.delete(doc.ref);
       }
     });
+
+    // NOTE: 'claimed_trials' collection records are intentionally PRESERVED.
+    // This prevents malicious users from deleting their account and re-registering to claim another free trial.
 
     // Commit all deletions and updates atomically
     await batch.commit();

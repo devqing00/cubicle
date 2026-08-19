@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { requireTutorUser } from "@/lib/auth-utils";
 import crypto from "crypto";
 
 export async function POST(request: Request) {
   try {
+    const tutorUser = await requireTutorUser();
+    if (!tutorUser) {
+      return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+    }
+
     const data = await request.json();
-    
-    // In a real app, verify tutor authentication
     
     const { type, date, time, studentEmail, tier, reason } = data;
 

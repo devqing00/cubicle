@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { getCurrentUser, requireTutorUser } from "@/lib/auth-utils";
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const user = await getCurrentUser();
+    const isTutor = await requireTutorUser();
+
+    if (!user && !isTutor) {
+      return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+    }
+
     const resolvedParams = await params;
     const { id } = resolvedParams;
 
@@ -18,6 +26,11 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }
     
     const bookingData = bookingDoc.data();
+
+    // Verify ownership (or tutor role)
+    if (!isTutor && user?.uid !== bookingData?.studentId) {
+      return NextResponse.json({ error: "Forbidden: You do not own this booking" }, { status: 403 });
+    }
 
     // Allow student to cancel pending_payment or confirmed bookings
     if (bookingData?.status === "completed") {

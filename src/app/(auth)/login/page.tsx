@@ -11,6 +11,15 @@ import HugeIcon from "@/components/ui/HugeIcon";
 import { getCleanErrorMessage } from "@/lib/firebaseErrors";
 import Logo from "@/components/ui/Logo";
 
+const isAdminEmail = (emailStr?: string | null) => {
+  if (!emailStr) return false;
+  const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "")
+    .split(",")
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+  return adminEmails.includes(emailStr.trim().toLowerCase());
+};
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -36,17 +45,31 @@ function LoginForm() {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       const idToken = await result.user.getIdToken();
+      const userEmail = result.user.email || email;
       
       // Verify account document exists in Firestore
       const userDoc = await getDoc(doc(db, "users", result.user.uid));
       if (!userDoc.exists()) {
-        setUnregisteredModal({
-          uid: result.user.uid,
-          email: result.user.email || email,
-          displayName: result.user.displayName || "Student",
-          idToken,
-        });
-        return;
+        if (isAdminEmail(userEmail)) {
+          // Auto-provision Tutor/Admin document
+          await setDoc(doc(db, "users", result.user.uid), {
+            uid: result.user.uid,
+            displayName: result.user.displayName || userEmail.split("@")[0],
+            fullName: result.user.displayName || userEmail.split("@")[0],
+            email: userEmail,
+            role: "tutor",
+            onboardingComplete: true,
+            createdAt: new Date().toISOString(),
+          }, { merge: true });
+        } else {
+          setUnregisteredModal({
+            uid: result.user.uid,
+            email: userEmail,
+            displayName: result.user.displayName || "Student",
+            idToken,
+          });
+          return;
+        }
       }
 
       await fetch("/api/auth/login", {
@@ -70,17 +93,31 @@ function LoginForm() {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();
+      const userEmail = result.user.email || "";
       
       // Verify account document exists in Firestore
       const userDoc = await getDoc(doc(db, "users", result.user.uid));
       if (!userDoc.exists()) {
-        setUnregisteredModal({
-          uid: result.user.uid,
-          email: result.user.email || "",
-          displayName: result.user.displayName || "Student",
-          idToken,
-        });
-        return;
+        if (isAdminEmail(userEmail)) {
+          // Auto-provision Tutor/Admin document
+          await setDoc(doc(db, "users", result.user.uid), {
+            uid: result.user.uid,
+            displayName: result.user.displayName || userEmail.split("@")[0],
+            fullName: result.user.displayName || userEmail.split("@")[0],
+            email: userEmail,
+            role: "tutor",
+            onboardingComplete: true,
+            createdAt: new Date().toISOString(),
+          }, { merge: true });
+        } else {
+          setUnregisteredModal({
+            uid: result.user.uid,
+            email: userEmail,
+            displayName: result.user.displayName || "Student",
+            idToken,
+          });
+          return;
+        }
       }
 
       const response = await fetch("/api/auth/login", {
@@ -109,12 +146,14 @@ function LoginForm() {
     if (!unregisteredModal) return;
     setRegistering(true);
     try {
+      const isAdmin = isAdminEmail(unregisteredModal.email);
       await setDoc(doc(db, "users", unregisteredModal.uid), {
         uid: unregisteredModal.uid,
         displayName: unregisteredModal.displayName,
         fullName: unregisteredModal.displayName,
         email: unregisteredModal.email,
-        role: "student",
+        role: isAdmin ? "tutor" : "student",
+        onboardingComplete: isAdmin,
         createdAt: new Date().toISOString(),
       }, { merge: true });
 
@@ -126,7 +165,7 @@ function LoginForm() {
 
       toast.success("Account created successfully! Welcome to Cubicle.");
       setUnregisteredModal(null);
-      router.push("/onboarding");
+      router.push(isAdmin ? "/dashboard" : "/onboarding");
     } catch (err) {
       toast.error(getCleanErrorMessage(err, "Failed to create account"));
     } finally {

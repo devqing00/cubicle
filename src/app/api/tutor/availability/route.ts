@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { requireTutorUser } from "@/lib/auth-utils";
 
 export async function GET() {
   try {
@@ -27,6 +28,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const tutorUser = await requireTutorUser();
+    if (!tutorUser) {
+      return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+    }
+
     const { schedule, overrides } = await request.json();
 
     // 1. Persist to Firestore availability document

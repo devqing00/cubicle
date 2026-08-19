@@ -1,30 +1,25 @@
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 
-const CALCOM_API_KEY = process.env.CALCOM_API_KEY;
+import crypto from "crypto";
+import { checkTrialEligibility, recordClaimedTrial, normalizeEmail, normalizePhone } from "@/lib/trial-fraud-prevention";
+
+const CALCOM_API_KEY = process.env.CALCOM_API_KEY || "";
 
 // Helper to convert any 12h/24h time format into clean 24h format (HH:mm)
 function parseTo24Hour(timeStr: string): string {
-  if (!timeStr) return "10:00";
-  const trimmed = timeStr.trim();
-  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(trimmed) && !trimmed.toLowerCase().includes("m")) {
-    const [h, m] = trimmed.split(":");
-    return `${h.padStart(2, '0')}:${m}`;
-  }
+  const clean = timeStr.trim().toUpperCase();
+  const isPM = clean.includes("PM");
+  const isAM = clean.includes("AM");
+  const rawTime = clean.replace(/(AM|PM)/g, "").trim();
 
-  const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
-  if (match) {
-    let hour = parseInt(match[1], 10);
-    const minute = match[2];
-    const modifier = match[3]?.toUpperCase();
+  let [hours, minutes] = rawTime.split(":").map((val) => parseInt(val, 10));
+  if (isNaN(minutes)) minutes = 0;
 
-    if (modifier === "PM" && hour < 12) hour += 12;
-    if (modifier === "AM" && hour === 12) hour = 0;
+  if (isPM && hours < 12) hours += 12;
+  if (isAM && hours === 12) hours = 0;
 
-    return `${hour.toString().padStart(2, '0')}:${minute}`;
-  }
-
-  return "10:00";
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
 export async function POST(request: Request) {
@@ -39,10 +34,34 @@ export async function POST(request: Request) {
       scheduledTime,
       formattedSchedule,
       timeZone = "Africa/Lagos",
+      deviceId,
     } = body;
 
     if (!studentId || !scheduledDate || !scheduledTime || !tier) {
       return NextResponse.json({ error: "Missing required booking details" }, { status: 400 });
+    }
+
+    const isTrial = tier === "trial";
+
+    // 1. Fetch user doc to obtain verified profile email and phone
+    const userSnap = await getAdminDb().collection("users").doc(studentId).get();
+    const userData = userSnap.exists ? userSnap.data() : null;
+
+    const targetEmail = studentEmail || userData?.email || "";
+    const targetPhone = userData?.whatsappNumber || userData?.whatsapp || userData?.phoneNumber || "";
+
+    // 2. Anti-Fraud Enforcement for Free Trial Bookings
+    if (isTrial) {
+      const eligibility = await checkTrialEligibility({
+        studentId,
+        email: targetEmail,
+        phone: targetPhone,
+        deviceId: deviceId || request.headers.get("x-device-fingerprint"),
+      });
+
+      if (!eligibility.eligible) {
+        return NextResponse.json({ error: eligibility.reason }, { status: 400 });
+      }
     }
 
     // Generate unique Cubicle reference
@@ -69,9 +88,8 @@ export async function POST(request: Request) {
       0
     ));
 
-    const durationMinutes = tier === "trial" ? 30 : tier === "standard" ? 60 : 90;
+    const durationMinutes = isTrial ? 30 : tier === "standard" ? 60 : 90;
 
-    const isTrial = tier === "trial";
     const initialStatus = isTrial ? "confirmed" : "pending_payment";
 
     let meetLink = "";
@@ -95,7 +113,7 @@ export async function POST(request: Request) {
               start: utcDate.toISOString(),
               attendee: {
                 name: studentName || "Student",
-                email: studentEmail || "adetayoalexander12@gmail.com",
+                email: studentEmail || "",
                 timeZone: timeZone || "Africa/Lagos",
               },
               eventTypeSlug: "30min",
@@ -167,6 +185,22 @@ export async function POST(request: Request) {
       status: initialStatus,
       createdAt: new Date().toISOString(),
     });
+
+    // 4. Record permanent claim lock if this was a free trial session
+    if (isTrial) {
+      try {
+        await recordClaimedTrial({
+          studentId,
+          studentEmail: targetEmail,
+          normalizedEmail: normalizeEmail(targetEmail),
+          normalizedPhone: normalizePhone(targetPhone),
+          deviceId: deviceId || request.headers.get("x-device-fingerprint"),
+          reference: ref,
+        });
+      } catch (claimErr) {
+        console.error("Failed to record claimed trial lock:", claimErr);
+      }
+    }
 
     // 3. Dispatch in-app notifications
     try {
