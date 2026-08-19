@@ -283,7 +283,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         )}
 
-        <main className="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto pt-[76px] md:pt-10">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 md:p-10 max-w-7xl w-full mx-auto pt-[72px] md:pt-10">{children}</main>
       </div>
 
       {/* Reusable Sign Out Confirmation Modal */}

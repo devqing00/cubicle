@@ -158,8 +158,8 @@ export default function HistoryPage() {
         ) : (
           <div className="w-full">
             <div className="overflow-x-auto">
-              <table className="w-full text-left font-body text-xs">
-                <thead className="border-b border-border-light text-text-secondary uppercase tracking-wider text-[11px]">
+              <table className="w-full min-w-[650px] text-left font-body text-xs">
+                <thead className="border-b border-border-light text-text-secondary uppercase tracking-wider text-[11px] whitespace-nowrap">
                   <tr>
                     <th className="pb-3 font-semibold">Date & Time</th>
                     {userData?.role === "tutor" && <th className="pb-3 font-semibold">Student</th>}

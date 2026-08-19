@@ -472,9 +472,9 @@ export default function StudentsManagementPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[700px] text-left border-collapse">
               <thead>
-                <tr className="border-b border-border-light bg-surface-near-white/60 text-[11px] font-heading font-bold uppercase tracking-wider text-text-secondary">
+                <tr className="border-b border-border-light bg-surface-near-white/60 text-[11px] font-heading font-bold uppercase tracking-wider text-text-secondary whitespace-nowrap">
                   <th className="py-4 px-6">Student</th>
                   <th className="py-4 px-4">Language Track</th>
                   <th className="py-4 px-4">Level & Goal</th>

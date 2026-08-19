@@ -286,9 +286,9 @@ export default function SchedulePage() {
               ) : (
                 <div className="flex flex-col gap-3 w-full">
                   {upcomingLessons.map((lesson) => (
-                    <div key={lesson.id} className="bg-surface-near-white p-4 rounded-2xl border border-border-light flex items-center justify-between">
+                    <div key={lesson.id} className="bg-surface-near-white p-4 rounded-2xl border border-border-light flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-white rounded-xl border border-border-light flex items-center justify-center text-accent-blue">
+                        <div className="w-9 h-9 bg-white rounded-xl border border-border-light flex items-center justify-center text-accent-blue shrink-0">
                           <HugeIcon name="calendar" size={18} />
                         </div>
                         <div>
@@ -298,7 +298,7 @@ export default function SchedulePage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         {lesson.videoCallUrl ? (
                           <a 
                             href={lesson.videoCallUrl}

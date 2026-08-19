@@ -54,6 +54,7 @@ export default function ChatPage() {
   const [chatTab, setChatTab] = useState<"active" | "archived">("active");
   const [actionLoading, setActionLoading] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [showMobileChatWindow, setShowMobileChatWindow] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -304,7 +305,9 @@ export default function ChatPage() {
         
         {/* Left: Tutor Student Thread List (Only shown for Tutor) */}
         {isTutor && (
-          <div className="md:col-span-4 border-r border-border-light flex flex-col h-full bg-surface-near-white">
+          <div className={`md:col-span-4 border-r border-border-light flex flex-col h-full bg-surface-near-white ${
+            showMobileChatWindow ? "hidden md:flex" : "flex"
+          }`}>
             
             {/* Active vs Archived Tab Controls */}
             <div className="p-3 border-b border-border-light flex items-center justify-between gap-1 bg-white">
@@ -351,7 +354,10 @@ export default function ChatPage() {
                   return (
                     <button
                       key={thread.id}
-                      onClick={() => setActiveThreadId(thread.id)}
+                      onClick={() => {
+                        setActiveThreadId(thread.id);
+                        setShowMobileChatWindow(true);
+                      }}
                       className={`w-full p-4 text-left transition-colors flex items-center gap-3 ${
                         isActive ? "bg-white border-l-4 border-l-accent-blue shadow-2xs" : "hover:bg-surface-muted"
                       }`}
@@ -383,24 +389,36 @@ export default function ChatPage() {
         )}
 
         {/* Right / Main: Chat Conversation Window */}
-        <div className={`${isTutor ? "md:col-span-8" : "col-span-12"} flex flex-col h-full bg-white`}>
+        <div className={`${isTutor ? "md:col-span-8" : "col-span-12"} flex flex-col h-full bg-white ${
+          isTutor && !showMobileChatWindow ? "hidden md:flex" : "flex"
+        }`}>
           
           {/* Thread Header */}
           <div className="px-6 py-4 border-b border-border-light flex items-center justify-between bg-surface-near-white shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-accent-blue/10 border border-accent-blue/20 text-accent-blue flex items-center justify-center font-heading font-bold text-sm">
+              {isTutor && (
+                <button
+                  type="button"
+                  onClick={() => setShowMobileChatWindow(false)}
+                  className="md:hidden px-2.5 py-1 text-text-secondary hover:text-text-primary rounded-xl bg-white border border-border-light flex items-center gap-1 font-body text-xs font-semibold shrink-0"
+                >
+                  <HugeIcon name="chevron-left" size={14} />
+                  <span>Inbox</span>
+                </button>
+              )}
+              <div className="w-10 h-10 rounded-full bg-accent-blue/10 border border-accent-blue/20 text-accent-blue flex items-center justify-center font-heading font-bold text-sm shrink-0">
                 {recipientName.charAt(0)}
               </div>
-              <div>
-                <h3 className="font-heading font-bold text-sm text-text-primary flex items-center gap-2">
-                  <span>{recipientName}</span>
+              <div className="min-w-0">
+                <h3 className="font-heading font-bold text-sm text-text-primary flex items-center gap-2 truncate">
+                  <span className="truncate">{recipientName}</span>
                   {activeThread?.isDeletedStudent && (
-                    <span className="px-2 py-0.5 bg-red-500/10 text-red-600 rounded-full text-[10px] font-bold">
+                    <span className="px-2 py-0.5 bg-red-500/10 text-red-600 rounded-full text-[10px] font-bold shrink-0">
                       Account Deleted
                     </span>
                   )}
                 </h3>
-                <p className="font-body text-[11px] text-text-secondary">
+                <p className="font-body text-[11px] text-text-secondary truncate">
                   {isTutor ? (activeThread?.archived ? "Archived Discussion Thread" : "Student Discussion Thread") : "Official Tutor Communication Channel"}
                 </p>
               </div>

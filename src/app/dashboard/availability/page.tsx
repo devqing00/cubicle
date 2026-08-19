@@ -190,7 +190,7 @@ export default function AvailabilityPage() {
         </div>
 
         <div className="max-w-3xl">
-          <div className="flex items-end gap-4 mb-6 p-4 bg-surface-near-white rounded-2xl border border-border-light">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3 mb-6 p-4 bg-surface-near-white rounded-2xl border border-border-light">
             <div className="flex-1">
               <label className="block font-body text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Date</label>
               <input 
