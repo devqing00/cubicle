@@ -86,8 +86,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           let fetchedData = userSnap.data() as UserData;
 
-          // Auto-promote to Tutor if email matches
-          if (authUser.email && process.env.NEXT_PUBLIC_ADMIN_EMAIL && authUser.email.toLowerCase() === process.env.NEXT_PUBLIC_ADMIN_EMAIL.toLowerCase()) {
+          // Auto-promote to Tutor/Admin if email matches NEXT_PUBLIC_ADMIN_EMAIL (supports comma-separated emails for discreet super admin access)
+          const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "")
+            .split(",")
+            .map(e => e.trim().toLowerCase())
+            .filter(Boolean);
+
+          if (authUser.email && adminEmails.includes(authUser.email.toLowerCase())) {
             if (fetchedData.role !== "tutor" || !fetchedData.onboardingComplete) {
               fetchedData.role = "tutor";
               fetchedData.onboardingComplete = true;

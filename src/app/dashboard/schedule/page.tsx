@@ -508,6 +508,31 @@ export default function SchedulePage() {
     );
   }
 
+  const handlePayment = async (bookingId: string) => {
+    setActionLoading(bookingId);
+    try {
+      const response = await fetch("/api/paystack/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId }),
+      });
+      const data = await response.json();
+      
+      if (data.authorization_url) {
+        window.location.href = data.authorization_url;
+      } else {
+        toast.error(data.error || "Failed to initialize payment");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred while initializing payment.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const pendingPaymentBooking = bookings.find(b => b.status === "pending_payment");
+
   // Student View
   return (
     <div className="w-full">
@@ -523,6 +548,42 @@ export default function SchedulePage() {
           Book Another Session
         </Link>
       </div>
+
+      {/* PENDING PAYMENT ALERT BANNER */}
+      {pendingPaymentBooking && (
+        <div className="bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-orange-500/15 border border-amber-500/30 rounded-[28px] p-6 mb-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-0.5 bg-amber-500 text-white font-bold text-[10px] uppercase tracking-wider rounded-full">
+                Pending Payment
+              </span>
+              <span className="text-xs font-mono text-amber-950 font-bold">Ref: {pendingPaymentBooking.reference}</span>
+            </div>
+            <h3 className="font-heading text-lg font-bold text-amber-950 mt-1">
+              Payment Required: {pendingPaymentBooking.tier.charAt(0).toUpperCase() + pendingPaymentBooking.tier.slice(1)} Lesson
+            </h3>
+            <p className="font-body text-xs text-amber-900/90">
+              Scheduled: {pendingPaymentBooking.formattedSchedule || pendingPaymentBooking.scheduledDate}. Complete payment to unlock your Google Meet link and confirm your booking.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <button
+              onClick={() => handlePayment(pendingPaymentBooking.id)}
+              disabled={actionLoading === pendingPaymentBooking.id}
+              className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-xs font-bold transition-all shadow-md flex-1 md:flex-initial disabled:opacity-50"
+            >
+              {actionLoading === pendingPaymentBooking.id ? "Redirecting..." : "Pay Now (OPay, Cards & Bank)"}
+            </button>
+            <button
+              onClick={() => promptStatusUpdate(pendingPaymentBooking.id, "cancelled", pendingPaymentBooking.reference)}
+              className="px-4 py-3 bg-white hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-full text-xs font-semibold transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white p-6 rounded-[24px] border border-border-light shadow-xs">
         {loading ? (
@@ -558,7 +619,7 @@ export default function SchedulePage() {
                           ? "bg-blue-50 text-blue-700 border-blue-200"
                           : "bg-amber-50 text-amber-700 border-amber-200"
                       }`}>
-                        {booking.status.replace("_", " ")}
+                        {booking.status === "paid" ? "Paid & Confirmed" : booking.status.replace("_", " ")}
                       </span>
                     </div>
 
@@ -571,7 +632,7 @@ export default function SchedulePage() {
                         </span>
                       )}
                       <span className="text-text-subtle">• Ref: {booking.reference}</span>
-                      {booking.meetLink && (
+                      {booking.meetLink && isActionable && (
                         <button
                           type="button"
                           onClick={() => {
@@ -589,6 +650,17 @@ export default function SchedulePage() {
                   </div>
 
                   <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
+                    {booking.status === "pending_payment" && (
+                      <button
+                        type="button"
+                        onClick={() => handlePayment(booking.id)}
+                        disabled={actionLoading === booking.id}
+                        className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-xs font-bold transition-colors shadow-2xs disabled:opacity-50"
+                      >
+                        {actionLoading === booking.id ? "Redirecting..." : "Pay Now (OPay, Cards & Bank)"}
+                      </button>
+                    )}
+
                     {(booking.meetLink || booking.videoCallUrl) && isActionable && (
                       <a 
                         href={booking.meetLink || booking.videoCallUrl}

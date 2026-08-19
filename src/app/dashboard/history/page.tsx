@@ -29,6 +29,35 @@ export default function HistoryPage() {
   const [savingRecording, setSavingRecording] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get("payment");
+    const reference = urlParams.get("reference") || urlParams.get("trxref");
+
+    if (reference && (paymentStatus === "success" || urlParams.has("trxref"))) {
+      fetch("/api/paystack/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reference }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            import("sonner").then(({ toast }) => {
+              toast.success("Payment verified! Your session is confirmed and meeting room is unlocked.");
+            });
+          }
+        })
+        .catch((err) => console.error("Payment auto-verify error:", err))
+        .finally(() => {
+          // Clear query params from browser URL bar without reloading
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, newUrl);
+        });
+    }
+  }, []);
+
+  useEffect(() => {
     if (!userData) return;
 
     let q;

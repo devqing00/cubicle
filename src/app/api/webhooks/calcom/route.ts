@@ -35,10 +35,28 @@ export async function POST(req: Request) {
         await doc.ref.update({
           startTime: startTime || null,
           endTime: endTime || null,
-          meetLink: videoCallUrl || null,
+          meetLink: videoCallUrl || doc.data().meetLink || null,
           updatedAt: new Date().toISOString()
         });
         console.log(`Updated booking ${uid} with video link and times.`);
+      }
+    } else if (triggerEvent === "BOOKING_RESCHEDULED") {
+      const snapshot = await getAdminDb().collection("bookings").where("calcomBookingId", "==", uid).get();
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        const { startTime, videoCallUrl } = event.payload || {};
+        
+        const updatePayload: Record<string, any> = { updatedAt: new Date().toISOString() };
+        if (startTime) {
+          const dateObj = new Date(startTime);
+          updatePayload.scheduledDate = dateObj.toISOString().split("T")[0];
+          updatePayload.scheduledTime = `${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+          updatePayload.formattedSchedule = dateObj.toLocaleString("en-US", { dateStyle: "full", timeStyle: "short" });
+        }
+        if (videoCallUrl) updatePayload.meetLink = videoCallUrl;
+
+        await doc.ref.update(updatePayload);
+        console.log(`Booking rescheduled in Firestore for Cal.com UID: ${uid}`);
       }
     } else if (triggerEvent === "BOOKING_CANCELLED" || triggerEvent === "BOOKING_REJECTED") {
       // 1. Query Firestore for this calcomBookingId
@@ -61,6 +79,13 @@ export async function POST(req: Request) {
       }
       
       console.log(`Booking cancelled/rejected in Cal.com: ${uid}`);
+    } else if (triggerEvent === "MEETING_ENDED") {
+      const snapshot = await getAdminDb().collection("bookings").where("calcomBookingId", "==", uid).get();
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        await doc.ref.update({ status: "completed", completedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+        console.log(`Meeting completed for Cal.com UID: ${uid}`);
+      }
     }
 
     return new NextResponse("OK", { status: 200 });

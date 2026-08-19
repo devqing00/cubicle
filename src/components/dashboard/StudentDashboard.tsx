@@ -124,11 +124,58 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
 
   const tutorWhatsApp = (process.env.NEXT_PUBLIC_TUTOR_WHATSAPP || "2348000000000").replace(/[^0-9]/g, '');
 
+  const pendingPaymentBooking = bookings.find(b => b.status === "pending_payment");
+
   return (
     <div className="space-y-8 font-body">
 
+      {/* PENDING PAYMENT REMINDER ALERT BANNER */}
+      {pendingPaymentBooking && (
+        <div className="bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-orange-500/15 border border-amber-500/30 rounded-[28px] p-6 sm:p-7 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+          <div className="space-y-1 z-10">
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-0.5 bg-amber-500 text-white font-bold text-[10px] uppercase tracking-wider rounded-full shadow-2xs">
+                Action Required • Pending Payment
+              </span>
+              <span className="text-xs font-mono text-amber-950/80 font-bold">
+                Ref: {pendingPaymentBooking.reference}
+              </span>
+            </div>
+            <h2 className="font-heading text-lg sm:text-xl font-bold text-amber-950 tracking-tight mt-1">
+              Complete Payment for your {pendingPaymentBooking.tier.charAt(0).toUpperCase() + pendingPaymentBooking.tier.slice(1)} Session
+            </h2>
+            <p className="font-body text-xs sm:text-sm text-amber-900/90 flex items-center gap-2">
+              <HugeIcon name="calendar" size={14} className="text-amber-600" />
+              <span>Scheduled: {pendingPaymentBooking.formattedSchedule || pendingPaymentBooking.scheduledDate || "Upcoming"}</span>
+            </p>
+            <p className="text-[11px] text-amber-800/80 mt-1">
+              Your time slot is held temporarily. Complete payment (OPay, Cards, Bank Transfer) to receive your Google Meet room link and unlock session chat.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 z-10 shrink-0 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => handlePayment(pendingPaymentBooking.id)}
+              disabled={payingBookingId === pendingPaymentBooking.id}
+              className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-full font-body text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 flex-1 sm:flex-initial disabled:opacity-50"
+            >
+              <HugeIcon name="sparkles" size={16} />
+              <span>{payingBookingId === pendingPaymentBooking.id ? "Redirecting..." : "Pay Now (OPay, Cards & Bank)"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setModalBookingToCancel(pendingPaymentBooking)}
+              className="px-4 py-3 bg-white/80 hover:bg-white text-amber-900 border border-amber-300 rounded-full font-body text-xs font-semibold transition-colors flex items-center justify-center"
+            >
+              Cancel Request
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Next Lesson Starting Soon Hero Countdown Banner */}
-      {nextLesson && (
+      {nextLesson && (nextLesson.status === "confirmed" || nextLesson.status === "paid") && (
         <div className="bg-gradient-to-r from-text-primary via-neutral-900 to-accent-blue/90 text-white p-6 sm:p-8 rounded-[28px] shadow-lg border border-white/10 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2 relative z-10">
             <div className="flex items-center gap-2 flex-wrap">
@@ -300,13 +347,13 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                           <button
                             onClick={() => handlePayment(b.id)}
                             disabled={payingBookingId === b.id}
-                            className="px-4 py-2 bg-accent-blue text-white rounded-full text-xs font-semibold hover:bg-blue-600 transition-colors disabled:opacity-50 shadow-2xs"
+                            className="px-4 py-2 bg-amber-600 text-white rounded-full text-xs font-bold hover:bg-amber-700 transition-colors disabled:opacity-50 shadow-2xs"
                           >
-                            {payingBookingId === b.id ? "Redirecting..." : "Pay with Paystack"}
+                            {payingBookingId === b.id ? "Redirecting..." : "Pay Now (OPay, Cards & Bank)"}
                           </button>
                         )}
 
-                        {b.meetLink && (
+                        {b.status !== "pending_payment" && b.meetLink && (
                           <a
                             href={b.meetLink}
                             target="_blank"
@@ -406,7 +453,16 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                 </div>
 
                 <div className="space-y-2">
-                  {nextLesson.meetLink ? (
+                  {nextLesson.status === "pending_payment" ? (
+                    <button
+                      type="button"
+                      onClick={() => handlePayment(nextLesson.id)}
+                      disabled={payingBookingId === nextLesson.id}
+                      className="w-full text-center px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-xs font-bold transition-colors shadow-2xs disabled:opacity-50"
+                    >
+                      {payingBookingId === nextLesson.id ? "Redirecting..." : "Pay Now (OPay, Cards & Bank)"}
+                    </button>
+                  ) : nextLesson.meetLink ? (
                     <a
                       href={nextLesson.meetLink}
                       target="_blank"
@@ -417,7 +473,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                     </a>
                   ) : (
                     <button 
-                      onClick={() => toast.info("Meeting links will be generated closer to the session.")}
+                      onClick={() => toast.info("Meeting link will be unlocked once session is confirmed.")}
                       className="w-full text-center px-4 py-2.5 bg-surface-muted text-text-subtle rounded-full text-xs font-medium cursor-not-allowed border border-border-light"
                     >
                       Join Meeting (Pending)

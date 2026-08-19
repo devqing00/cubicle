@@ -71,84 +71,85 @@ export async function POST(request: Request) {
 
     const durationMinutes = tier === "trial" ? 30 : tier === "standard" ? 60 : 90;
 
-    let meetLink = process.env.NEXT_PUBLIC_TUTOR_MEET_LINK || "";
-    let meetingCode = "";
-    let calcomBookingId: number | null = null;
-
-    let calErrorMsg = "";
-
-    // 1. Programmatically provision dedicated Google Meet room via Cal.com API v2
-    if (CALCOM_API_KEY && CALCOM_API_KEY.startsWith("cal_")) {
-      try {
-        const calRes = await fetch("https://api.cal.com/v2/bookings", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${CALCOM_API_KEY}`,
-            "cal-api-version": "2024-08-13",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            start: utcDate.toISOString(),
-            attendee: {
-              name: studentName || "Student",
-              email: studentEmail || "adetayoalexander12@gmail.com",
-              timeZone: timeZone || "Africa/Lagos",
-            },
-            eventTypeSlug: "30min",
-            username: "devqing",
-            location: "integrations:google:meet",
-          }),
-        });
-
-        const calData = await calRes.json();
-
-        if (calRes.ok && calData.data) {
-          const bookingData = calData.data;
-          calcomBookingId = bookingData.id || null;
-          meetLink = bookingData.meetingUrl || bookingData.location || "";
-          if (meetLink.includes("meet.google.com/")) {
-            meetingCode = meetLink.split("meet.google.com/")[1]?.split("?")[0] || bookingData.uid || "";
-          } else {
-            meetingCode = bookingData.uid || "";
-          }
-        } else {
-          const rawMsg = calData.error?.message || calData.message || "Selected slot is unavailable or conflicts with existing schedule.";
-          if (rawMsg.toLowerCase().includes("in the past")) {
-            calErrorMsg = "The selected time slot has already passed for today. Please pick a future time slot.";
-          } else if (rawMsg.toLowerCase().includes("already has booking") || rawMsg.toLowerCase().includes("not available")) {
-            calErrorMsg = "This time slot is already booked on the instructor's calendar. Please select another slot.";
-          } else {
-            calErrorMsg = rawMsg;
-          }
-          console.warn("Cal.com v2 booking creation rejected:", calErrorMsg);
-        }
-      } catch (calErr: unknown) {
-        calErrorMsg = calErr instanceof Error ? calErr.message : "Failed to communicate with scheduling service.";
-        console.error("Error communicating with Cal.com v2 API:", calErr);
-      }
-    }
-
-    // 2. Fallback to Tutor's configured dedicated Google Meet link if Cal.com is unconfigured or failed
-    if (!meetLink && process.env.NEXT_PUBLIC_TUTOR_MEET_LINK && process.env.NEXT_PUBLIC_TUTOR_MEET_LINK.trim().length > 0) {
-      meetLink = process.env.NEXT_PUBLIC_TUTOR_MEET_LINK.trim();
-      meetingCode = meetLink.split("/").pop() || ref;
-    }
-
-    // 3. STRICT GUARD: If a valid meeting link could NOT be generated, FAIL the request! Do NOT create a booking with dummy links!
-    if (!meetLink) {
-      return NextResponse.json({
-        error: `Could not generate Google Meet room for this session: ${calErrorMsg || "Slot unavailable"}. Please select another time slot or try again.`
-      }, { status: 400 });
-    }
-
-    // If meetingCode is still empty, extract from URL
-    if (!meetingCode && meetLink) {
-      const parts = meetLink.split("/");
-      meetingCode = parts[parts.length - 1] || ref;
-    }
-
     const isTrial = tier === "trial";
     const initialStatus = isTrial ? "confirmed" : "pending_payment";
+
+    let meetLink = "";
+    let meetingCode = "";
+    let calcomBookingId: number | null = null;
+    let calErrorMsg = "";
+
+    // ONLY provision Cal.com / Google Meet immediately for FREE TRIAL bookings.
+    // For paid sessions (standard/intensive), meeting link provisioning is deferred until Paystack payment is confirmed!
+    if (isTrial) {
+      if (CALCOM_API_KEY && CALCOM_API_KEY.startsWith("cal_")) {
+        try {
+          const calRes = await fetch("https://api.cal.com/v2/bookings", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${CALCOM_API_KEY}`,
+              "cal-api-version": "2024-08-13",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              start: utcDate.toISOString(),
+              attendee: {
+                name: studentName || "Student",
+                email: studentEmail || "adetayoalexander12@gmail.com",
+                timeZone: timeZone || "Africa/Lagos",
+              },
+              eventTypeSlug: "30min",
+              username: "devqing",
+              location: "integrations:google:meet",
+            }),
+          });
+
+          const calData = await calRes.json();
+
+          if (calRes.ok && calData.data) {
+            const bookingData = calData.data;
+            calcomBookingId = bookingData.id || null;
+            meetLink = bookingData.meetingUrl || bookingData.location || "";
+            if (meetLink.includes("meet.google.com/")) {
+              meetingCode = meetLink.split("meet.google.com/")[1]?.split("?")[0] || bookingData.uid || "";
+            } else {
+              meetingCode = bookingData.uid || "";
+            }
+          } else {
+            const rawMsg = calData.error?.message || calData.message || "Selected slot is unavailable or conflicts with existing schedule.";
+            if (rawMsg.toLowerCase().includes("in the past")) {
+              calErrorMsg = "The selected time slot has already passed for today. Please pick a future time slot.";
+            } else if (rawMsg.toLowerCase().includes("already has booking") || rawMsg.toLowerCase().includes("not available")) {
+              calErrorMsg = "This time slot is already booked on the instructor's calendar. Please select another slot.";
+            } else {
+              calErrorMsg = rawMsg;
+            }
+            console.warn("Cal.com v2 booking creation rejected:", calErrorMsg);
+          }
+        } catch (calErr: unknown) {
+          calErrorMsg = calErr instanceof Error ? calErr.message : "Failed to communicate with scheduling service.";
+          console.error("Error communicating with Cal.com v2 API:", calErr);
+        }
+      }
+
+      // Fallback for Trial if Cal.com is unconfigured or failed
+      if (!meetLink && process.env.NEXT_PUBLIC_TUTOR_MEET_LINK && process.env.NEXT_PUBLIC_TUTOR_MEET_LINK.trim().length > 0) {
+        meetLink = process.env.NEXT_PUBLIC_TUTOR_MEET_LINK.trim();
+        meetingCode = meetLink.split("/").pop() || ref;
+      }
+
+      // Guard for Trial: Must have valid meet link
+      if (!meetLink) {
+        return NextResponse.json({
+          error: `Could not generate Google Meet room for this session: ${calErrorMsg || "Slot unavailable"}. Please select another time slot or try again.`
+        }, { status: 400 });
+      }
+
+      if (!meetingCode && meetLink) {
+        const parts = meetLink.split("/");
+        meetingCode = parts[parts.length - 1] || ref;
+      }
+    }
 
     // 3. Store booking record in Firestore with guaranteed meetingCode
     const docRef = await getAdminDb().collection("bookings").add({

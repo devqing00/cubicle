@@ -26,7 +26,7 @@ const steps = [
     num: "04",
     title: "Pay to confirm",
     description:
-      "Receive a Paystack payment link to lock in your slot and automatically generate your Google Meet link.",
+      "Complete payment via OPay, Cards, or Bank Transfer to lock in your slot and receive your Google Meet room link.",
   },
   {
     num: "05",
