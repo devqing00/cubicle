@@ -111,16 +111,31 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
   const nextLesson = upcomingLessons[0];
   const pastLessons = bookings.filter(b => b.status === "completed" || b.status === "cancelled").slice(0, 3);
 
-  // Recharts demo activity data
-  const activityData = [
-    { day: "Mon", hours: 1 },
-    { day: "Tue", hours: 0 },
-    { day: "Wed", hours: 1.5 },
-    { day: "Thu", hours: 0 },
-    { day: "Fri", hours: 1 },
-    { day: "Sat", hours: 2 },
-    { day: "Sun", hours: 0 },
-  ];
+  // Calculate dynamic weekly activity hours from student's bookings
+  const activityData = React.useMemo(() => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const today = new Date();
+    const data: { day: string; hours: number }[] = [];
+    
+    // Calculate for last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dayName = days[d.getDay()];
+      
+      const dayBookings = bookings.filter((b) => {
+        if (b.status !== "completed" && b.status !== "paid" && b.status !== "confirmed") return false;
+        const bDate = new Date(b.createdAt);
+        return bDate.getDate() === d.getDate() && bDate.getMonth() === d.getMonth() && bDate.getFullYear() === d.getFullYear();
+      });
+      
+      const totalHours = dayBookings.reduce((sum, b) => sum + (b.tier === "trial" ? 0.5 : b.tier === "standard" ? 1.0 : 1.5), 0);
+      data.push({ day: dayName, hours: totalHours });
+    }
+    return data;
+  }, [bookings]);
+
+  const hasActivity = activityData.some((d) => d.hours > 0);
 
   const tutorWhatsApp = (process.env.NEXT_PUBLIC_TUTOR_WHATSAPP || "2348000000000").replace(/[^0-9]/g, '');
 
@@ -412,25 +427,47 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
           <div className="bg-white rounded-[24px] p-6 sm:p-8 border border-border-light shadow-xs">
             <h2 className="font-heading text-xl font-bold text-text-primary mb-1">Learning Activity</h2>
             <p className="font-body text-xs text-text-secondary mb-6">Hours spent speaking and learning this week</p>
-            <div className="h-[220px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={activityData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                  <XAxis dataKey="day" stroke="#898989" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#898989" fontSize={11} tickLine={false} unit="h" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#ffffff',
-                      borderColor: '#e5e7eb',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                    }}
-                  />
-                  <Bar dataKey="hours" fill="#0284c7" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            
+            {hasActivity ? (
+              <div className="h-[220px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={activityData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis dataKey="day" stroke="#898989" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#898989" fontSize={11} tickLine={false} unit="h" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e7eb',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                      }}
+                    />
+                    <Bar dataKey="hours" fill="#0284c7" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="bg-surface-near-white border border-dashed border-border-light rounded-2xl p-8 text-center flex flex-col items-center justify-center min-h-[200px]">
+                <div className="w-12 h-12 rounded-2xl bg-accent-blue/10 text-accent-blue flex items-center justify-center mb-3 border border-accent-blue/20">
+                  <HugeIcon name="clock" size={24} />
+                </div>
+                <h4 className="font-heading font-bold text-base text-text-primary mb-1">
+                  No Learning Activity Yet This Week
+                </h4>
+                <p className="font-body text-xs text-text-secondary max-w-md mb-4 leading-relaxed">
+                  Your speaking and learning hours will automatically graph here in real-time as you attend your 1-on-1 language sessions with your instructor.
+                </p>
+                <Link
+                  href="/dashboard/book"
+                  className="px-5 py-2.5 bg-accent-blue hover:bg-accent-blue-hover text-white rounded-full font-body text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5"
+                >
+                  <HugeIcon name="calendar" size={14} />
+                  <span>Schedule Your Next Session</span>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 

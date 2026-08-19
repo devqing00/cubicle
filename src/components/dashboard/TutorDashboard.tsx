@@ -306,32 +306,54 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
           <div className="bg-white rounded-[24px] p-6 sm:p-8 border border-border-light shadow-xs">
             <h2 className="font-heading text-xl font-bold text-text-primary mb-1">Weekly Revenue</h2>
             <p className="font-body text-xs text-text-secondary mb-6">Earnings breakdown over the last 7 days</p>
-            <div className="h-[220px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="earningsGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0284c7" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#0284c7" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                  <XAxis dataKey="day" stroke="#898989" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#898989" fontSize={11} tickLine={false} tickFormatter={(val) => `₦${val/1000}k`} />
-                  <Tooltip
-                    formatter={(value: any) => [`₦${Number(value).toLocaleString()}`, 'Earnings']}
-                    contentStyle={{
-                      backgroundColor: '#ffffff',
-                      borderColor: '#e5e7eb',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                    }}
-                  />
-                  <Area type="monotone" dataKey="earnings" stroke="#0284c7" strokeWidth={2} fillOpacity={1} fill="url(#earningsGrad)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+            
+            {chartData.some((d) => d.earnings > 0) ? (
+              <div className="h-[220px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="earningsGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#0284c7" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#0284c7" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis dataKey="day" stroke="#898989" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#898989" fontSize={11} tickLine={false} tickFormatter={(val) => `₦${val/1000}k`} />
+                    <Tooltip
+                      formatter={(value: any) => [`₦${Number(value).toLocaleString()}`, 'Earnings']}
+                      contentStyle={{
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e7eb',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                      }}
+                    />
+                    <Area type="monotone" dataKey="earnings" stroke="#0284c7" strokeWidth={2} fillOpacity={1} fill="url(#earningsGrad)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="bg-surface-near-white border border-dashed border-border-light rounded-2xl p-8 text-center flex flex-col items-center justify-center min-h-[200px]">
+                <div className="w-12 h-12 rounded-2xl bg-accent-blue/10 text-accent-blue flex items-center justify-center mb-3 border border-accent-blue/20">
+                  <HugeIcon name="credit-card" size={24} />
+                </div>
+                <h4 className="font-heading font-bold text-base text-text-primary mb-1">
+                  No Completed Session Earnings Yet This Week
+                </h4>
+                <p className="font-body text-xs text-text-secondary max-w-md mb-4 leading-relaxed">
+                  Your weekly revenue graph will update dynamically in real-time as student sessions are completed and confirmed on the platform.
+                </p>
+                <Link
+                  href="/dashboard/schedule"
+                  className="px-5 py-2.5 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-all shadow-xs flex items-center gap-1.5"
+                >
+                  <HugeIcon name="calendar" size={14} />
+                  <span>View Teaching Schedule</span>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
