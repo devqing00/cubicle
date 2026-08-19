@@ -11,9 +11,7 @@ import PhoneInput from "@/components/ui/PhoneInput";
 import Logo from "@/components/ui/Logo";
 
 const LANGUAGES = [
-  "Spanish", "French", "German", "Italian",
-  "Mandarin Chinese", "Japanese", "Portuguese",
-  "Russian", "English", "General / Conversational"
+  "English"
 ];
 
 const LEVELS = [
