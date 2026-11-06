@@ -43,9 +43,6 @@ export default function HowItWorksPage() {
           
           {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="px-3.5 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-xs font-bold uppercase tracking-wider border border-accent-blue/20 mb-4 inline-block">
-              Step-by-Step Experience
-            </span>
             <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-bold text-text-primary tracking-tight leading-[1.1] mb-6">
               How Cubicle brings language learning <span className="italic text-accent-blue">to life.</span>
             </h1>
@@ -57,7 +54,7 @@ export default function HowItWorksPage() {
           {/* 4 Steps Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
             {steps.map((step) => (
-              <div key={step.num} className="bg-white p-8 rounded-[24px] border border-border-light shadow-xs flex flex-col justify-between group hover:border-accent-blue/40 transition-colors">
+              <div key={step.num} className="tactile-card p-8 rounded-[24px] flex flex-col justify-between group">
                 <div>
                   <div className="flex justify-between items-center mb-6">
                     <span className="font-mono text-2xl font-bold text-accent-blue">{step.num}</span>
@@ -95,12 +92,12 @@ export default function HowItWorksPage() {
           </div>
 
           {/* Bottom CTA */}
-          <div className="text-center bg-surface-muted p-10 rounded-[28px] border border-border-light">
+          <div className="text-center tactile-card p-10 rounded-[28px]">
             <h2 className="font-heading text-2xl font-bold text-text-primary mb-2">Ready to test it out?</h2>
             <p className="font-body text-xs sm:text-sm text-text-secondary mb-6">Your first trial lesson is completely free. No credit card required.</p>
             <Link
               href="/signup?redirect=/dashboard/book"
-              className="inline-flex items-center gap-2 px-8 py-3.5 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors"
+              className="tactile-btn btn-tactile-dark inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-body text-xs font-semibold"
             >
               <span>Book Your Free Trial</span>
               <HugeIcon name="arrow-right" size={14} />

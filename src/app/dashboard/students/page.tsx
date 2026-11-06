@@ -363,9 +363,6 @@ export default function StudentsManagementPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20 mb-2 inline-block">
-            Tutor Administration
-          </span>
           <h1 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
             Student & User Management
           </h1>
@@ -376,7 +373,7 @@ export default function StudentsManagementPage() {
 
         <Link
           href="/dashboard/chat"
-          className="px-5 py-2.5 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors flex items-center gap-2 self-start sm:self-auto shadow-xs"
+          className="tactile-btn btn-tactile-dark px-5 py-2.5 rounded-full font-body text-xs font-semibold flex items-center gap-2 self-start sm:self-auto shadow-xs"
         >
           <HugeIcon name="comment" size={16} />
           <span>Open Messages</span>
@@ -459,7 +456,7 @@ export default function StudentsManagementPage() {
       </div>
 
       {/* Student Directory Table / Grid */}
-      <div className="bg-white rounded-[28px] border border-border-light shadow-xs overflow-hidden">
+      <div className="tactile-card rounded-[28px] overflow-hidden">
         {filteredStudents.length === 0 ? (
           <div className="text-center py-16 px-4">
             <div className="w-14 h-14 rounded-2xl bg-surface-muted flex items-center justify-center mx-auto mb-3 text-text-subtle">
@@ -509,7 +506,7 @@ export default function StudentsManagementPage() {
 
                       {/* Language Track */}
                       <td className="py-4 px-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-accent-blue/10 text-accent-blue border border-accent-blue/20">
+                        <span className="font-heading font-bold text-xs text-accent-blue capitalize">
                           {targetLang}
                         </span>
                       </td>
@@ -613,7 +610,7 @@ export default function StudentsManagementPage() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <form
             onSubmit={handleSaveEditStudent}
-            className="bg-white rounded-[28px] max-w-lg w-full p-6 sm:p-8 border border-border-light shadow-2xl space-y-4"
+            className="tactile-card rounded-[28px] max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-4"
           >
             <div className="flex items-center justify-between border-b border-border-light pb-4">
               <div>
@@ -627,7 +624,7 @@ export default function StudentsManagementPage() {
               <button
                 type="button"
                 onClick={() => setSelectedStudentForEdit(null)}
-                className="p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary"
+                className="tactile-btn p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary transition-colors"
               >
                 <HugeIcon name="cancel" size={18} />
               </button>
@@ -713,14 +710,14 @@ export default function StudentsManagementPage() {
               <button
                 type="button"
                 onClick={() => setSelectedStudentForEdit(null)}
-                className="px-4 py-2 rounded-full border border-border-light text-xs font-semibold text-text-secondary hover:bg-surface-muted"
+                className="tactile-btn btn-tactile-secondary px-4 py-2 rounded-full text-xs font-semibold"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={savingEdit}
-                className="px-5 py-2 rounded-full bg-accent-blue text-white text-xs font-semibold hover:bg-accent-blue-hover transition-colors disabled:opacity-50"
+                className="tactile-btn btn-tactile-primary px-5 py-2 rounded-full text-xs font-semibold disabled:opacity-50"
               >
                 {savingEdit ? "Saving..." : "Save Changes"}
               </button>
@@ -732,7 +729,7 @@ export default function StudentsManagementPage() {
       {/* Modal 2: Tutor Private Notes Editor */}
       {selectedStudentForNotes && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] max-w-lg w-full p-6 sm:p-8 border border-border-light shadow-2xl space-y-4">
+          <div className="tactile-card rounded-[28px] max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-border-light pb-4">
               <div>
                 <h3 className="font-heading text-lg font-bold text-text-primary">
@@ -761,14 +758,14 @@ export default function StudentsManagementPage() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setSelectedStudentForNotes(null)}
-                className="px-4 py-2 rounded-full border border-border-light text-xs font-semibold text-text-secondary hover:bg-surface-muted"
+                className="tactile-btn btn-tactile-secondary px-4 py-2 rounded-full text-xs font-semibold"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveNotes}
                 disabled={savingNotes}
-                className="px-5 py-2 rounded-full bg-accent-blue text-white text-xs font-semibold hover:bg-accent-blue-hover transition-colors disabled:opacity-50"
+                className="tactile-btn btn-tactile-primary px-5 py-2 rounded-full text-xs font-semibold disabled:opacity-50"
               >
                 {savingNotes ? "Saving..." : "Save Notes"}
               </button>
@@ -814,16 +811,8 @@ export default function StudentsManagementPage() {
                         <span className="font-heading font-bold text-xs text-text-primary capitalize">
                           {b.tier} Session
                         </span>
-                        <span
-                          className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full border ${
-                            b.status === "confirmed" || b.status === "paid"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : b.status === "completed"
-                              ? "bg-purple-50 text-purple-700 border-purple-200"
-                              : "bg-amber-50 text-amber-700 border-amber-200"
-                          }`}
-                        >
-                          {b.status.replace("_", " ")}
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+                          • {b.status.replace("_", " ")}
                         </span>
                       </div>
                       <p className="text-[11px] text-text-secondary mt-1">
@@ -837,7 +826,7 @@ export default function StudentsManagementPage() {
                         href={b.meetLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3.5 py-1.5 bg-text-primary text-white rounded-full text-xs font-semibold hover:bg-black transition-colors self-start sm:self-auto shrink-0 flex items-center gap-1"
+                        className="tactile-btn btn-tactile-dark px-3.5 py-1.5 rounded-full text-xs font-semibold self-start sm:self-auto shrink-0 flex items-center gap-1"
                       >
                         <HugeIcon name="sparkles" size={12} />
                         <span>Meeting Room</span>
@@ -865,7 +854,7 @@ export default function StudentsManagementPage() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <form
             onSubmit={handleCreateManualBooking}
-            className="bg-white rounded-[28px] max-w-md w-full p-6 sm:p-8 border border-border-light shadow-2xl space-y-4"
+            className="tactile-card rounded-[28px] max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-4"
           >
             <div className="flex items-center justify-between border-b border-border-light pb-4">
               <div>
@@ -879,7 +868,7 @@ export default function StudentsManagementPage() {
               <button
                 type="button"
                 onClick={() => setSelectedStudentForBooking(null)}
-                className="p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary"
+                className="tactile-btn p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary transition-colors"
               >
                 <HugeIcon name="cancel" size={18} />
               </button>
@@ -926,14 +915,14 @@ export default function StudentsManagementPage() {
               <button
                 type="button"
                 onClick={() => setSelectedStudentForBooking(null)}
-                className="px-4 py-2 rounded-full border border-border-light text-xs font-semibold text-text-secondary hover:bg-surface-muted"
+                className="tactile-btn btn-tactile-secondary px-4 py-2 rounded-full text-xs font-semibold"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={creatingBooking}
-                className="px-5 py-2 rounded-full bg-accent-blue text-white text-xs font-semibold hover:bg-accent-blue-hover transition-colors disabled:opacity-50"
+                className="tactile-btn btn-tactile-primary px-5 py-2 rounded-full text-xs font-semibold disabled:opacity-50"
               >
                 {creatingBooking ? "Creating..." : "Confirm & Schedule"}
               </button>

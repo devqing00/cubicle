@@ -261,7 +261,7 @@ export default function SchedulePage() {
           </div>
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="px-5 py-2.5 bg-text-primary text-white rounded-full text-xs font-semibold hover:bg-black transition-colors flex items-center gap-2"
+            className="tactile-btn btn-tactile-dark px-5 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2"
           >
             <HugeIcon name="sparkles" size={14} className="text-accent-blue" />
             <span>+ Create Booking</span>
@@ -272,7 +272,7 @@ export default function SchedulePage() {
           {/* Upcoming Schedule */}
           <div>
             <h2 className="font-heading text-xl font-bold text-text-primary mb-4">Confirmed Sessions</h2>
-            <div className="bg-white p-6 rounded-[24px] border border-border-light shadow-xs min-h-[350px] flex flex-col justify-start">
+            <div className="tactile-card p-6 rounded-[24px] min-h-[350px] flex flex-col justify-start">
               {loading ? (
                 <div className="my-auto flex flex-col items-center gap-3">
                   <div className="w-8 h-8 border-2 border-accent-blue border-t-transparent rounded-full animate-spin" />
@@ -341,7 +341,7 @@ export default function SchedulePage() {
           {/* Pending Drafts */}
           <div>
             <h2 className="font-heading text-xl font-bold text-text-primary mb-4">Pending Requests</h2>
-            <div className="bg-white p-6 rounded-[24px] border border-border-light shadow-xs min-h-[350px] flex flex-col justify-start">
+            <div className="tactile-card p-6 rounded-[24px] min-h-[350px] flex flex-col justify-start">
               {loading ? (
                 <div className="my-auto flex flex-col items-center gap-3">
                   <div className="w-8 h-8 border-2 border-accent-blue border-t-transparent rounded-full animate-spin" />
@@ -363,7 +363,7 @@ export default function SchedulePage() {
                             {lesson.tier} Tier Session
                           </p>
                         </div>
-                        <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border bg-blue-50 text-blue-700 border-blue-200">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-accent-blue">
                           Awaiting Payment
                         </span>
                       </div>
@@ -373,14 +373,14 @@ export default function SchedulePage() {
                           <button
                             onClick={() => promptStatusUpdate(lesson.id, "cancelled", lesson.reference)}
                             disabled={actionLoading === lesson.id}
-                            className="px-3 py-1 bg-white border border-border-light text-text-primary rounded-full text-xs font-medium hover:bg-surface-muted transition-colors disabled:opacity-50"
+                            className="tactile-btn btn-tactile-secondary px-3 py-1 rounded-full text-xs font-medium disabled:opacity-50"
                           >
                             Decline
                           </button>
                           <button
                             onClick={() => promptStatusUpdate(lesson.id, "confirmed", lesson.reference)}
                             disabled={actionLoading === lesson.id}
-                            className="px-3 py-1 bg-accent-blue text-white rounded-full text-xs font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
+                            className="tactile-btn btn-tactile-primary px-3 py-1 rounded-full text-xs font-medium disabled:opacity-50"
                           >
                             Approve
                           </button>
@@ -397,10 +397,10 @@ export default function SchedulePage() {
         {/* Modal for Manual Booking or Time Block */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-[28px] max-w-md w-full p-6 sm:p-8 border border-border-light shadow-2xl">
+            <div className="tactile-card rounded-[28px] max-w-md w-full p-6 sm:p-8">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-heading text-xl font-bold text-text-primary">Create Booking Entry</h3>
-                <button onClick={() => setIsModalOpen(false)} className="text-text-subtle hover:text-text-primary">
+                <button onClick={() => setIsModalOpen(false)} className="tactile-btn p-1.5 rounded-full text-text-subtle hover:text-text-primary hover:bg-surface-muted transition-colors">
                   <HugeIcon name="cancel" size={20} />
                 </button>
               </div>
@@ -408,7 +408,7 @@ export default function SchedulePage() {
               <div className="flex gap-2 p-1 bg-surface-muted rounded-xl mb-6">
                 <button 
                   onClick={() => setModalType("booking")}
-                  className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                  className={`tactile-btn flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
                     modalType === "booking" ? "bg-white text-text-primary shadow-xs" : "text-text-secondary hover:text-text-primary"
                   }`}
                 >
@@ -416,7 +416,7 @@ export default function SchedulePage() {
                 </button>
                 <button 
                   onClick={() => setModalType("block")}
-                  className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                  className={`tactile-btn flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
                     modalType === "block" ? "bg-white text-text-primary shadow-xs" : "text-text-secondary hover:text-text-primary"
                   }`}
                 >
@@ -491,14 +491,14 @@ export default function SchedulePage() {
                   <button 
                     type="button" 
                     onClick={() => setIsModalOpen(false)}
-                    className="w-1/2 py-3 border border-border-light text-text-secondary rounded-full font-body text-xs font-semibold hover:bg-surface-muted"
+                    className="tactile-btn btn-tactile-secondary w-1/2 py-3 rounded-full font-body text-xs font-semibold"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="w-1/2 py-3 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors"
+                    className="tactile-btn btn-tactile-dark w-1/2 py-3 rounded-full font-body text-xs font-semibold disabled:opacity-50"
                   >
                     {isSubmitting ? "Creating..." : "Save Entry"}
                   </button>
@@ -527,11 +527,24 @@ export default function SchedulePage() {
   const handlePayment = async (bookingId: string) => {
     setActionLoading(bookingId);
     try {
-      const response = await fetch("/api/paystack/initialize", {
+      let response = await fetch("/api/bachs/initialize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bookingId }),
       });
+
+      // Fallback if Bachs is temporarily unconfigured
+      if (!response.ok) {
+        const fallbackRes = await fetch("/api/paystack/initialize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookingId }),
+        });
+        if (fallbackRes.ok) {
+          response = fallbackRes;
+        }
+      }
+
       const data = await response.json();
       
       if (data.authorization_url) {
@@ -559,7 +572,7 @@ export default function SchedulePage() {
         </div>
         <Link 
           href="/dashboard/book"
-          className="px-5 py-2.5 bg-text-primary text-white rounded-full text-xs font-semibold hover:bg-black transition-colors inline-block"
+          className="tactile-btn btn-tactile-dark px-5 py-2.5 rounded-full text-xs font-semibold inline-block"
         >
           Book Another Session
         </Link>
@@ -567,11 +580,11 @@ export default function SchedulePage() {
 
       {/* PENDING PAYMENT ALERT BANNER */}
       {pendingPaymentBooking && (
-        <div className="bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-orange-500/15 border border-amber-500/30 rounded-[28px] p-6 mb-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="tactile-card bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-orange-500/15 rounded-[28px] p-6 mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="px-3 py-0.5 bg-amber-500 text-white font-bold text-[10px] uppercase tracking-wider rounded-full">
-                Pending Payment
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                Action Required • Pending Payment
               </span>
               <span className="text-xs font-mono text-amber-950 font-bold">Ref: {pendingPaymentBooking.reference}</span>
             </div>
@@ -587,13 +600,13 @@ export default function SchedulePage() {
             <button
               onClick={() => handlePayment(pendingPaymentBooking.id)}
               disabled={actionLoading === pendingPaymentBooking.id}
-              className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-xs font-bold transition-all shadow-md flex-1 md:flex-initial disabled:opacity-50"
+              className="tactile-btn btn-tactile-primary px-6 py-3 rounded-full text-xs font-bold transition-all shadow-md flex-1 md:flex-initial disabled:opacity-50"
             >
               {actionLoading === pendingPaymentBooking.id ? "Redirecting..." : "Pay Now (OPay, Cards & Bank)"}
             </button>
             <button
               onClick={() => promptStatusUpdate(pendingPaymentBooking.id, "cancelled", pendingPaymentBooking.reference)}
-              className="px-4 py-3 bg-white hover:bg-amber-50 text-amber-900 border border-amber-300 rounded-full text-xs font-semibold transition-colors"
+              className="tactile-btn btn-tactile-secondary px-4 py-3 rounded-full text-xs font-semibold"
             >
               Cancel
             </button>
@@ -601,7 +614,7 @@ export default function SchedulePage() {
         </div>
       )}
 
-      <div className="bg-white p-6 rounded-[24px] border border-border-light shadow-xs">
+      <div className="tactile-card p-6 rounded-[24px]">
         {loading ? (
           <div className="flex justify-center py-10">
             <div className="w-8 h-8 border-2 border-accent-blue border-t-transparent rounded-full animate-spin" />
@@ -611,7 +624,7 @@ export default function SchedulePage() {
             <HugeIcon name="calendar" size={32} className="text-text-subtle mx-auto mb-3" />
             <h3 className="font-heading text-lg font-bold text-text-primary mb-1">No lessons scheduled</h3>
             <p className="font-body text-xs text-text-secondary mb-4">Book your first 1-on-1 language lesson now.</p>
-            <Link href="/dashboard/book" className="px-5 py-2.5 bg-text-primary text-white rounded-full text-xs font-semibold hover:bg-black transition-colors inline-block">
+            <Link href="/dashboard/book" className="tactile-btn btn-tactile-dark px-5 py-2.5 rounded-full text-xs font-semibold inline-block">
               Schedule Now
             </Link>
           </div>
@@ -628,14 +641,8 @@ export default function SchedulePage() {
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-heading font-bold text-sm text-text-primary capitalize">{booking.tier} Session</span>
-                      <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
-                        booking.status === "confirmed" || booking.status === "paid"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : booking.status === "completed"
-                          ? "bg-blue-50 text-blue-700 border-blue-200"
-                          : "bg-amber-50 text-amber-700 border-amber-200"
-                      }`}>
-                        {booking.status === "paid" ? "Paid & Confirmed" : booking.status.replace("_", " ")}
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+                        • {booking.status === "paid" ? "Paid & Confirmed" : booking.status.replace("_", " ")}
                       </span>
                     </div>
 
@@ -671,7 +678,7 @@ export default function SchedulePage() {
                         type="button"
                         onClick={() => handlePayment(booking.id)}
                         disabled={actionLoading === booking.id}
-                        className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-xs font-bold transition-colors shadow-2xs disabled:opacity-50"
+                        className="tactile-btn btn-tactile-primary px-4 py-2 rounded-full text-xs font-bold disabled:opacity-50"
                       >
                         {actionLoading === booking.id ? "Redirecting..." : "Pay Now (OPay, Cards & Bank)"}
                       </button>
@@ -682,7 +689,7 @@ export default function SchedulePage() {
                         href={booking.meetLink || booking.videoCallUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2 bg-accent-blue text-white rounded-full text-xs font-semibold hover:bg-accent-blue-hover transition-colors flex items-center gap-1.5 shadow-xs"
+                        className="tactile-btn btn-tactile-primary px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-xs"
                       >
                         <HugeIcon name="video" size={14} />
                         <span>Join Room</span>
@@ -692,7 +699,7 @@ export default function SchedulePage() {
                     {isActionable && (
                       <button
                         onClick={() => handleOpenReschedule(booking)}
-                        className="px-3.5 py-2 text-xs font-semibold text-text-primary bg-white hover:bg-surface-muted border border-border-light rounded-full transition-colors flex items-center gap-1"
+                        className="tactile-btn btn-tactile-secondary px-3.5 py-2 text-xs font-semibold rounded-full flex items-center gap-1"
                       >
                         <HugeIcon name="calendar" size={14} />
                         <span>Reschedule</span>
@@ -703,7 +710,7 @@ export default function SchedulePage() {
                       <button
                         onClick={() => promptStatusUpdate(booking.id, "cancelled", booking.reference)}
                         disabled={actionLoading === booking.id}
-                        className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-red-600 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
+                        className="tactile-btn px-3 py-2 text-xs font-medium text-text-secondary hover:text-red-600 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
                       >
                         Cancel
                       </button>
@@ -721,7 +728,7 @@ export default function SchedulePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <form
             onSubmit={handleRescheduleSubmit}
-            className="bg-white rounded-[28px] max-w-md w-full p-6 sm:p-8 border border-border-light shadow-2xl space-y-4 font-body"
+            className="tactile-card rounded-[28px] max-w-md w-full p-6 sm:p-8 space-y-4 font-body shadow-2xl"
           >
             <div className="flex items-center justify-between border-b border-border-light pb-4">
               <div>
@@ -735,7 +742,7 @@ export default function SchedulePage() {
               <button
                 type="button"
                 onClick={() => setRescheduleBooking(null)}
-                className="p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary"
+                className="tactile-btn p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary transition-colors"
               >
                 <HugeIcon name="cancel" size={18} />
               </button>
@@ -774,14 +781,14 @@ export default function SchedulePage() {
               <button
                 type="button"
                 onClick={() => setRescheduleBooking(null)}
-                className="px-4 py-2 rounded-full border border-border-light text-xs font-semibold text-text-secondary hover:bg-surface-muted"
+                className="tactile-btn btn-tactile-secondary px-4 py-2 rounded-full text-xs font-semibold"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={rescheduling}
-                className="px-5 py-2 rounded-full bg-accent-blue text-white text-xs font-semibold hover:bg-accent-blue-hover transition-colors disabled:opacity-50"
+                className="tactile-btn btn-tactile-primary px-5 py-2 rounded-full text-xs font-semibold disabled:opacity-50"
               >
                 {rescheduling ? "Updating..." : "Confirm New Slot"}
               </button>

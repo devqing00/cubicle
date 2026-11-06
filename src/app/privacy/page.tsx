@@ -16,9 +16,6 @@ export default function PrivacyPage() {
           
           {/* Header */}
           <div className="mb-12 border-b border-border-light pb-8">
-            <span className="px-3.5 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-xs font-bold uppercase tracking-wider border border-accent-blue/20 mb-4 inline-block">
-              Data & Protection
-            </span>
             <h1 className="font-heading text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1] mb-3">
               Privacy Policy
             </h1>
@@ -30,7 +27,7 @@ export default function PrivacyPage() {
           {/* Document Content */}
           <div className="space-y-8 text-xs sm:text-sm text-text-secondary leading-relaxed">
             
-            <section className="bg-white p-6 rounded-[24px] border border-border-light shadow-xs space-y-3">
+            <section className="tactile-card p-6 rounded-[24px] space-y-3">
               <h2 className="font-heading text-lg font-bold text-text-primary">1. Information We Collect</h2>
               <p>
                 To provide seamless 1-on-1 language tutoring, Cubicle collects basic user information including:
@@ -42,21 +39,21 @@ export default function PrivacyPage() {
               </ul>
             </section>
 
-            <section className="bg-white p-6 rounded-[24px] border border-border-light shadow-xs space-y-3">
+            <section className="tactile-card p-6 rounded-[24px] space-y-3">
               <h2 className="font-heading text-lg font-bold text-text-primary">2. How We Use Your Data</h2>
               <p>
-                Your personal data is strictly utilized to facilitate live lessons, generate Google Meet video call links, process transactions securely via Paystack, and deliver post-session progress notes on WhatsApp. We do not sell or rent your personal information to third parties.
+                Your personal data is strictly utilized to facilitate live lessons, generate Google Meet video call links, process transactions securely via Bachs, and deliver post-session progress notes on WhatsApp. We do not sell or rent your personal information to third parties.
               </p>
             </section>
 
-            <section className="bg-white p-6 rounded-[24px] border border-border-light shadow-xs space-y-3">
+            <section className="tactile-card p-6 rounded-[24px] space-y-3">
               <h2 className="font-heading text-lg font-bold text-text-primary">3. Payments & Security</h2>
               <p>
-                Cubicle does not store your full debit card or banking credentials. Financial transactions are securely handled by Paystack, compliant with PCI-DSS standards.
+                Cubicle does not store your full debit card or banking credentials. Financial transactions are securely handled by Bachs, compliant with PCI-DSS standards.
               </p>
             </section>
 
-            <section className="bg-white p-6 rounded-[24px] border border-border-light shadow-xs space-y-3">
+            <section className="tactile-card p-6 rounded-[24px] space-y-3">
               <h2 className="font-heading text-lg font-bold text-text-primary">4. Data Retention & Deletion</h2>
               <p>
                 You retain full ownership of your data. You can request complete deletion of your account and associated booking history at any time by contacting <a href="mailto:privacy@cubicle.com" className="text-accent-blue font-bold hover:underline">privacy@cubicle.com</a>.

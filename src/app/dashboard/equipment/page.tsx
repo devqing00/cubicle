@@ -144,9 +144,6 @@ export default function EquipmentPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20 mb-3 inline-block">
-          Lesson Readiness
-        </span>
         <h1 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight mb-2">
           Equipment Check & Testing
         </h1>
@@ -156,7 +153,7 @@ export default function EquipmentPage() {
       </div>
 
       {permissionError ? (
-        <div className="bg-white border border-border-light rounded-[28px] p-10 text-center max-w-xl mx-auto space-y-4 shadow-sm">
+        <div className="tactile-card rounded-[28px] p-10 text-center max-w-xl mx-auto space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-red-50 text-red-600 border border-red-200 flex items-center justify-center mx-auto">
             <HugeIcon name="alert" size={28} />
           </div>
@@ -166,7 +163,7 @@ export default function EquipmentPage() {
           </p>
           <button 
             onClick={() => startTest()}
-            className="px-8 py-3.5 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors"
+            className="tactile-btn btn-tactile-dark px-8 py-3.5 rounded-full font-body text-xs font-semibold"
           >
             Retry Permissions
           </button>
@@ -175,7 +172,7 @@ export default function EquipmentPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Video Preview Canvas (7 cols) */}
-          <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-[28px] border border-border-light shadow-sm space-y-4">
+          <div className="lg:col-span-7 tactile-card p-6 sm:p-8 rounded-[28px] space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-heading text-lg font-bold text-text-primary">
                 Camera Live Feed
@@ -236,7 +233,7 @@ export default function EquipmentPage() {
           <div className="lg:col-span-5 space-y-6">
             
             {/* Microphone Input */}
-            <div className="bg-white p-6 sm:p-8 rounded-[28px] border border-border-light shadow-sm space-y-4">
+            <div className="tactile-card p-6 sm:p-8 rounded-[28px] space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading text-lg font-bold text-text-primary">
                   Microphone Test
@@ -280,7 +277,7 @@ export default function EquipmentPage() {
             </div>
 
             {/* Speaker Sound Check */}
-            <div className="bg-white p-6 sm:p-8 rounded-[28px] border border-border-light shadow-sm space-y-4">
+            <div className="tactile-card p-6 sm:p-8 rounded-[28px] space-y-4">
               <h3 className="font-heading text-lg font-bold text-text-primary">
                 Speaker Output Check
               </h3>
@@ -292,7 +289,7 @@ export default function EquipmentPage() {
                 type="button"
                 onClick={playTestSound}
                 disabled={isPlayingSound}
-                className="w-full py-3.5 bg-surface-near-white border border-border-light rounded-full text-xs font-heading font-bold text-text-primary hover:border-accent-blue hover:text-accent-blue hover:bg-white transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-2xs"
+                className="tactile-btn btn-tactile-secondary w-full py-3.5 rounded-full text-xs font-heading font-bold flex items-center justify-center gap-2"
               >
                 <HugeIcon name="sparkles" size={16} />
                 <span>{isPlayingSound ? "Playing 440Hz Tone..." : "Play Test Audio"}</span>

@@ -138,15 +138,15 @@ export default function ResourcesPage() {
   const getTypeBadge = (type: LearningResource["type"]) => {
     switch (type) {
       case "pdf":
-        return <span className="px-2.5 py-0.5 bg-red-50 text-red-600 border border-red-200 rounded-full text-[10px] font-bold uppercase">PDF Doc</span>;
+        return <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">PDF Doc</span>;
       case "vocab":
-        return <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full text-[10px] font-bold uppercase">Vocab Deck</span>;
+        return <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Vocab Deck</span>;
       case "drive":
-        return <span className="px-2.5 py-0.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-full text-[10px] font-bold uppercase">Google Drive</span>;
+        return <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Google Drive</span>;
       case "guide":
-        return <span className="px-2.5 py-0.5 bg-purple-50 text-purple-600 border border-purple-200 rounded-full text-[10px] font-bold uppercase">Grammar Guide</span>;
+        return <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wider">Grammar Guide</span>;
       default:
-        return <span className="px-2.5 py-0.5 bg-surface-muted text-text-secondary rounded-full text-[10px] font-bold uppercase">Material</span>;
+        return <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Material</span>;
     }
   };
 
@@ -166,9 +166,6 @@ export default function ResourcesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20 mb-2 inline-block">
-            Curriculum Library
-          </span>
           <h1 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
             Learning Resources & Vault
           </h1>
@@ -180,7 +177,7 @@ export default function ResourcesPage() {
         {isTutor && (
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-5 py-2.5 bg-accent-blue text-white rounded-full font-body text-xs font-semibold hover:bg-accent-blue-hover transition-colors flex items-center gap-2 self-start sm:self-auto shadow-xs"
+            className="tactile-btn btn-tactile-primary px-5 py-2.5 rounded-full font-body text-xs font-semibold flex items-center gap-2 self-start sm:self-auto shadow-xs"
           >
             <HugeIcon name="sparkles" size={16} />
             <span>+ Add Resource</span>
@@ -189,7 +186,7 @@ export default function ResourcesPage() {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-white p-5 rounded-[24px] border border-border-light shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="tactile-card p-5 rounded-[24px] flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="relative w-full md:w-80">
           <input
             type="text"
@@ -246,11 +243,11 @@ export default function ResourcesPage() {
           {filteredResources.map((res) => (
             <div
               key={res.id}
-              className="bg-white rounded-[28px] border border-border-light shadow-xs p-6 flex flex-col justify-between hover:border-accent-blue/40 transition-all group"
+              className="tactile-card rounded-[28px] p-6 flex flex-col justify-between hover:border-accent-blue/40 transition-all group"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="px-2.5 py-0.5 bg-accent-blue/10 text-accent-blue border border-accent-blue/20 rounded-full text-[10px] font-bold uppercase">
+                  <span className="text-[11px] font-bold text-accent-blue uppercase tracking-wider">
                     {res.language} • {res.level}
                   </span>
                   {getTypeBadge(res.type)}
@@ -285,7 +282,7 @@ export default function ResourcesPage() {
                     href={res.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 bg-text-primary group-hover:bg-accent-blue text-white rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs"
+                    className="tactile-btn btn-tactile-dark px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-xs"
                   >
                     <span>Open Material</span>
                     <HugeIcon name="arrow-up-right" size={12} />
@@ -302,7 +299,7 @@ export default function ResourcesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <form
             onSubmit={handleAddResource}
-            className="bg-white rounded-[28px] max-w-lg w-full p-6 sm:p-8 border border-border-light shadow-2xl space-y-4 font-body"
+            className="tactile-card rounded-[28px] max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-4 font-body"
           >
             <div className="flex items-center justify-between border-b border-border-light pb-4">
               <div>
@@ -312,7 +309,7 @@ export default function ResourcesPage() {
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary"
+                className="tactile-btn p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary transition-colors"
               >
                 <HugeIcon name="cancel" size={18} />
               </button>
@@ -407,14 +404,14 @@ export default function ResourcesPage() {
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="px-4 py-2 rounded-full border border-border-light text-xs font-semibold text-text-secondary hover:bg-surface-muted"
+                className="tactile-btn btn-tactile-secondary px-4 py-2 rounded-full text-xs font-semibold"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={addingResource}
-                className="px-5 py-2 rounded-full bg-accent-blue text-white text-xs font-semibold hover:bg-accent-blue-hover transition-colors disabled:opacity-50"
+                className="tactile-btn btn-tactile-primary px-5 py-2 rounded-full text-xs font-semibold disabled:opacity-50"
               >
                 {addingResource ? "Publishing..." : "Publish to Vault"}
               </button>

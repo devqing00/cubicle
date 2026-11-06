@@ -278,9 +278,6 @@ export default function ChatPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20 mb-2 inline-block">
-            Real-Time Messages
-          </span>
           <h1 className="font-heading text-3xl font-bold text-text-primary tracking-tight">
             {isTutor ? "Student Inquiries & Messages" : "Chat with your Instructor"}
           </h1>
@@ -292,7 +289,7 @@ export default function ChatPage() {
             href={`https://wa.me/${tutorWhatsAppNumber}?text=${encodeURIComponent("Hi! I'm reaching out from Cubicle regarding my lessons.")}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/20 rounded-full font-body text-xs font-semibold hover:bg-[#25D366] hover:text-white transition-all self-start sm:self-auto"
+            className="tactile-btn inline-flex items-center gap-2 px-4 py-2 bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/20 rounded-full font-body text-xs font-semibold hover:bg-[#25D366] hover:text-white transition-all self-start sm:self-auto"
           >
             <HugeIcon name="comment" size={16} />
             <span>Open in WhatsApp</span>
@@ -301,7 +298,7 @@ export default function ChatPage() {
       </div>
 
       {/* Main Chat Canvas */}
-      <div className="bg-white rounded-[28px] border border-border-light shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[580px] max-h-[75vh]">
+      <div className="tactile-card rounded-[28px] overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[580px] max-h-[75vh]">
         
         {/* Left: Tutor Student Thread List (Only shown for Tutor) */}
         {isTutor && (
@@ -430,7 +427,7 @@ export default function ChatPage() {
                 <button
                   onClick={() => handleToggleArchive(activeThread.id, Boolean(activeThread.archived))}
                   disabled={actionLoading}
-                  className="px-3 py-1.5 bg-white border border-border-light rounded-xl font-body text-xs font-semibold text-text-secondary hover:text-accent-blue hover:border-accent-blue/30 transition-all flex items-center gap-1.5"
+                  className="tactile-btn btn-tactile-secondary px-3 py-1.5 rounded-xl font-body text-xs font-semibold flex items-center gap-1.5"
                   title={activeThread.archived ? "Move back to Active Messages" : "Archive Thread"}
                 >
                   <HugeIcon name="archive" size={14} />
@@ -439,7 +436,7 @@ export default function ChatPage() {
                 <button
                   onClick={() => setDeleteConfirmOpen(true)}
                   disabled={actionLoading}
-                  className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-xl font-body text-xs font-semibold hover:bg-red-600 hover:text-white transition-all flex items-center gap-1.5"
+                  className="tactile-btn btn-tactile-danger px-3 py-1.5 rounded-xl font-body text-xs font-semibold flex items-center gap-1.5"
                   title="Delete Thread Permanently"
                 >
                   <HugeIcon name="trash" size={14} />
@@ -525,7 +522,7 @@ export default function ChatPage() {
             <button
               type="submit"
               disabled={sending || !inputText.trim()}
-              className="px-5 py-3 bg-accent-blue text-white rounded-2xl font-body text-xs font-semibold hover:bg-accent-blue-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-xs shrink-0 h-[44px]"
+              className="tactile-btn btn-tactile-primary px-5 py-3 rounded-2xl font-body text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-xs shrink-0 h-[44px]"
             >
               <span>Send</span>
               <HugeIcon name="arrow-right" size={14} />
@@ -539,7 +536,7 @@ export default function ChatPage() {
       {/* Delete Confirmation Modal */}
       {deleteConfirmOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-[24px] border border-border-light max-w-md w-full p-6 space-y-4 shadow-xl">
+          <div className="tactile-card rounded-[24px] max-w-md w-full p-6 space-y-4 shadow-xl">
             <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-600 flex items-center justify-center">
               <HugeIcon name="trash" size={24} />
             </div>
@@ -556,7 +553,7 @@ export default function ChatPage() {
                 type="button"
                 onClick={() => setDeleteConfirmOpen(false)}
                 disabled={actionLoading}
-                className="px-4 py-2 bg-surface-near-white border border-border-light rounded-xl font-body text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors"
+                className="tactile-btn btn-tactile-secondary px-4 py-2 rounded-xl font-body text-xs font-semibold"
               >
                 Cancel
               </button>
@@ -564,7 +561,7 @@ export default function ChatPage() {
                 type="button"
                 onClick={handleDeletePermanently}
                 disabled={actionLoading}
-                className="px-4 py-2 bg-red-600 text-white rounded-xl font-body text-xs font-semibold hover:bg-red-700 transition-colors shadow-xs"
+                className="tactile-btn btn-tactile-danger px-4 py-2 rounded-xl font-body text-xs font-semibold shadow-xs"
               >
                 {actionLoading ? "Deleting..." : "Yes, Delete Permanently"}
               </button>

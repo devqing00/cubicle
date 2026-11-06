@@ -146,7 +146,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex ${collapsed ? "justify-center" : "justify-start"} items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition-all ${
+                  className={`tactile-btn flex ${collapsed ? "justify-center" : "justify-start"} items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition-all ${
                     active
                       ? "bg-text-primary text-white shadow-xs"
                       : "text-text-secondary hover:text-text-primary hover:bg-surface-muted"
@@ -179,7 +179,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           )}
           <button
             onClick={() => setShowSignOutModal(true)}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold text-text-secondary hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="tactile-btn w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold text-text-secondary hover:text-red-600 hover:bg-red-50 transition-colors"
             title="Sign Out"
             aria-label="Sign out of account"
           >
@@ -226,14 +226,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <NotificationBell />
               <button
                 onClick={() => setShowSignOutModal(true)}
-                className="p-1.5 rounded-full text-text-secondary hover:text-red-600 hover:bg-red-50 transition-colors"
+                className="tactile-btn p-1.5 rounded-full text-text-secondary hover:text-red-600 hover:bg-red-50 transition-colors"
                 title="Sign Out"
               >
                 <HugeIcon name="logout" size={18} />
               </button>
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="p-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-colors"
+                className="tactile-btn p-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-colors"
                 aria-label="Toggle menu"
               >
                 <HugeIcon name={mobileOpen ? "cancel" : "menu"} size={20} />
@@ -250,13 +250,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm mx-auto bg-white/95 backdrop-blur-2xl p-4 rounded-[28px] border border-border-light shadow-2xl space-y-1.5 z-50 animate-[aeBubblePop_0.3s_cubic-bezier(0.34,1.56,0.64,1)]"
+              className="tactile-card w-full max-w-sm mx-auto p-4 rounded-[28px] shadow-2xl space-y-1.5 z-50 animate-[aeBubblePop_0.3s_cubic-bezier(0.34,1.56,0.64,1)]"
             >
               <div className="px-4 py-2 border-b border-border-light/60 flex items-center justify-between mb-1">
                 <span className="font-heading text-xs font-bold text-text-subtle uppercase tracking-wider">
                   {isTutor ? "Instructor Portal" : "Student Menu"}
                 </span>
-                <span className="text-[10px] px-2 py-0.5 bg-accent-blue/10 text-accent-blue rounded-full font-semibold capitalize">
+                <span className="text-[11px] font-bold text-accent-blue capitalize">
                   {userData?.role || "Student"}
                 </span>
               </div>
@@ -268,7 +268,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     key={item.name}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-xs font-semibold transition-all ${
+                    className={`tactile-btn flex items-center gap-3 px-4 py-3.5 rounded-2xl text-xs font-semibold transition-all ${
                       active
                         ? "bg-text-primary text-white shadow-xs"
                         : "text-text-secondary hover:text-text-primary hover:bg-surface-muted"

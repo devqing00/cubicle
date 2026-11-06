@@ -29,9 +29,6 @@ export default function ContactPage() {
           
           {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="px-3.5 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-xs font-bold uppercase tracking-wider border border-accent-blue/20 mb-4 inline-block">
-              Get in Touch
-            </span>
             <h1 className="font-heading text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1] mb-4">
               We&apos;re here to <span className="italic text-accent-blue">help.</span>
             </h1>
@@ -43,7 +40,7 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             
             {/* Contact Form */}
-            <div className="bg-white p-8 rounded-[28px] border border-border-light shadow-xs">
+            <div className="tactile-card p-8 rounded-[28px]">
               <h3 className="font-heading text-xl font-bold text-text-primary mb-6">Send an Inquiry</h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -82,7 +79,7 @@ export default function ContactPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3.5 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors disabled:opacity-50"
+                  className="tactile-btn btn-tactile-dark w-full py-3.5 rounded-full font-body text-xs font-semibold disabled:opacity-50"
                 >
                   {submitting ? "Sending..." : "Submit Inquiry"}
                 </button>
@@ -93,7 +90,7 @@ export default function ContactPage() {
             <div className="space-y-6">
               
               {/* WhatsApp Quick Connect Card */}
-              <div className="bg-[#0b291a] text-white p-8 rounded-[28px] border border-emerald-900/40 relative overflow-hidden">
+              <div className="tactile-card-dark bg-gradient-to-b from-[#0b291a] to-[#06180f] text-white p-8 rounded-[28px] border border-emerald-900/40 relative overflow-hidden">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-[#25D366]/20 border border-[#25D366]/40 flex items-center justify-center text-[#25D366]">
                     <HugeIcon name="comment" size={20} />
@@ -110,7 +107,7 @@ export default function ContactPage() {
                   href={`https://wa.me/${(process.env.NEXT_PUBLIC_PLATFORM_WHATSAPP_NUMBER || "2348000000000").replace(/[^0-9]/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 w-full py-3.5 bg-[#25D366] text-white rounded-full font-body text-xs font-semibold hover:opacity-90 transition-opacity"
+                  className="tactile-btn inline-flex items-center justify-center gap-2 w-full py-3.5 bg-[#25D366] text-white rounded-full font-body text-xs font-semibold hover:opacity-90 transition-opacity shadow-md"
                 >
                   <span>Chat on WhatsApp</span>
                   <HugeIcon name="arrow-right" size={14} />
@@ -118,7 +115,7 @@ export default function ContactPage() {
               </div>
 
               {/* Email Support Card */}
-              <div className="bg-white p-6 rounded-[24px] border border-border-light shadow-xs flex items-center gap-4">
+              <div className="tactile-card p-6 rounded-[24px] flex items-center gap-4">
                 <div className="w-11 h-11 bg-surface-muted rounded-xl border border-border-light flex items-center justify-center text-text-primary shrink-0">
                   <HugeIcon name="sparkles" size={20} />
                 </div>

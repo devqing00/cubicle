@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { issueRefund } from "@/lib/paystack";
+import { issueBachsRefund } from "@/lib/bachs";
 import { requireTutorUser } from "@/lib/auth-utils";
 
 async function sendWhatsAppMessage(to: string, text: string) {
@@ -68,9 +69,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const finalStatus = (status === "confirmed" && isTrial) ? "paid" : status;
 
     // Handle refunds if rejecting a paid booking
-    if (status === "cancelled" && bookingData?.status === "paid" && bookingData?.paystackReference) {
-      console.log(`Rejecting paid booking ${id}. Issuing refund...`);
-      await issueRefund(bookingData.paystackReference);
+    if (status === "cancelled" && bookingData?.status === "paid") {
+      if (bookingData.paymentGateway === "bachs" || bookingData.bachsSessionId) {
+        console.log(`Rejecting Bachs paid booking ${id}. Issuing refund...`);
+        await issueBachsRefund(bookingData.bachsSessionId || bookingData.reference);
+      } else if (bookingData.paystackReference) {
+        console.log(`Rejecting Paystack paid booking ${id}. Issuing refund...`);
+        await issueRefund(bookingData.paystackReference);
+      }
     }
 
     await bookingRef.update({
@@ -95,8 +101,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         }
       } else if (status === "cancelled") {
         let msg = `Hi ${bookingData.studentName || 'there'},\n\nUnfortunately, your lesson booking (${bookingData.reference}) was declined by the instructor due to unavailability.`;
-        if (bookingData.status === "paid" && bookingData.paystackReference) {
-          msg += `\n\nWe have automatically issued a full refund of your payment via Paystack. It should reflect in your account shortly.`;
+        if (bookingData.status === "paid") {
+          msg += `\n\nWe have automatically issued a full refund of your payment. It should reflect in your account shortly.`;
         }
         await sendWhatsAppMessage(bookingData.studentWhatsApp, msg);
       } else if (status === "completed") {

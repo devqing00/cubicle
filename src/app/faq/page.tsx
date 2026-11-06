@@ -29,7 +29,7 @@ export default function FAQPage() {
     {
       cat: "payments",
       q: "What payment gateways do you use?",
-      a: "All payments are processed securely via Paystack, supporting bank transfers, debit cards, USSD, and Apple Pay.",
+      a: "All payments are processed securely via Bachs, supporting bank transfers, debit cards, mobile money, and Apple Pay.",
     },
     {
       cat: "sessions",
@@ -59,9 +59,6 @@ export default function FAQPage() {
           
           {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="px-3.5 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-xs font-bold uppercase tracking-wider border border-accent-blue/20 mb-4 inline-block">
-              Help & Answers
-            </span>
             <h1 className="font-heading text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1] mb-4">
               Frequently Asked <span className="italic text-accent-blue">Questions.</span>
             </h1>
@@ -82,10 +79,10 @@ export default function FAQPage() {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id as any)}
-                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                className={`tactile-btn px-4 py-2 rounded-full text-xs font-semibold ${
                   activeCategory === cat.id
-                    ? "bg-text-primary text-white shadow-xs"
-                    : "bg-white text-text-secondary border border-border-light hover:bg-surface-muted hover:text-text-primary"
+                    ? "btn-tactile-dark shadow-xs"
+                    : "btn-tactile-secondary"
                 }`}
               >
                 {cat.label}
@@ -100,7 +97,7 @@ export default function FAQPage() {
               return (
                 <div
                   key={faq.q}
-                  className="bg-white rounded-[20px] border border-border-light shadow-xs overflow-hidden transition-all"
+                  className="tactile-card rounded-[20px] overflow-hidden transition-all"
                 >
                   <button
                     onClick={() => setOpenIdx(isOpen ? null : idx)}
@@ -124,12 +121,12 @@ export default function FAQPage() {
           </div>
 
           {/* Still have questions CTA */}
-          <div className="text-center bg-white p-8 sm:p-10 rounded-[28px] border border-border-light shadow-xs">
+          <div className="text-center tactile-card p-8 sm:p-10 rounded-[28px]">
             <h3 className="font-heading text-xl font-bold text-text-primary mb-2">Still have questions?</h3>
             <p className="font-body text-xs text-text-secondary mb-6">Our team is always available to assist you directly on WhatsApp.</p>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors"
+              className="tactile-btn btn-tactile-dark inline-flex items-center gap-2 px-6 py-3 rounded-full font-body text-xs font-semibold"
             >
               <span>Contact Support</span>
               <HugeIcon name="arrow-right" size={14} />

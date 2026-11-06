@@ -38,11 +38,24 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
   const handlePayment = async (bookingId: string) => {
     setPayingBookingId(bookingId);
     try {
-      const response = await fetch("/api/paystack/initialize", {
+      let response = await fetch("/api/bachs/initialize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bookingId }),
       });
+
+      // Fallback if Bachs is temporarily unconfigured
+      if (!response.ok) {
+        const fallbackRes = await fetch("/api/paystack/initialize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookingId }),
+        });
+        if (fallbackRes.ok) {
+          response = fallbackRes;
+        }
+      }
+
       const data = await response.json();
       
       if (data.authorization_url) {
@@ -146,14 +159,11 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
 
       {/* PENDING PAYMENT REMINDER ALERT BANNER */}
       {pendingPaymentBooking && (
-        <div className="bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-orange-500/15 border border-amber-500/30 rounded-[28px] p-6 sm:p-7 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="tactile-card bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-orange-500/10 border border-amber-500/30 rounded-[28px] p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
           <div className="space-y-1 z-10">
             <div className="flex items-center gap-2">
-              <span className="px-3 py-0.5 bg-amber-500 text-white font-bold text-[10px] uppercase tracking-wider rounded-full shadow-2xs">
-                Action Required • Pending Payment
-              </span>
-              <span className="text-xs font-mono text-amber-950/80 font-bold">
-                Ref: {pendingPaymentBooking.reference}
+              <span className="text-xs font-mono text-amber-950 font-bold">
+                Pending Payment • Ref: {pendingPaymentBooking.reference}
               </span>
             </div>
             <h2 className="font-heading text-lg sm:text-xl font-bold text-amber-950 tracking-tight mt-1">
@@ -173,7 +183,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
               type="button"
               onClick={() => handlePayment(pendingPaymentBooking.id)}
               disabled={payingBookingId === pendingPaymentBooking.id}
-              className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-full font-body text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 flex-1 sm:flex-initial disabled:opacity-50"
+              className="tactile-btn px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-full font-body text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 flex-1 sm:flex-initial disabled:opacity-50"
             >
               <HugeIcon name="sparkles" size={16} />
               <span>{payingBookingId === pendingPaymentBooking.id ? "Redirecting..." : "Pay Now (OPay, Cards & Bank)"}</span>
@@ -181,7 +191,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
             <button
               type="button"
               onClick={() => setModalBookingToCancel(pendingPaymentBooking)}
-              className="px-4 py-3 bg-white/80 hover:bg-white text-amber-900 border border-amber-300 rounded-full font-body text-xs font-semibold transition-colors flex items-center justify-center"
+              className="tactile-btn px-4 py-3 bg-white/80 hover:bg-white text-amber-900 border border-amber-300 rounded-full font-body text-xs font-semibold transition-colors flex items-center justify-center"
             >
               Cancel Request
             </button>
@@ -191,13 +201,10 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
 
       {/* Next Lesson Starting Soon Hero Countdown Banner */}
       {nextLesson && (nextLesson.status === "confirmed" || nextLesson.status === "paid") && (
-        <div className="bg-gradient-to-r from-text-primary via-neutral-900 to-accent-blue/90 text-white p-6 sm:p-8 rounded-[28px] shadow-lg border border-white/10 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="tactile-section-container-dark bg-gradient-to-r from-text-primary via-neutral-900 to-accent-blue/90 text-white p-6 sm:p-8 rounded-[28px] border border-white/10 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2 relative z-10">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-3 py-0.5 bg-accent-blue text-white rounded-full text-[10px] font-bold uppercase tracking-wider shadow-xs">
-                Upcoming Live Lesson
-              </span>
-              <span className="text-xs text-white/80 font-medium">
+              <span className="text-xs text-white/90 font-bold">
                 Ref: {nextLesson.reference}
               </span>
               {nextLesson.meetLink && (
@@ -208,7 +215,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                     navigator.clipboard.writeText(code);
                     toast.success(`Meeting code "${code}" copied!`);
                   }}
-                  className="px-2.5 py-0.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-md text-[10px] font-mono text-white/90 transition-colors flex items-center gap-1"
+                  className="tactile-btn px-2.5 py-0.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-md text-[10px] font-mono text-white/90 transition-colors flex items-center gap-1"
                 >
                   <span>Code: {nextLesson.meetLink?.split("/").pop()}</span>
                   <span className="text-[9px] opacity-75 font-sans">📋</span>
@@ -230,7 +237,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                 href={nextLesson.meetLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3 bg-accent-blue hover:bg-accent-blue-hover text-white rounded-full font-body text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+                className="tactile-btn btn-tactile-primary px-6 py-3 rounded-full font-body text-xs font-bold flex items-center justify-center gap-2 flex-1 sm:flex-initial"
               >
                 <HugeIcon name="video" size={16} />
                 <span>Join Meeting Room</span>
@@ -238,7 +245,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
             )}
             <Link
               href="/dashboard/chat"
-              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-body text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+              className="tactile-btn btn-tactile-secondary px-4 py-3 rounded-full font-body text-xs font-semibold flex items-center justify-center gap-1.5"
             >
               <HugeIcon name="comment" size={16} />
               <span>Chat</span>
@@ -248,11 +255,8 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
       )}
       
       {/* Welcome Banner */}
-      <div className="bg-white p-8 rounded-[28px] border border-border-light shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-6 w-full">
+      <div className="tactile-card p-8 rounded-[28px] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 w-full">
         <div>
-          <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-xs font-bold uppercase tracking-wider mb-2 inline-block border border-accent-blue/20">
-            Student Portal
-          </span>
           <h1 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
             Welcome back, {userData.displayName || userData.firstName || userData.fullName || "Student"}
           </h1>
@@ -262,7 +266,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
         </div>
         <Link
           href="/dashboard/book"
-          className="px-6 py-3 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors shrink-0 shadow-xs"
+          className="tactile-btn btn-tactile-dark px-6 py-3 rounded-full font-body text-xs font-semibold shrink-0 shadow-xs"
         >
           Book a Lesson
         </Link>
@@ -272,7 +276,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Link
           href="/dashboard/book"
-          className="p-5 bg-white rounded-2xl border border-border-light hover:border-accent-blue/40 transition-colors group flex items-center gap-4"
+          className="tactile-card tactile-card-interactive p-5 rounded-2xl group flex items-center gap-4"
         >
           <div className="w-10 h-10 rounded-xl bg-accent-blue/10 flex items-center justify-center text-accent-blue group-hover:scale-105 transition-transform">
             <HugeIcon name="calendar" size={20} />
@@ -285,7 +289,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
 
         <Link
           href="/dashboard/chat"
-          className="p-5 bg-white rounded-2xl border border-border-light hover:border-accent-blue/40 transition-colors group flex items-center gap-4"
+          className="tactile-card tactile-card-interactive p-5 rounded-2xl group flex items-center gap-4"
         >
           <div className="w-10 h-10 rounded-xl bg-surface-muted flex items-center justify-center text-text-primary group-hover:scale-105 transition-transform">
             <HugeIcon name="comment" size={20} />
@@ -298,7 +302,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
 
         <Link
           href="/dashboard/equipment"
-          className="p-5 bg-white rounded-2xl border border-border-light hover:border-accent-blue/40 transition-colors group flex items-center gap-4 text-left w-full"
+          className="tactile-card tactile-card-interactive p-5 rounded-2xl group flex items-center gap-4 text-left w-full"
         >
           <div className="w-10 h-10 rounded-xl bg-surface-muted flex items-center justify-center text-text-primary group-hover:scale-105 transition-transform">
             <HugeIcon name="video" size={20} />
@@ -315,10 +319,10 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
         <div className="lg:col-span-2 space-y-8">
           
           {/* Active Bookings List */}
-          <div className="bg-white rounded-[24px] p-6 sm:p-8 border border-border-light shadow-xs">
+          <div className="tactile-card rounded-[24px] p-6 sm:p-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-heading text-xl font-bold text-text-primary">Your Active Sessions</h2>
-              <span className="text-xs font-semibold px-2.5 py-1 bg-surface-muted rounded-full text-text-secondary">
+              <span className="text-xs font-semibold text-text-secondary">
                 {activeBookings.length} Active
               </span>
             </div>
@@ -341,14 +345,8 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                           <span className="font-heading font-bold text-sm text-text-primary capitalize">
                             {b.tier} Session
                           </span>
-                          <span
-                            className={`px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
-                              b.status === "confirmed" || b.status === "paid"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : "bg-amber-50 text-amber-700 border-amber-200"
-                            }`}
-                          >
-                            {b.status === "paid" ? "Paid & Confirmed" : b.status.replace("_", " ")}
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+                            • {b.status === "paid" ? "Paid & Confirmed" : b.status.replace("_", " ")}
                           </span>
                         </div>
                         <p className="font-body text-xs text-text-secondary mt-1">
@@ -362,7 +360,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                           <button
                             onClick={() => handlePayment(b.id)}
                             disabled={payingBookingId === b.id}
-                            className="px-4 py-2 bg-amber-600 text-white rounded-full text-xs font-bold hover:bg-amber-700 transition-colors disabled:opacity-50 shadow-2xs"
+                            className="tactile-btn btn-tactile-primary px-4 py-2 rounded-full text-xs font-bold disabled:opacity-50 shadow-2xs"
                           >
                             {payingBookingId === b.id ? "Redirecting..." : "Pay Now (OPay, Cards & Bank)"}
                           </button>
@@ -373,7 +371,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                             href={b.meetLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-4 py-2 bg-text-primary text-white rounded-full text-xs font-semibold hover:bg-black transition-colors flex items-center gap-1.5 shadow-2xs"
+                            className="tactile-btn btn-tactile-dark px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-2xs"
                           >
                             <HugeIcon name="sparkles" size={14} />
                             <span>Join Meet</span>
@@ -382,7 +380,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
 
                         <Link
                           href="/dashboard/chat"
-                          className="px-3.5 py-2 bg-white text-text-primary border border-border-light rounded-full text-xs font-semibold hover:bg-surface-muted transition-colors flex items-center gap-1.5"
+                          className="tactile-btn btn-tactile-secondary px-3.5 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5"
                         >
                           <HugeIcon name="comment" size={14} />
                           <span>Chat</span>
@@ -392,7 +390,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                           href={`https://wa.me/${tutorWhatsApp}?text=${encodeURIComponent(`Hi, I have a question about my booking ${b.reference}`)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 text-[#25D366] hover:bg-emerald-50 rounded-full transition-colors"
+                          className="tactile-btn p-2 text-[#25D366] hover:bg-emerald-50 rounded-full transition-colors"
                           title="WhatsApp Tutor"
                         >
                           <HugeIcon name="comment" size={16} />
@@ -401,7 +399,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                         <button
                           onClick={() => setModalBookingToCancel(b)}
                           disabled={cancellingBookingId === b.id}
-                          className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
+                          className="tactile-btn px-3 py-2 text-xs font-medium text-text-secondary hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
                         >
                           Cancel
                         </button>
@@ -415,7 +413,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                 <p className="font-body text-xs sm:text-sm text-text-secondary mb-4">You have no active lesson bookings.</p>
                 <Link
                   href="/dashboard/book"
-                  className="px-5 py-2.5 bg-text-primary text-white rounded-full text-xs font-semibold hover:bg-black transition-colors inline-block"
+                  className="tactile-btn btn-tactile-dark inline-block px-6 py-3 rounded-full text-xs font-semibold shadow-sm"
                 >
                   Book Your First Lesson
                 </Link>
@@ -424,7 +422,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
           </div>
 
           {/* Learning Activity Chart */}
-          <div className="bg-white rounded-[24px] p-6 sm:p-8 border border-border-light shadow-xs">
+          <div className="tactile-card rounded-[24px] p-6 sm:p-8">
             <h2 className="font-heading text-xl font-bold text-text-primary mb-1">Learning Activity</h2>
             <p className="font-body text-xs text-text-secondary mb-6">Hours spent speaking and learning this week</p>
             
@@ -461,7 +459,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                 </p>
                 <Link
                   href="/dashboard/book"
-                  className="px-5 py-2.5 bg-accent-blue hover:bg-accent-blue-hover text-white rounded-full font-body text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5"
+                  className="tactile-btn btn-tactile-primary px-5 py-2.5 rounded-full font-body text-xs font-semibold flex items-center gap-1.5"
                 >
                   <HugeIcon name="calendar" size={14} />
                   <span>Schedule Your Next Session</span>
@@ -475,12 +473,12 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
         <div className="space-y-8">
           
           {/* Next Lesson Card */}
-          <div className="bg-white rounded-[24px] p-6 border border-border-light shadow-xs">
+          <div className="tactile-card rounded-[24px] p-6">
             <h3 className="font-heading text-lg font-bold text-text-primary mb-4">Next Upcoming Lesson</h3>
             {nextLesson ? (
               <div className="space-y-4">
                 <div className="p-4 bg-surface-near-white rounded-2xl border border-border-light">
-                  <span className="px-2.5 py-0.5 text-[10px] font-bold bg-accent-blue/10 text-accent-blue rounded-full capitalize">
+                  <span className="text-[11px] font-bold text-accent-blue uppercase tracking-wider">
                     {nextLesson.tier}
                   </span>
                   <h4 className="font-heading font-bold text-base text-text-primary mt-2">1-on-1 Conversation</h4>
@@ -495,7 +493,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                       type="button"
                       onClick={() => handlePayment(nextLesson.id)}
                       disabled={payingBookingId === nextLesson.id}
-                      className="w-full text-center px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-xs font-bold transition-colors shadow-2xs disabled:opacity-50"
+                      className="tactile-btn btn-tactile-primary w-full text-center px-4 py-2.5 rounded-full text-xs font-bold disabled:opacity-50"
                     >
                       {payingBookingId === nextLesson.id ? "Redirecting..." : "Pay Now (OPay, Cards & Bank)"}
                     </button>
@@ -504,7 +502,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                       href={nextLesson.meetLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full inline-block text-center px-4 py-2.5 bg-accent-blue text-white rounded-full text-xs font-medium hover:bg-blue-600 transition-colors"
+                      className="tactile-btn btn-tactile-dark w-full inline-block text-center px-4 py-2.5 rounded-full text-xs font-medium"
                     >
                       Join Meeting
                     </a>
@@ -525,7 +523,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
             ) : (
               <div>
                 <p className="font-body text-xs text-text-secondary mb-5">You don&apos;t have any upcoming lessons scheduled.</p>
-                <Link href="/dashboard/book" className="inline-block px-5 py-2.5 bg-text-primary text-white rounded-full text-xs font-medium hover:bg-black transition-colors">
+                <Link href="/dashboard/book" className="tactile-btn btn-tactile-dark inline-block px-5 py-2.5 rounded-full text-xs font-medium">
                   Book a Lesson
                 </Link>
               </div>
@@ -533,7 +531,7 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
           </div>
 
           {/* Recent History Widget */}
-          <div className="bg-white rounded-[24px] p-6 border border-border-light shadow-xs">
+          <div className="tactile-card rounded-[24px] p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-heading text-lg font-bold text-text-primary">Recent History</h3>
               <Link href="/dashboard/history" className="text-xs font-medium text-accent-blue hover:underline transition-colors">
@@ -554,15 +552,13 @@ export default function StudentDashboard({ userData }: { userData: UserData }) {
                       <p className="font-body text-[11px] text-text-secondary mt-0.5">{new Date(lesson.createdAt).toLocaleDateString()}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
-                          lesson.status === "completed" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"
-                        }`}>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-text-secondary">
                         {lesson.status}
                       </span>
                       {lesson.status === "completed" && !lesson.hasFeedback && (
                         <button
                           onClick={() => setFeedbackBooking(lesson)}
-                          className="px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 rounded-full text-[10px] font-bold flex items-center gap-1 transition-colors"
+                          className="tactile-btn px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 rounded-full text-[10px] font-bold flex items-center gap-1 transition-colors"
                         >
                           <HugeIcon name="star" size={10} />
                           <span>Review</span>

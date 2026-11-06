@@ -131,7 +131,7 @@ export default function NotificationBell() {
       {/* Bell Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2.5 rounded-full hover:bg-surface-muted text-text-secondary hover:text-text-primary transition-colors focus:outline-none"
+        className="tactile-btn relative p-2.5 rounded-full hover:bg-surface-muted text-text-secondary hover:text-text-primary transition-colors focus:outline-none"
         aria-label="Notifications"
       >
         <HugeIcon name="bell" size={20} />
@@ -144,7 +144,7 @@ export default function NotificationBell() {
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="fixed sm:absolute left-1/2 sm:left-auto right-auto sm:right-0 -translate-x-1/2 sm:translate-x-0 top-16 sm:top-auto mt-0 sm:mt-2 w-[calc(100vw-32px)] max-w-sm sm:w-96 bg-white rounded-[24px] border border-border-light shadow-xl z-50 overflow-hidden flex flex-col font-body">
+        <div className="tactile-card fixed sm:absolute left-1/2 sm:left-auto right-auto sm:right-0 -translate-x-1/2 sm:translate-x-0 top-16 sm:top-auto mt-0 sm:mt-2 w-[calc(100vw-32px)] max-w-sm sm:w-96 rounded-[24px] shadow-xl z-50 overflow-hidden flex flex-col font-body">
           {/* Dropdown Header */}
           <div className="px-5 py-4 border-b border-border-light flex items-center justify-between bg-surface-near-white/70 shrink-0">
             <div className="flex items-center gap-2">

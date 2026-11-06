@@ -154,21 +154,18 @@ export default function EquipmentTestModal({ isOpen, onClose }: EquipmentTestMod
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-[28px] p-6 sm:p-8 max-w-3xl w-full border border-border-light relative max-h-[90vh] overflow-y-auto shadow-xl space-y-6">
+      <div className="tactile-card rounded-[28px] p-6 sm:p-8 max-w-3xl w-full relative max-h-[90vh] overflow-y-auto shadow-xl space-y-6">
         
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-border-light">
           <div>
-            <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20 mb-2 inline-block">
-              Pre-Lesson Diagnostics
-            </span>
             <h2 className="font-heading text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">
               Equipment Check
             </h2>
           </div>
           <button 
             onClick={onClose}
-            className="p-2.5 rounded-full hover:bg-surface-muted text-text-secondary hover:text-text-primary transition-colors"
+            className="tactile-btn p-2.5 rounded-full hover:bg-surface-muted text-text-secondary hover:text-text-primary transition-colors"
             aria-label="Close modal"
           >
             <HugeIcon name="cancel" size={20} />
@@ -176,7 +173,7 @@ export default function EquipmentTestModal({ isOpen, onClose }: EquipmentTestMod
         </div>
 
         {permissionError ? (
-          <div className="bg-surface-muted border border-border-light rounded-2xl p-8 text-center max-w-lg mx-auto space-y-4">
+          <div className="tactile-card rounded-2xl p-8 text-center max-w-lg mx-auto space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 border border-red-200 flex items-center justify-center mx-auto">
               <HugeIcon name="alert" size={24} />
             </div>
@@ -186,7 +183,7 @@ export default function EquipmentTestModal({ isOpen, onClose }: EquipmentTestMod
             </p>
             <button 
               onClick={() => startTest()}
-              className="px-6 py-3 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors"
+              className="tactile-btn btn-tactile-dark px-6 py-3 rounded-full font-body text-xs font-semibold"
             >
               Try Again
             </button>
@@ -299,7 +296,7 @@ export default function EquipmentTestModal({ isOpen, onClose }: EquipmentTestMod
                   type="button"
                   onClick={playTestSound}
                   disabled={isPlayingSound}
-                  className="w-full py-2.5 bg-white border border-border-light rounded-xl text-xs font-heading font-bold text-text-primary hover:border-accent-blue hover:text-accent-blue transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="tactile-btn btn-tactile-secondary w-full py-2.5 rounded-xl text-xs font-heading font-bold disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <HugeIcon name="sparkles" size={14} />
                   <span>{isPlayingSound ? "Playing test sound..." : "Play Test Tone"}</span>
@@ -310,7 +307,7 @@ export default function EquipmentTestModal({ isOpen, onClose }: EquipmentTestMod
               <button 
                 type="button"
                 onClick={onClose}
-                className="w-full py-3.5 rounded-full font-body text-xs font-semibold bg-text-primary text-white hover:bg-black transition-colors shadow-xs"
+                className="tactile-btn btn-tactile-dark w-full py-3.5 rounded-full font-body text-xs font-semibold shadow-xs"
               >
                 Everything Looks Good • Close
               </button>

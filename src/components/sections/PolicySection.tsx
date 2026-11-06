@@ -8,10 +8,6 @@ export default function PolicySection() {
     <section id="cancellation-policy" className="py-20 px-4 sm:px-6 bg-surface-near-white">
       <div className="max-w-[900px] mx-auto w-full">
         <div className="text-center mb-12 w-full max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-muted border border-border-light rounded-full text-xs font-medium text-text-secondary mb-4 hover:border-accent-blue/30 transition-colors mx-auto">
-            <HugeIcon name="legal" size={16} className="text-accent-blue" />
-            <span>Clear Policies</span>
-          </div>
           <h2 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary leading-tight tracking-tight mb-3 w-full text-center">
             Cancellation & Refund Policy
           </h2>
@@ -20,7 +16,7 @@ export default function PolicySection() {
           </p>
         </div>
 
-        <div className="bg-white border border-border-light rounded-[24px] p-6 sm:p-10 shadow-sm space-y-8 hover:border-border-subtle transition-colors w-full">
+        <div className="tactile-card rounded-[24px] p-6 sm:p-10 space-y-8 w-full">
           
           <div className="flex items-start gap-4 w-full">
             <HugeIcon name="check" size={24} className="text-accent-blue shrink-0 mt-0.5" />

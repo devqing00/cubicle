@@ -16,9 +16,6 @@ export default function CancellationPolicyPage() {
           
           {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="px-3.5 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-xs font-bold uppercase tracking-wider border border-accent-blue/20 mb-4 inline-block">
-              Policy & Terms
-            </span>
             <h1 className="font-heading text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1] mb-6">
               Cancellation & Rescheduling <span className="italic text-accent-blue">Policy.</span>
             </h1>
@@ -31,7 +28,7 @@ export default function CancellationPolicyPage() {
           <div className="space-y-8 mb-16">
             
             {/* Free Trial Rule */}
-            <div className="bg-white p-8 rounded-[24px] border border-border-light shadow-xs flex flex-col sm:flex-row items-start gap-6">
+            <div className="tactile-card p-8 rounded-[24px] flex flex-col sm:flex-row items-start gap-6">
               <div className="w-12 h-12 bg-accent-blue/10 rounded-2xl border border-accent-blue/20 flex items-center justify-center text-accent-blue shrink-0">
                 <HugeIcon name="sparkles" size={24} />
               </div>
@@ -44,7 +41,7 @@ export default function CancellationPolicyPage() {
             </div>
 
             {/* 24-Hour Rescheduling Rule */}
-            <div className="bg-white p-8 rounded-[24px] border border-border-light shadow-xs flex flex-col sm:flex-row items-start gap-6">
+            <div className="tactile-card p-8 rounded-[24px] flex flex-col sm:flex-row items-start gap-6">
               <div className="w-12 h-12 bg-surface-muted rounded-2xl border border-border-light flex items-center justify-center text-text-primary shrink-0">
                 <HugeIcon name="calendar" size={24} />
               </div>
@@ -57,7 +54,7 @@ export default function CancellationPolicyPage() {
             </div>
 
             {/* Late Cancellations & No-Shows */}
-            <div className="bg-white p-8 rounded-[24px] border border-border-light shadow-xs flex flex-col sm:flex-row items-start gap-6">
+            <div className="tactile-card p-8 rounded-[24px] flex flex-col sm:flex-row items-start gap-6">
               <div className="w-12 h-12 bg-red-50 rounded-2xl border border-red-200 flex items-center justify-center text-red-600 shrink-0">
                 <HugeIcon name="alert" size={24} />
               </div>
@@ -70,7 +67,7 @@ export default function CancellationPolicyPage() {
             </div>
 
             {/* Instructor Cancellation Guarantee */}
-            <div className="bg-white p-8 rounded-[24px] border border-border-light shadow-xs flex flex-col sm:flex-row items-start gap-6">
+            <div className="tactile-card p-8 rounded-[24px] flex flex-col sm:flex-row items-start gap-6">
               <div className="w-12 h-12 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
                 <HugeIcon name="shield" size={24} />
               </div>
@@ -85,14 +82,14 @@ export default function CancellationPolicyPage() {
           </div>
 
           {/* Contact Support Note */}
-          <div className="text-center bg-surface-muted p-8 rounded-[28px] border border-border-light">
+          <div className="text-center tactile-card p-8 rounded-[28px]">
             <h3 className="font-heading text-lg font-bold text-text-primary mb-1">Need help with a booking?</h3>
             <p className="font-body text-xs text-text-secondary mb-4">Contact our support team directly on WhatsApp for instant assistance.</p>
             <a
               href={`https://wa.me/${(process.env.NEXT_PUBLIC_PLATFORM_WHATSAPP_NUMBER || "2348000000000").replace(/[^0-9]/g, '')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#25D366] text-white rounded-full font-body text-xs font-semibold hover:opacity-90 transition-opacity"
+              className="tactile-btn inline-flex items-center gap-2 px-6 py-2.5 bg-[#25D366] text-white rounded-full font-body text-xs font-semibold hover:opacity-90 transition-opacity shadow-md"
             >
               <HugeIcon name="comment" size={16} />
               <span>Contact WhatsApp Support</span>

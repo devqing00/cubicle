@@ -77,9 +77,6 @@ export default function SubjectsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20 mb-2 inline-block">
-            Curriculum & Subjects
-          </span>
           <h1 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
             Language Learning Catalog
           </h1>
@@ -90,7 +87,7 @@ export default function SubjectsPage() {
 
         <Link
           href="/dashboard/book"
-          className="px-6 py-3 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors self-start md:self-auto shadow-xs"
+          className="tactile-btn btn-tactile-dark px-6 py-3 rounded-full font-body text-xs font-semibold self-start md:self-auto"
         >
           Book 1-on-1 Session
         </Link>
@@ -101,12 +98,12 @@ export default function SubjectsPage() {
         {SUBJECTS.map((subject) => (
           <div
             key={subject.id}
-            className="bg-white p-7 rounded-[28px] border border-border-light shadow-xs flex flex-col justify-between hover:border-accent-blue/40 transition-all group"
+            className="tactile-card p-7 rounded-[28px] flex flex-col justify-between hover:border-accent-blue/40 transition-all group"
           >
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-3xl">{subject.flagEmoji}</span>
-                <span className="px-2.5 py-1 bg-surface-muted border border-border-light rounded-full text-[10px] font-bold text-text-secondary">
+                <span className="text-[11px] font-semibold text-text-secondary">
                   {subject.level.split("•")[0].trim()}
                 </span>
               </div>
@@ -138,7 +135,7 @@ export default function SubjectsPage() {
 
             <Link
               href="/dashboard/book"
-              className="w-full py-3 bg-surface-near-white border border-border-light rounded-full text-xs font-heading font-bold text-text-primary hover:bg-text-primary hover:text-white hover:border-text-primary transition-all flex items-center justify-center gap-2 shadow-2xs"
+              className="tactile-btn btn-tactile-secondary w-full py-3 rounded-full text-xs font-heading font-bold flex items-center justify-center gap-2"
             >
               <span>Schedule {subject.name}</span>
               <HugeIcon name="arrow-right" size={14} />

@@ -66,9 +66,6 @@ export default function PricingPage() {
           
           {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="px-3.5 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-xs font-bold uppercase tracking-wider border border-accent-blue/20 mb-4 inline-block">
-              Transparent Pricing
-            </span>
             <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-bold text-text-primary tracking-tight leading-[1.1] mb-6">
               Simple plans. <span className="italic text-accent-blue">No subscriptions.</span>
             </h1>
@@ -82,15 +79,10 @@ export default function PricingPage() {
             {tiers.map((tier) => (
               <div
                 key={tier.id}
-                className={`bg-white p-8 rounded-[28px] border shadow-xs flex flex-col justify-between relative ${
-                  tier.popular ? "border-accent-blue shadow-md ring-1 ring-accent-blue/30" : "border-border-light"
+                className={`tactile-card p-8 rounded-[28px] flex flex-col justify-between relative ${
+                  tier.popular ? "ring-2 ring-accent-blue/40" : ""
                 }`}
               >
-                {tier.popular && (
-                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-accent-blue text-white rounded-full text-[10px] font-bold uppercase tracking-wider shadow-xs">
-                    Most Popular
-                  </span>
-                )}
                 <div>
                   <h3 className="font-heading text-2xl font-bold text-text-primary mb-1">{tier.name}</h3>
                   <p className="font-body text-xs text-text-secondary mb-6">{tier.desc}</p>
@@ -112,10 +104,10 @@ export default function PricingPage() {
 
                 <Link
                   href="/signup?redirect=/dashboard/book"
-                  className={`w-full py-3.5 text-center rounded-full font-body text-xs font-semibold transition-all ${
+                  className={`tactile-btn w-full py-3.5 text-center rounded-full font-body text-xs font-semibold ${
                     tier.popular
-                      ? "bg-accent-blue text-white hover:bg-blue-600 shadow-xs"
-                      : "bg-text-primary text-white hover:bg-black"
+                      ? "btn-tactile-primary"
+                      : "btn-tactile-dark"
                   }`}
                 >
                   {tier.ctaText}
@@ -125,7 +117,7 @@ export default function PricingPage() {
           </div>
 
           {/* Pricing FAQ Section */}
-          <div className="bg-white p-8 sm:p-12 rounded-[28px] border border-border-light shadow-xs max-w-4xl mx-auto">
+          <div className="tactile-card p-8 sm:p-12 rounded-[28px] max-w-4xl mx-auto">
             <h2 className="font-heading text-2xl font-bold text-text-primary mb-8 text-center">Frequently Asked Questions</h2>
             <div className="space-y-6">
               <div className="pb-6 border-b border-border-light">
@@ -134,7 +126,7 @@ export default function PricingPage() {
               </div>
               <div className="pb-6 border-b border-border-light">
                 <h4 className="font-heading font-bold text-base text-text-primary mb-1">What payment methods are supported?</h4>
-                <p className="font-body text-xs sm:text-sm text-text-secondary leading-relaxed">We process payments securely via Paystack, supporting bank transfers, debit cards, Apple Pay, and USSD.</p>
+                <p className="font-body text-xs sm:text-sm text-text-secondary leading-relaxed">We process payments securely via Bachs, supporting bank transfers, debit cards, mobile money, and Apple Pay.</p>
               </div>
               <div>
                 <h4 className="font-heading font-bold text-base text-text-primary mb-1">What if I need to reschedule my session?</h4>

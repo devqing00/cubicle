@@ -41,10 +41,6 @@ export default function HowItWorksSection() {
     <section id="how-it-works" className="py-24 px-4 sm:px-6 bg-surface-near-white">
       <div className="max-w-[1200px] mx-auto w-full">
         <div className="text-center mb-16 w-full max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-muted border border-border-light rounded-full text-xs font-medium text-text-secondary mb-4 hover:border-accent-blue/30 transition-colors mx-auto">
-            <HugeIcon name="navigation" size={16} className="text-accent-blue" />
-            <span>Simple Process</span>
-          </div>
           <h2 className="font-heading text-3xl sm:text-5xl font-bold text-text-primary leading-tight tracking-tight w-full text-center">
             How Cubicle <span className="italic text-accent-blue">Works</span>
           </h2>
@@ -57,7 +53,7 @@ export default function HowItWorksSection() {
           {steps.map((step, idx) => (
             <div
               key={idx}
-              className="bg-white border border-border-light rounded-[20px] p-6 flex flex-col justify-between shadow-sm hover:border-accent-blue/50 transition-colors group"
+              className="tactile-card rounded-[20px] p-6 flex flex-col justify-between group"
             >
               <div>
                 <div className="w-9 h-9 rounded-full bg-surface-muted border border-border-light flex items-center justify-center font-heading text-xs font-bold text-text-primary mb-5 group-hover:border-accent-blue/40 group-hover:text-accent-blue transition-colors">

@@ -158,16 +158,13 @@ function SignupForm() {
   };
 
   return (
-    <div className="bg-white p-8 sm:p-10 rounded-[28px] shadow-sm border border-border-light relative z-10 space-y-6">
+    <div className="tactile-card p-8 sm:p-10 rounded-[28px] relative z-10 space-y-6">
       
       {/* Header */}
       <div>
         <div className="mb-4">
           <Logo variant="blue" size={26} />
         </div>
-        <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20 mb-3 inline-block">
-          Student Registration
-        </span>
         <h1 className="font-heading text-2xl sm:text-3xl font-bold text-text-primary tracking-tight mb-1">
           Create student account
         </h1>
@@ -240,7 +237,7 @@ function SignupForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-xs"
+          className="tactile-btn btn-tactile-dark w-full py-3.5 rounded-full font-body text-xs font-semibold disabled:opacity-70 disabled:cursor-not-allowed shadow-xs"
         >
           {loading ? "Creating account..." : "Complete Registration"}
         </button>
@@ -257,7 +254,7 @@ function SignupForm() {
       <button
         onClick={handleGoogleSignup}
         disabled={loading}
-        className="w-full py-3 bg-white text-text-primary border border-border-light rounded-full font-body text-xs font-semibold flex items-center justify-center gap-2.5 hover:bg-surface-muted transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+        className="tactile-btn btn-tactile-secondary w-full py-3 rounded-full font-body text-xs font-semibold flex items-center justify-center gap-2.5 disabled:opacity-70 disabled:cursor-not-allowed"
         aria-label="Sign up with Google account"
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -280,15 +277,12 @@ function SignupForm() {
       {/* Existing Account Modal */}
       {existingModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-border-light shadow-xl space-y-5">
+          <div className="tactile-card rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-xl space-y-5">
             <div className="w-12 h-12 rounded-2xl bg-accent-blue/10 border border-accent-blue/20 flex items-center justify-center text-accent-blue">
               <HugeIcon name="sparkles" size={24} />
             </div>
 
             <div>
-              <span className="px-2.5 py-0.5 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20 mb-2 inline-block">
-                Account Already Exists
-              </span>
               <h3 className="font-heading text-xl font-bold text-text-primary">
                 Log in to your account?
               </h3>
@@ -301,14 +295,14 @@ function SignupForm() {
               <button
                 onClick={handleDirectLogin}
                 disabled={loggingIn}
-                className="w-full py-3 bg-text-primary text-white rounded-full font-semibold hover:bg-black transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-xs flex items-center justify-center gap-2"
+                className="tactile-btn btn-tactile-dark w-full py-3 rounded-full font-semibold disabled:opacity-70 disabled:cursor-not-allowed shadow-xs flex items-center justify-center gap-2"
               >
                 {loggingIn ? "Logging in..." : "Log In Now"}
               </button>
               <button
                 onClick={handleCancelExisting}
                 disabled={loggingIn}
-                className="w-full py-2.5 bg-surface-near-white text-text-secondary border border-border-light rounded-full font-medium hover:text-text-primary transition-colors"
+                className="tactile-btn btn-tactile-secondary w-full py-2.5 rounded-full font-medium"
               >
                 Use Different Email
               </button>

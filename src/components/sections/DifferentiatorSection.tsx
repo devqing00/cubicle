@@ -10,10 +10,6 @@ export default function DifferentiatorSection() {
         
         {/* Header */}
         <div className="text-center mb-16 w-full max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-muted border border-border-light rounded-full text-xs font-medium text-text-secondary mb-4 hover:border-accent-blue/30 transition-colors mx-auto">
-            <HugeIcon name="sparkles" size={16} className="text-accent-blue" />
-            <span>Why Cubicle Stands Out</span>
-          </div>
           <h2 className="font-heading text-3xl sm:text-5xl font-bold text-text-primary leading-tight tracking-tight mb-4 w-full text-center">
             Structured learning <span className="italic text-accent-blue">designed around you.</span>
           </h2>
@@ -26,7 +22,7 @@ export default function DifferentiatorSection() {
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
           
           {/* Card 1: Real Conversation First */}
-          <div className="bg-white border border-border-light rounded-[24px] p-8 sm:p-10 flex flex-col justify-between shadow-sm hover:border-accent-blue/50 transition-colors group">
+          <div className="tactile-card rounded-[24px] p-8 sm:p-10 flex flex-col justify-between group">
             <div>
               <div className="w-10 h-10 rounded-xl bg-surface-muted border border-border-light flex items-center justify-center mb-6 text-text-primary group-hover:border-accent-blue/40 group-hover:text-accent-blue transition-colors">
                 <HugeIcon name="comment" size={20} />
@@ -41,7 +37,7 @@ export default function DifferentiatorSection() {
           </div>
 
           {/* Card 2: Instant Scheduling */}
-          <div className="bg-white border border-border-light rounded-[24px] p-8 sm:p-10 flex flex-col justify-between shadow-sm hover:border-accent-blue/50 transition-colors group">
+          <div className="tactile-card rounded-[24px] p-8 sm:p-10 flex flex-col justify-between group">
             <div>
               <div className="w-10 h-10 rounded-xl bg-surface-muted border border-border-light flex items-center justify-center mb-6 text-text-primary group-hover:border-accent-blue/40 group-hover:text-accent-blue transition-colors">
                 <HugeIcon name="calendar" size={20} />
@@ -56,7 +52,7 @@ export default function DifferentiatorSection() {
           </div>
 
           {/* Card 3: Transparent & Fair */}
-          <div className="bg-white border border-border-light rounded-[24px] p-8 sm:p-10 flex flex-col justify-between shadow-sm hover:border-accent-blue/50 transition-colors group">
+          <div className="tactile-card rounded-[24px] p-8 sm:p-10 flex flex-col justify-between group">
             <div>
               <div className="w-10 h-10 rounded-xl bg-surface-muted border border-border-light flex items-center justify-center mb-6 text-text-primary group-hover:border-accent-blue/40 group-hover:text-accent-blue transition-colors">
                 <HugeIcon name="shield" size={20} />
@@ -71,7 +67,7 @@ export default function DifferentiatorSection() {
           </div>
 
           {/* Card 4: Tailored Lessons */}
-          <div className="bg-white border border-border-light rounded-[24px] p-8 sm:p-10 flex flex-col justify-between shadow-sm hover:border-accent-blue/50 transition-colors group">
+          <div className="tactile-card rounded-[24px] p-8 sm:p-10 flex flex-col justify-between group">
             <div>
               <div className="w-10 h-10 rounded-xl bg-surface-muted border border-border-light flex items-center justify-center mb-6 text-text-primary group-hover:border-accent-blue/40 group-hover:text-accent-blue transition-colors">
                 <HugeIcon name="brain" size={20} />

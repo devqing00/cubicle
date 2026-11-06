@@ -87,9 +87,6 @@ export default function SettingsPage() {
     <div className="max-w-4xl mx-auto space-y-8 font-body">
       {/* Header */}
       <div>
-        <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20 mb-2 inline-block">
-          Account & Preferences
-        </span>
         <h1 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
           Profile Settings
         </h1>
@@ -100,7 +97,7 @@ export default function SettingsPage() {
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Personal Details Card */}
-        <div className="bg-white p-6 sm:p-8 rounded-[28px] border border-border-light shadow-xs space-y-6">
+        <div className="tactile-card p-6 sm:p-8 rounded-[28px] space-y-6">
           <div className="flex items-center gap-3 border-b border-border-light pb-4">
             <div className="w-10 h-10 rounded-2xl bg-accent-blue/10 text-accent-blue flex items-center justify-center">
               <HugeIcon name="users" size={20} />
@@ -165,7 +162,7 @@ export default function SettingsPage() {
 
         {/* Meeting Room Configuration (For Tutors) */}
         {isTutor && (
-          <div className="bg-white p-6 sm:p-8 rounded-[28px] border border-border-light shadow-xs space-y-6">
+          <div className="tactile-card p-6 sm:p-8 rounded-[28px] space-y-6">
             <div className="flex items-center gap-3 border-b border-border-light pb-4">
               <div className="w-10 h-10 rounded-2xl bg-accent-blue/10 text-accent-blue flex items-center justify-center">
                 <HugeIcon name="video" size={20} />
@@ -196,7 +193,7 @@ export default function SettingsPage() {
 
         {/* Learning Program Preferences (For Students) */}
         {!isTutor && (
-          <div className="bg-white p-6 sm:p-8 rounded-[28px] border border-border-light shadow-xs space-y-6">
+          <div className="tactile-card p-6 sm:p-8 rounded-[28px] space-y-6">
             <div className="flex items-center gap-3 border-b border-border-light pb-4">
               <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center">
                 <HugeIcon name="sparkles" size={20} />
@@ -257,7 +254,7 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={saving}
-            className="px-8 py-3 bg-accent-blue text-white rounded-full font-body text-xs font-semibold hover:bg-accent-blue-hover transition-colors shadow-xs disabled:opacity-50 flex items-center gap-2"
+            className="tactile-btn btn-tactile-primary px-8 py-3 rounded-full font-body text-xs font-semibold shadow-xs disabled:opacity-50 flex items-center gap-2"
           >
             <HugeIcon name="check" size={16} />
             <span>{saving ? "Saving Changes..." : "Save Preferences"}</span>

@@ -214,13 +214,13 @@ export default function NativeScheduler({
   };
 
   return (
-    <div className="bg-white rounded-[28px] border border-border-light shadow-sm overflow-hidden p-6 sm:p-8">
+    <div className="tactile-card rounded-[28px] overflow-hidden p-6 sm:p-8">
       
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border-light">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-[10px] font-bold uppercase tracking-wider border border-accent-blue/20">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-accent-blue">
               {selectedTier.toUpperCase()} SESSION
             </span>
             <span className="text-xs text-text-secondary font-medium">
@@ -234,7 +234,7 @@ export default function NativeScheduler({
 
         <button
           onClick={onBack}
-          className="self-start sm:self-auto text-xs font-semibold text-text-secondary hover:text-accent-blue transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border-light hover:bg-surface-muted"
+          className="tactile-btn btn-tactile-secondary self-start sm:self-auto text-xs font-semibold flex items-center gap-1.5 px-3.5 py-1.5 rounded-full"
         >
           <HugeIcon name="chevron-left" size={14} />
           <span>Change Tier</span>
@@ -257,7 +257,7 @@ export default function NativeScheduler({
                 type="button"
                 onClick={handlePrevMonth}
                 disabled={currentMonth === today.getMonth() && currentYear === today.getFullYear()}
-                className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-surface-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="tactile-btn p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-surface-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 aria-label="Previous month"
               >
                 <HugeIcon name="chevron-left" size={16} />
@@ -265,7 +265,7 @@ export default function NativeScheduler({
               <button
                 type="button"
                 onClick={handleNextMonth}
-                className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-colors"
+                className="tactile-btn p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-colors"
                 aria-label="Next month"
               >
                 <HugeIcon name="chevron-right" size={16} />
@@ -348,11 +348,11 @@ export default function NativeScheduler({
                     type="button"
                     disabled={isDisabled}
                     onClick={() => setSelectedTime(time)}
-                    className={`px-4 py-3 rounded-2xl border text-xs font-heading font-bold transition-all flex items-center justify-between group ${
+                    className={`tactile-btn px-4 py-3 rounded-2xl border text-xs font-heading font-bold transition-all flex items-center justify-between group ${
                       isDisabled
                         ? "border-border-light bg-surface-muted/60 text-text-subtle/50 cursor-not-allowed line-through"
                         : isTimeSelected
-                        ? "border-text-primary bg-text-primary text-white shadow-xs"
+                        ? "btn-tactile-dark shadow-xs"
                         : "border-border-light bg-surface-near-white text-text-primary hover:border-accent-blue hover:bg-white"
                     }`}
                   >
@@ -386,7 +386,7 @@ export default function NativeScheduler({
           </div>
 
           {/* Session Overview Card */}
-          <div className="bg-surface-near-white p-4 rounded-2xl border border-border-light space-y-2.5">
+          <div className="tactile-card p-4 rounded-2xl space-y-2.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-text-secondary">Meeting Format</span>
               <span className="font-bold text-text-primary flex items-center gap-1">
@@ -411,7 +411,7 @@ export default function NativeScheduler({
             type="button"
             onClick={handleConfirm}
             disabled={loading}
-            className="w-full py-4 bg-accent-blue text-white rounded-full font-body text-xs font-semibold hover:bg-accent-blue-hover transition-colors shadow-xs flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="tactile-btn btn-tactile-primary w-full py-4 rounded-full font-body text-xs font-semibold transition-all shadow-xs flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>

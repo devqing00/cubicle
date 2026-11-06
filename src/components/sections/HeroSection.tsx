@@ -405,14 +405,14 @@ export default function HeroSection() {
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/signup?redirect=/dashboard/book"
-              className="inline-flex items-center gap-2 px-7 py-3.5 bg-text-primary text-white rounded-full font-body text-sm font-medium hover:bg-black transition-all duration-200 shadow-sm hover:shadow-md"
+              className="tactile-btn btn-tactile-dark inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-body text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
             >
               <span>Start Free Trial</span>
               <HugeIcon name="arrow-right" size={16} />
             </Link>
             <Link
               href="/how-it-works"
-              className="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-text-primary border border-border-light rounded-full font-body text-sm font-medium hover:border-accent-blue/50 hover:text-accent-blue transition-colors duration-200"
+              className="tactile-btn btn-tactile-secondary inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-body text-sm font-medium transition-colors duration-200"
             >
               <span>How It Works</span>
             </Link>

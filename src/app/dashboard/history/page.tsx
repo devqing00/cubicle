@@ -33,16 +33,29 @@ export default function HistoryPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get("payment");
     const reference = urlParams.get("reference") || urlParams.get("trxref");
+    const gateway = urlParams.get("gateway");
 
     if (reference && (paymentStatus === "success" || urlParams.has("trxref"))) {
-      fetch("/api/paystack/verify", {
+      const verifyEndpoint = gateway === "paystack" ? "/api/paystack/verify" : "/api/bachs/verify";
+      
+      fetch(verifyEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reference }),
       })
-        .then((res) => res.json())
+        .then((res) => {
+          // If Bachs returns 404 or fails, fallback to Paystack verify
+          if (!res.ok && verifyEndpoint === "/api/bachs/verify") {
+            return fetch("/api/paystack/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ reference }),
+            }).then((r) => r.json());
+          }
+          return res.json();
+        })
         .then((data) => {
-          if (data.success) {
+          if (data?.success) {
             import("sonner").then(({ toast }) => {
               toast.success("Payment verified! Your session is confirmed and meeting room is unlocked.");
             });
@@ -142,7 +155,7 @@ export default function HistoryPage() {
         <p className="font-body text-xs md:text-sm text-text-secondary mt-1">Review past sessions, access Google Drive recordings, and archive lesson logs.</p>
       </div>
       
-      <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-border-light shadow-xs min-h-[400px]">
+      <div className="tactile-card p-6 sm:p-8 rounded-[24px] min-h-[400px]">
         {loading ? (
           <div className="flex items-center justify-center h-48">
             <div className="w-8 h-8 border-2 border-accent-blue border-t-transparent rounded-full animate-spin" />
@@ -187,13 +200,7 @@ export default function HistoryPage() {
                         {lesson.reference || "N/A"}
                       </td>
                       <td className="py-4">
-                        <span className={`inline-block px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
-                          lesson.status === "completed"
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            : lesson.status === "cancelled"
-                            ? "bg-red-50 text-red-700 border-red-200"
-                            : "bg-blue-50 text-blue-700 border-blue-200"
-                        }`}>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">
                           {lesson.status}
                         </span>
                       </td>
@@ -203,7 +210,7 @@ export default function HistoryPage() {
                             href={lesson.recordingUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-3 py-1.5 bg-accent-blue/10 hover:bg-accent-blue text-accent-blue hover:text-white rounded-full text-[11px] font-bold transition-all inline-flex items-center gap-1.5"
+                            className="tactile-btn btn-tactile-primary px-3 py-1.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1.5"
                           >
                             <HugeIcon name="video" size={13} />
                             <span>Watch Recording</span>
@@ -214,7 +221,7 @@ export default function HistoryPage() {
                               setSelectedRecordingBooking(lesson);
                               setRecordingLinkInput(lesson.recordingUrl || "");
                             }}
-                            className="px-3 py-1.5 bg-surface-muted hover:bg-surface-near-white border border-border-light text-text-primary rounded-full text-[11px] font-semibold transition-colors"
+                            className="tactile-btn btn-tactile-secondary px-3 py-1.5 rounded-full text-[11px] font-semibold"
                           >
                             + Attach Recording
                           </button>
@@ -236,7 +243,7 @@ export default function HistoryPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <form
             onSubmit={handleSaveRecording}
-            className="bg-white rounded-[28px] max-w-md w-full p-6 sm:p-8 border border-border-light shadow-2xl space-y-4 font-body"
+            className="tactile-card rounded-[28px] max-w-md w-full p-6 sm:p-8 space-y-4 font-body shadow-2xl"
           >
             <div className="flex items-center justify-between border-b border-border-light pb-4">
               <div>
@@ -250,7 +257,7 @@ export default function HistoryPage() {
               <button
                 type="button"
                 onClick={() => setSelectedRecordingBooking(null)}
-                className="p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary"
+                className="tactile-btn p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary transition-colors"
               >
                 <HugeIcon name="cancel" size={18} />
               </button>
@@ -279,14 +286,14 @@ export default function HistoryPage() {
               <button
                 type="button"
                 onClick={() => setSelectedRecordingBooking(null)}
-                className="px-4 py-2 rounded-full border border-border-light text-xs font-semibold text-text-secondary hover:bg-surface-muted"
+                className="tactile-btn btn-tactile-secondary px-4 py-2 rounded-full text-xs font-semibold"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={savingRecording}
-                className="px-5 py-2 rounded-full bg-accent-blue text-white text-xs font-semibold hover:bg-accent-blue-hover transition-colors disabled:opacity-50"
+                className="tactile-btn btn-tactile-primary px-5 py-2 rounded-full text-xs font-semibold disabled:opacity-50"
               >
                 {savingRecording ? "Saving..." : "Save & Notify Student"}
               </button>

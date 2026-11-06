@@ -117,9 +117,9 @@ export default function BookingPage() {
         setBookingStatus("confirmation");
         toast.success("Free trial booked successfully!");
       } else {
-        // Paid lesson flow: Initialize Paystack checkout
+        // Paid lesson flow: Initialize Bachs checkout
         try {
-          const payRes = await fetch("/api/paystack/initialize", {
+          const payRes = await fetch("/api/bachs/initialize", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ bookingId: data.id })
@@ -127,12 +127,12 @@ export default function BookingPage() {
 
           const payData = await payRes.json();
           if (payData.authorization_url) {
-            // Redirect to Paystack secure checkout
+            // Redirect to Bachs secure checkout
             window.location.href = payData.authorization_url;
             return;
           }
         } catch (e) {
-          console.warn("Paystack initialize skipped, showing confirmation:", e);
+          console.warn("Bachs initialize skipped, showing confirmation:", e);
         }
 
         // On-platform confirmation fallback
@@ -176,7 +176,7 @@ export default function BookingPage() {
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
               <h1 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary">Select your lesson type</h1>
-              <span className="px-3 py-1 bg-surface-muted text-text-secondary rounded-full text-xs font-semibold self-start sm:self-auto flex items-center gap-1.5">
+              <span className="text-xs font-medium text-text-secondary self-start sm:self-auto flex items-center gap-1.5">
                 <HugeIcon name="clock" size={13} className="text-accent-blue" />
                 <span>Timezone: Africa/Lagos (WAT) • Local: {getUserLocalTimeZone()}</span>
               </span>
@@ -199,14 +199,14 @@ export default function BookingPage() {
                     setBookingStatus("calendar");
                   }}
                   disabled={isDisabled}
-                  className={`bg-white p-8 rounded-[28px] border border-border-light shadow-xs transition-all text-left flex flex-col justify-between min-h-[260px] ${
-                    isDisabled ? "opacity-50 cursor-not-allowed grayscale" : "hover:border-accent-blue/50 hover:shadow-md cursor-pointer group"
+                  className={`tactile-card tactile-card-interactive p-8 rounded-[28px] text-left flex flex-col justify-between min-h-[260px] ${
+                    isDisabled ? "opacity-50 cursor-not-allowed grayscale" : "cursor-pointer group"
                   }`}
                 >
                   <div>
-                    <span className="inline-block px-3 py-1 bg-surface-muted border border-border-light rounded-full text-[10px] font-bold uppercase tracking-wider text-text-secondary mb-6">
+                    <p className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider mb-6">
                       {isDisabled ? "Already Claimed" : tier.desc}
-                    </span>
+                    </p>
                     <h3 className="font-heading text-2xl font-bold text-text-primary mb-1">{tier.name}</h3>
                     <p className="font-heading text-3xl font-bold text-text-primary">{tier.price}</p>
                   </div>
@@ -234,16 +234,13 @@ export default function BookingPage() {
 
         {/* Step 3: Instant On-Platform Booking Confirmation */}
         {bookingStatus === "confirmation" && bookingResult && (
-          <div className="bg-white p-8 sm:p-12 rounded-[28px] border border-border-light shadow-md max-w-2xl mx-auto text-center space-y-6">
+          <div className="tactile-card p-8 sm:p-12 rounded-[28px] max-w-2xl mx-auto text-center space-y-6">
             
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto shadow-xs">
               <HugeIcon name="check" size={28} />
             </div>
 
             <div>
-              <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold uppercase tracking-wider border border-emerald-200 mb-2 inline-block">
-                Session Confirmed
-              </span>
               <h2 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
                 You&apos;re All Set!
               </h2>
@@ -253,7 +250,7 @@ export default function BookingPage() {
             </div>
 
             {/* Booking Details Box */}
-            <div className="bg-surface-near-white p-6 rounded-2xl border border-border-light text-left space-y-3">
+            <div className="tactile-card p-6 rounded-2xl text-left space-y-3">
               <div className="flex justify-between items-center pb-3 border-b border-border-light">
                 <span className="font-body text-xs text-text-secondary">Booking Reference</span>
                 <span className="font-heading font-bold text-sm text-text-primary">{bookingResult.reference}</span>
@@ -279,7 +276,7 @@ export default function BookingPage() {
                       navigator.clipboard.writeText(code);
                       toast.success(`Meeting code "${code}" copied!`);
                     }}
-                    className="px-2.5 py-1 bg-surface-muted hover:bg-surface-near-white border border-border-light rounded-md text-[10px] font-semibold text-text-secondary transition-colors"
+                    className="tactile-btn px-2.5 py-1 bg-surface-muted hover:bg-surface-near-white border border-border-light rounded-md text-[10px] font-semibold text-text-secondary transition-colors"
                   >
                     Copy Code
                   </button>
@@ -304,7 +301,7 @@ export default function BookingPage() {
                 href={bookingResult.meetLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="py-3.5 px-4 bg-accent-blue text-white rounded-full font-body text-xs font-semibold hover:bg-accent-blue-hover transition-colors flex items-center justify-center gap-2 shadow-xs"
+                className="tactile-btn btn-tactile-primary py-3.5 px-4 rounded-full font-body text-xs font-semibold flex items-center justify-center gap-2 shadow-xs"
               >
                 <HugeIcon name="sparkles" size={16} />
                 <span>{bookingResult.meetLink.includes("meet.google.com") ? "Join Google Meet" : "Join Video Room"}</span>
@@ -312,7 +309,7 @@ export default function BookingPage() {
 
               <Link
                 href="/dashboard/chat"
-                className="py-3.5 px-4 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors flex items-center justify-center gap-2 shadow-xs"
+                className="tactile-btn btn-tactile-dark py-3.5 px-4 rounded-full font-body text-xs font-semibold flex items-center justify-center gap-2 shadow-xs"
               >
                 <HugeIcon name="comment" size={16} />
                 <span>Chat with Instructor</span>

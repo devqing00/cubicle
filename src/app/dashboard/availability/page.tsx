@@ -109,7 +109,7 @@ export default function AvailabilityPage() {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => toast.info("Google Calendar sync will be added soon!")}
-            className="px-5 py-2.5 bg-white border border-border-light text-text-primary rounded-full font-body text-xs font-semibold flex items-center gap-2 hover:bg-surface-muted transition-colors"
+            className="tactile-btn btn-tactile-secondary px-5 py-2.5 rounded-full font-body text-xs font-semibold flex items-center gap-2"
           >
             <HugeIcon name="calendar" size={16} className="text-accent-blue" />
             <span>Sync Calendar</span>
@@ -117,14 +117,14 @@ export default function AvailabilityPage() {
           <button 
             onClick={handleSave}
             disabled={isSaving}
-            className="px-6 py-2.5 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors disabled:opacity-50"
+            className="tactile-btn btn-tactile-dark px-6 py-2.5 rounded-full font-body text-xs font-semibold disabled:opacity-50"
           >
             {isSaving ? "Saving..." : "Save Schedule"}
           </button>
         </div>
       </div>
 
-      <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-border-light shadow-xs mb-8">
+      <div className="tactile-card p-6 sm:p-8 rounded-[24px] mb-8">
         <div className="flex items-center gap-3 mb-8 border-b border-border-light pb-6">
           <div className="w-10 h-10 bg-accent-blue/10 rounded-xl border border-accent-blue/20 flex items-center justify-center text-accent-blue">
             <HugeIcon name="clock" size={20} />
@@ -142,7 +142,7 @@ export default function AvailabilityPage() {
               <div className="w-40 flex items-center gap-3">
                 <button
                   onClick={() => toggleDay(day.id)}
-                  className={`w-12 h-6 rounded-full p-1 transition-colors relative ${schedule[day.id].active ? 'bg-accent-blue' : 'bg-surface-muted border border-border-light'}`}
+                  className={`tactile-btn w-12 h-6 rounded-full p-1 transition-colors relative cursor-pointer ${schedule[day.id].active ? 'bg-accent-blue shadow-xs' : 'bg-surface-muted border border-border-light'}`}
                 >
                   <div className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform ${schedule[day.id].active ? 'translate-x-6' : 'translate-x-0'}`} />
                 </button>
@@ -178,7 +178,7 @@ export default function AvailabilityPage() {
         </div>
       </div>
 
-      <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-border-light shadow-xs">
+      <div className="tactile-card p-6 sm:p-8 rounded-[24px]">
         <div className="flex items-center gap-3 mb-8 border-b border-border-light pb-6">
           <div className="w-10 h-10 bg-surface-muted rounded-xl border border-border-light flex items-center justify-center text-text-primary">
             <HugeIcon name="calendar" size={20} />
@@ -212,7 +212,7 @@ export default function AvailabilityPage() {
             </div>
             <button
               onClick={addOverride}
-              className="px-4 py-2 bg-text-primary text-white rounded-xl hover:bg-black transition-colors text-xs font-semibold flex items-center justify-center"
+              className="tactile-btn btn-tactile-dark px-4 py-2 rounded-xl text-xs font-semibold flex items-center justify-center"
             >
               <span>+ Add</span>
             </button>
@@ -230,7 +230,8 @@ export default function AvailabilityPage() {
                   </div>
                   <button
                     onClick={() => removeOverride(override.id)}
-                    className="p-2 text-text-secondary hover:text-red-600 transition-colors bg-white rounded-lg border border-border-light"
+                    className="tactile-btn p-2 text-text-secondary hover:text-red-600 transition-colors bg-white rounded-lg border border-border-light"
+                    title="Remove override"
                   >
                     <HugeIcon name="cancel" size={16} />
                   </button>

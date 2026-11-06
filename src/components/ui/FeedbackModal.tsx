@@ -80,7 +80,7 @@ export default function FeedbackModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="relative w-full max-w-md bg-white rounded-[28px] border border-border-light shadow-2xl p-6 sm:p-8 transform animate-[aeBubblePop_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards] font-body space-y-5">
+      <div className="tactile-card relative w-full max-w-md rounded-[28px] shadow-2xl p-6 sm:p-8 transform animate-[aeBubblePop_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards] font-body space-y-5">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-border-light pb-4">
           <div className="flex items-center gap-3">
@@ -98,7 +98,7 @@ export default function FeedbackModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary"
+            className="tactile-btn p-2 rounded-full hover:bg-surface-muted text-text-subtle hover:text-text-primary"
           >
             <HugeIcon name="cancel" size={16} />
           </button>
@@ -118,7 +118,7 @@ export default function FeedbackModal({
                   onClick={() => setRating(star)}
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
-                  className="p-1.5 focus:outline-none transition-transform hover:scale-125"
+                  className="tactile-btn p-1.5 focus:outline-none transition-transform hover:scale-125"
                 >
                   <HugeIcon
                     name="star"
@@ -161,14 +161,14 @@ export default function FeedbackModal({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2.5 rounded-full border border-border-light text-xs font-semibold text-text-secondary hover:bg-surface-muted transition-colors disabled:opacity-50"
+              className="tactile-btn btn-tactile-secondary px-4 py-2.5 rounded-full text-xs font-semibold disabled:opacity-50"
             >
               Skip for now
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-6 py-2.5 rounded-full bg-accent-blue text-white text-xs font-semibold hover:bg-accent-blue-hover transition-colors shadow-xs disabled:opacity-50"
+              className="tactile-btn btn-tactile-primary px-6 py-2.5 rounded-full text-xs font-semibold disabled:opacity-50"
             >
               {submitting ? "Submitting..." : "Submit Review"}
             </button>

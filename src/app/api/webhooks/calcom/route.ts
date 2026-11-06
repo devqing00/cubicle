@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import crypto from "crypto";
 import { issueRefund } from "@/lib/paystack";
+import { issueBachsRefund } from "@/lib/bachs";
 
 export async function POST(req: Request) {
   try {
@@ -66,9 +67,14 @@ export async function POST(req: Request) {
         const bookingData = doc.data();
 
         // If it was already paid, issue a refund
-        if (bookingData.status === "paid" && bookingData.paystackReference) {
-          console.log(`Cal.com webhook: Booking ${uid} cancelled. Issuing refund for ${bookingData.paystackReference}`);
-          await issueRefund(bookingData.paystackReference);
+        if (bookingData.status === "paid") {
+          if (bookingData.paymentGateway === "bachs" || bookingData.bachsSessionId) {
+            console.log(`Cal.com webhook: Booking ${uid} cancelled. Issuing Bachs refund for ${bookingData.bachsSessionId || bookingData.reference}`);
+            await issueBachsRefund(bookingData.bachsSessionId || bookingData.reference);
+          } else if (bookingData.paystackReference) {
+            console.log(`Cal.com webhook: Booking ${uid} cancelled. Issuing Paystack refund for ${bookingData.paystackReference}`);
+            await issueRefund(bookingData.paystackReference);
+          }
         }
 
         // 2. Update status to 'cancelled'

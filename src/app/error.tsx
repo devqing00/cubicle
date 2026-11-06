@@ -21,7 +21,7 @@ export default function Error({
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="bg-white p-8 sm:p-12 rounded-[32px] border border-border-light shadow-sm flex flex-col items-center space-y-6 max-w-md w-full text-center relative z-10">
+      <div className="tactile-card p-8 sm:p-12 rounded-[32px] flex flex-col items-center space-y-6 max-w-md w-full text-center relative z-10">
         
         {/* Logo Badge & Warning Icon */}
         <div className="relative">
@@ -41,9 +41,6 @@ export default function Error({
 
         {/* Header & Message */}
         <div>
-          <span className="px-3 py-1 bg-red-500/10 text-red-600 rounded-full text-[10px] font-bold uppercase tracking-wider border border-red-500/20 mb-3 inline-block">
-            System Alert
-          </span>
           <h1 className="font-heading text-2xl sm:text-3xl font-bold text-text-primary tracking-tight mb-2">
             Something went wrong
           </h1>
@@ -56,7 +53,7 @@ export default function Error({
         <div className="w-full space-y-2.5 pt-2">
           <button
             onClick={() => reset()}
-            className="w-full py-3.5 bg-text-primary text-white rounded-full text-xs font-semibold hover:bg-black transition-colors flex items-center justify-center gap-2 shadow-xs"
+            className="tactile-btn btn-tactile-dark w-full py-3.5 rounded-full text-xs font-semibold flex items-center justify-center gap-2 shadow-xs"
           >
             <HugeIcon name="sparkles" size={16} />
             <span>Try Again</span>
@@ -64,7 +61,7 @@ export default function Error({
           
           <Link
             href="/dashboard"
-            className="w-full py-3 bg-surface-near-white text-text-secondary border border-border-light rounded-full text-xs font-medium hover:text-text-primary hover:bg-surface-muted transition-colors flex items-center justify-center gap-2"
+            className="tactile-btn btn-tactile-secondary w-full py-3 rounded-full text-xs font-medium flex items-center justify-center gap-2"
           >
             <HugeIcon name="home" size={16} />
             <span>Go to Dashboard</span>

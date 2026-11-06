@@ -62,10 +62,6 @@ export default function PricingSection() {
     <section id="pricing" className="py-24 px-4 sm:px-6 bg-surface-near-white">
       <div className="max-w-[1200px] mx-auto w-full">
         <div className="text-center mb-16 w-full max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-muted border border-border-light rounded-full text-xs font-medium text-text-secondary mb-4 hover:border-accent-blue/30 transition-colors mx-auto">
-            <HugeIcon name="credit-card" size={16} className="text-accent-blue" />
-            <span>Transparent Pricing</span>
-          </div>
           <h2 className="font-heading text-3xl sm:text-5xl font-bold text-text-primary leading-tight tracking-tight mb-4 w-full text-center">
             Simple, <span className="italic text-accent-blue">transparent pricing</span>
           </h2>
@@ -78,24 +74,12 @@ export default function PricingSection() {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`flex flex-col p-8 rounded-[24px] transition-all duration-200 ${
+              className={`flex flex-col p-8 rounded-[24px] ${
                 plan.highlighted
-                  ? "bg-text-primary text-white border-2 border-text-primary shadow-md relative scale-105 z-10 hover:border-accent-blue"
-                  : "bg-white text-text-primary border border-border-light shadow-sm hover:border-accent-blue/50"
+                  ? "tactile-card-dark relative scale-105 z-10"
+                  : "tactile-card text-text-primary"
               }`}
             >
-              {plan.tag && (
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-[9px] font-semibold uppercase tracking-wider mb-6 self-start ${
-                    plan.highlighted
-                      ? "bg-white/20 text-white"
-                      : "bg-surface-muted text-text-secondary border border-border-light"
-                  }`}
-                >
-                  {plan.tag}
-                </span>
-              )}
-
               <h3 className={`font-heading text-2xl font-bold mb-2 ${plan.highlighted ? "text-white" : "text-text-primary"}`}>
                 {plan.name}
               </h3>
@@ -126,10 +110,10 @@ export default function PricingSection() {
               <a
                 href="/signup?redirect=/dashboard/book"
                 id={`pricing-cta-${plan.id}`}
-                className={`w-full py-3.5 px-6 rounded-full font-body text-sm font-medium text-center transition-colors duration-200 ${
+                className={`tactile-btn w-full py-3.5 px-6 rounded-full font-body text-sm font-medium text-center transition-all duration-200 ${
                   plan.highlighted
-                    ? "bg-white text-text-primary hover:bg-surface-near-white hover:text-accent-blue"
-                    : "bg-text-primary text-white hover:bg-black"
+                    ? "btn-tactile-primary"
+                    : "btn-tactile-secondary"
                 }`}
               >
                 {plan.cta}

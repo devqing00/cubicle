@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/lib/AuthContext";
 import { Toaster } from "sonner";
+import TactileProvider from "@/components/providers/TactileProvider";
 
 const freigeist = localFont({
   src: [
@@ -50,10 +51,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={freigeist.variable} data-scroll-behavior="smooth">
       <body>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-        <Toaster position="top-center" richColors />
+        <TactileProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+          <Toaster position="top-center" richColors />
+        </TactileProvider>
       </body>
     </html>
   );

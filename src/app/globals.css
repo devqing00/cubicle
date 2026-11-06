@@ -157,3 +157,247 @@ input:focus, textarea:focus, select:focus {
   display: inline-block;
   vertical-align: middle;
 }
+
+/* =========================================================================
+   TACTILE BUTTON & CLICK MICRO-INTERACTION (From Qing Portfolio)
+   Hardware-accelerated press response, bevel rim highlights, and spring feedback
+   ========================================================================= */
+
+button:active > *:not(svg):not(img):not(.no-blur),
+button:active span,
+button:active p,
+[role="button"]:active > *:not(svg):not(img):not(.no-blur),
+[role="button"]:active span,
+[role="button"]:active p,
+.tactile-btn:active span,
+.btn-tactile-primary:active span,
+.btn-tactile-secondary:active span,
+.btn-tactile-dark:active span,
+.doron-btn-glow:active span,
+.doron-btn-white:active span {
+  opacity: 0.85;
+  transition: opacity 60ms ease;
+}
+
+button:not(:active) > *:not(svg):not(img):not(.no-blur),
+button:not(:active) span,
+button:not(:active) p,
+[role="button"]:not(:active) > *:not(svg):not(img):not(.no-blur),
+[role="button"]:not(:active) span,
+[role="button"]:not(:active) p,
+.tactile-btn:not(:active) span,
+.btn-tactile-primary:not(:active) span,
+.btn-tactile-secondary:not(:active) span,
+.btn-tactile-dark:not(:active) span,
+.doron-btn-glow:not(:active) span,
+.doron-btn-white:not(:active) span {
+  opacity: 1;
+  transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Base Tactile Click Behavior */
+.tactile-btn {
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  will-change: transform;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tactile-btn:active {
+  transform: scale(0.97);
+}
+
+/* Primary Tactile Button (Cubicle Azure / Accent Blue with dual-layer bevel) */
+.btn-tactile-primary,
+.doron-btn-glow {
+  position: relative;
+  user-select: none;
+  cursor: pointer;
+  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 45%, #0369a1 75%, #0284c7 100%);
+  border: 1px solid rgba(186, 230, 253, 0.55);
+  color: #ffffff;
+  box-shadow:
+    0 0 20px rgba(2, 132, 199, 0.32),
+    0 2px 10px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-tactile-primary:hover,
+.doron-btn-glow:hover {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 45%, #075985 75%, #0369a1 100%) !important;
+  border-color: rgba(125, 211, 252, 0.7) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 0 24px rgba(2, 132, 199, 0.45),
+    0 3px 12px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Secondary Tactile Button (Slate / Metallic light with crisp top rim) */
+.btn-tactile-secondary,
+.doron-btn-white {
+  position: relative;
+  user-select: none;
+  cursor: pointer;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 45%, #e2e8f0 75%, #f1f5f9 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  color: #0f172a;
+  box-shadow:
+    0 0 16px rgba(226, 232, 240, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-tactile-secondary:hover,
+.doron-btn-white:hover {
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 45%, #cbd5e1 75%, #e2e8f0 100%) !important;
+  border-color: rgba(255, 255, 255, 1) !important;
+  color: #0f172a !important;
+  box-shadow:
+    0 0 20px rgba(203, 213, 225, 0.5),
+    0 3px 10px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Dark Tactile Button (Deep charcoal hardware finish) */
+.btn-tactile-dark {
+  position: relative;
+  user-select: none;
+  cursor: pointer;
+  background: linear-gradient(180deg, #262626 0%, #171717 45%, #0a0a0a 75%, #171717 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-tactile-dark:hover {
+  background: linear-gradient(180deg, #333333 0%, #222222 45%, #111111 75%, #222222 100%) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Danger Tactile Button (Crimson hardware finish) */
+.btn-tactile-danger {
+  position: relative;
+  user-select: none;
+  cursor: pointer;
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 45%, #b91c1c 75%, #dc2626 100%);
+  border: 1px solid rgba(254, 202, 202, 0.45);
+  color: #ffffff;
+  box-shadow:
+    0 0 16px rgba(220, 38, 38, 0.35),
+    0 2px 10px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-tactile-danger:hover {
+  background: linear-gradient(180deg, #dc2626 0%, #b91c1c 45%, #991b1b 75%, #b91c1c 100%) !important;
+  border-color: rgba(254, 202, 202, 0.6) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 0 20px rgba(220, 38, 38, 0.45),
+    0 3px 12px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35) !important;
+}
+
+/* =========================================================================
+   TACTILE CARDS & SECTIONS (Hardware Bevels, Rim Highlights & Multi-layer Depth)
+   ========================================================================= */
+
+/* Light Tactile Card: Used for feature cards, bento cards, pricing, reviews */
+.tactile-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.03),
+    0 8px 24px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tactile-card:hover {
+  border-color: rgba(2, 132, 199, 0.35);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.05),
+    0 16px 36px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+}
+
+/* Dark Tactile Card: Used for highlighted plans, dark panels */
+.tactile-card-dark {
+  position: relative;
+  background: linear-gradient(180deg, #181e28 0%, #11151c 45%, #0b0e14 75%, #11151c 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.35),
+    0 16px 40px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tactile-card-dark:hover {
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.45),
+    0 20px 48px rgba(2, 132, 199, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* Tactile Interactive Card: Clickable cards (tiers, options, slots) */
+.tactile-card-interactive {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: transform;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tactile-card-interactive:active {
+  transform: scale(0.985);
+}
+
+/* Tactile Section Container: For large bounded hero containers, CTA containers */
+.tactile-section-container {
+  position: relative;
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.08),
+    0 32px 64px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+}
+
+.tactile-section-container-dark {
+  position: relative;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.4),
+    0 40px 90px rgba(2, 132, 199, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.8);
+}
+
+

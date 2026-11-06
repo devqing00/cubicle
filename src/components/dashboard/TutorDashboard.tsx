@@ -134,14 +134,14 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
 
       {/* Next Upcoming Live Lesson Hero Countdown Banner */}
       {nextLesson && (
-        <div className="bg-gradient-to-r from-text-primary via-neutral-900 to-accent-blue/90 text-white p-6 sm:p-8 rounded-[28px] shadow-lg border border-white/10 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="tactile-section-container-dark text-white p-6 sm:p-8 rounded-[28px] relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2 relative z-10">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-3 py-0.5 bg-accent-blue text-white rounded-full text-[10px] font-bold uppercase tracking-wider shadow-xs">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-accent-blue">
                 Next Upcoming Class
               </span>
               <span className="text-xs text-white/80 font-medium">
-                Ref: {nextLesson.reference}
+                • Ref: {nextLesson.reference}
               </span>
               {nextLesson.meetLink && (
                 <button
@@ -151,7 +151,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
                     navigator.clipboard.writeText(code);
                     toast.success(`Meeting code "${code}" copied!`);
                   }}
-                  className="px-2.5 py-0.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-md text-[10px] font-mono text-white/90 transition-colors flex items-center gap-1"
+                  className="tactile-btn px-2.5 py-0.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-md text-[10px] font-mono text-white/90 transition-colors flex items-center gap-1"
                 >
                   <span>Code: {nextLesson.meetLink?.split("/").pop()}</span>
                   <span className="text-[9px] opacity-75 font-sans">📋</span>
@@ -169,7 +169,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
 
           <div className="flex items-center gap-3 relative z-10 shrink-0 w-full sm:w-auto flex-wrap">
             {nextLesson.status === "pending_payment" ? (
-              <span className="px-5 py-2.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full font-body text-xs font-bold">
+              <span className="text-xs font-bold text-amber-300">
                 Awaiting Student Payment
               </span>
             ) : nextLesson.meetLink ? (
@@ -177,7 +177,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
                 href={nextLesson.meetLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3 bg-accent-blue hover:bg-accent-blue-hover text-white rounded-full font-body text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+                className="tactile-btn btn-tactile-primary px-6 py-3 rounded-full font-body text-xs font-bold flex items-center justify-center gap-2 flex-1 sm:flex-initial"
               >
                 <HugeIcon name="video" size={16} />
                 <span>Join Meeting Room</span>
@@ -185,7 +185,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
             ) : null}
             <Link
               href="/dashboard/chat"
-              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-body text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+              className="tactile-btn btn-tactile-secondary px-4 py-3 rounded-full font-body text-xs font-semibold flex items-center justify-center gap-1.5"
             >
               <HugeIcon name="comment" size={16} />
               <span>Chat</span>
@@ -195,11 +195,8 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
       )}
       
       {/* Welcome Banner */}
-      <div className="bg-white p-8 rounded-[28px] border border-border-light shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-6 w-full">
+      <div className="tactile-card p-8 rounded-[28px] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 w-full">
         <div>
-          <span className="px-3 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-xs font-bold uppercase tracking-wider mb-2 inline-block border border-accent-blue/20">
-            Instructor Portal
-          </span>
           <h1 className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
             Welcome back, {userData.displayName || userData.firstName || userData.fullName || "Tutor"}
           </h1>
@@ -210,7 +207,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
         <div className="flex gap-3">
           <Link
             href="/dashboard/schedule"
-            className="px-6 py-3 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors shrink-0 shadow-xs"
+            className="tactile-btn btn-tactile-dark px-6 py-3 rounded-full font-body text-xs font-semibold shrink-0"
           >
             Manage Schedule
           </Link>
@@ -219,7 +216,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white rounded-[24px] p-6 border border-border-light shadow-xs flex items-center gap-4">
+        <div className="tactile-card rounded-[24px] p-6 flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-surface-muted border border-border-light flex items-center justify-center text-text-primary shrink-0">
             <HugeIcon name="clock" size={24} />
           </div>
@@ -229,7 +226,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
           </div>
         </div>
 
-        <div className="bg-white rounded-[24px] p-6 border border-border-light shadow-xs flex items-center gap-4">
+        <div className="tactile-card rounded-[24px] p-6 flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-accent-blue/10 border border-accent-blue/20 flex items-center justify-center text-accent-blue shrink-0">
             <HugeIcon name="sparkles" size={24} />
           </div>
@@ -239,7 +236,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
           </div>
         </div>
 
-        <div className="bg-white rounded-[24px] p-6 border border-border-light shadow-xs flex items-center gap-4">
+        <div className="tactile-card rounded-[24px] p-6 flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-surface-muted border border-border-light flex items-center justify-center text-text-primary shrink-0">
             <HugeIcon name="credit-card" size={24} />
           </div>
@@ -257,13 +254,13 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
           
           {/* Action Required: Pending Approvals */}
           {pendingApprovals.length > 0 && (
-            <div className="bg-white rounded-[24px] p-6 sm:p-8 border border-amber-200 shadow-xs bg-amber-50/20">
+            <div className="tactile-card rounded-[24px] p-6 sm:p-8 bg-amber-50/20">
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <h2 className="font-heading text-xl font-bold text-text-primary">Action Required</h2>
                   <p className="font-body text-xs text-text-secondary">Pending bookings awaiting WhatsApp confirmation</p>
                 </div>
-                <span className="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">
+                <span className="text-xs font-bold text-amber-800">
                   {pendingApprovals.length} Pending
                 </span>
               </div>
@@ -274,7 +271,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-heading font-bold text-sm text-text-primary capitalize">{b.tier} Lesson</span>
-                        <span className="px-2 py-0.5 text-[10px] font-semibold bg-surface-muted rounded-full">Ref: {b.reference}</span>
+                        <span className="text-[11px] font-mono text-text-secondary">Ref: {b.reference}</span>
                       </div>
                       <p className="font-body text-xs text-text-secondary mt-1">
                         Booked: {new Date(b.createdAt).toLocaleDateString()}
@@ -284,14 +281,14 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
                       <button
                         onClick={() => handleApprove(b.id)}
                         disabled={actionLoading}
-                        className="px-4 py-2 bg-text-primary text-white rounded-full text-xs font-medium hover:bg-black transition-colors"
+                        className="tactile-btn btn-tactile-dark px-4 py-2 rounded-full text-xs font-medium"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => setRejectModalBooking(b)}
                         disabled={actionLoading}
-                        className="px-3 py-2 text-xs font-medium text-text-secondary hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
+                        className="tactile-btn btn-tactile-secondary px-3 py-2 text-xs font-medium text-text-secondary hover:text-red-600 rounded-full"
                       >
                         Reject
                       </button>
@@ -303,7 +300,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
           )}
 
           {/* Revenue Analytics Chart */}
-          <div className="bg-white rounded-[24px] p-6 sm:p-8 border border-border-light shadow-xs">
+          <div className="tactile-card rounded-[24px] p-6 sm:p-8">
             <h2 className="font-heading text-xl font-bold text-text-primary mb-1">Weekly Revenue</h2>
             <p className="font-body text-xs text-text-secondary mb-6">Earnings breakdown over the last 7 days</p>
             
@@ -347,7 +344,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
                 </p>
                 <Link
                   href="/dashboard/schedule"
-                  className="px-5 py-2.5 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-all shadow-xs flex items-center gap-1.5"
+                  className="tactile-btn btn-tactile-dark px-5 py-2.5 rounded-full font-body text-xs font-semibold flex items-center gap-1.5"
                 >
                   <HugeIcon name="calendar" size={14} />
                   <span>View Teaching Schedule</span>
@@ -361,12 +358,12 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
         <div className="space-y-8">
           
           {/* Next Class Widget */}
-          <div className="bg-white rounded-[24px] p-6 border border-border-light shadow-xs">
+          <div className="tactile-card rounded-[24px] p-6">
             <h3 className="font-heading text-lg font-bold text-text-primary mb-4">Next Scheduled Class</h3>
             {nextLesson ? (
               <div className="space-y-4">
                 <div className="p-4 bg-surface-near-white rounded-2xl border border-border-light">
-                  <span className="px-2.5 py-0.5 text-[10px] font-bold bg-accent-blue/10 text-accent-blue rounded-full capitalize">
+                  <span className="text-[11px] font-bold text-accent-blue uppercase tracking-wider">
                     {nextLesson.tier} Lesson
                   </span>
                   <h4 className="font-heading font-bold text-base text-text-primary mt-2">1-on-1 Student Session</h4>
@@ -381,7 +378,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
                       href={nextLesson.meetLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full inline-block text-center px-4 py-2.5 bg-accent-blue text-white rounded-full text-xs font-medium hover:bg-blue-600 transition-colors"
+                      className="tactile-btn btn-tactile-primary w-full inline-block text-center px-4 py-2.5 rounded-full text-xs font-medium"
                     >
                       Start Meeting Room
                     </a>
@@ -396,7 +393,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
                   
                   <button
                     onClick={() => setCompleteModalBooking(nextLesson)}
-                    className="w-full text-center px-4 py-2 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full hover:bg-emerald-100 transition-colors"
+                    className="tactile-btn btn-tactile-dark w-full text-center px-4 py-2.5 text-xs font-semibold rounded-full"
                   >
                     Mark as Completed
                   </button>
@@ -408,7 +405,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
           </div>
 
           {/* Recent History Widget */}
-          <div className="bg-white rounded-[24px] p-6 border border-border-light shadow-xs">
+          <div className="tactile-card rounded-[24px] p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-heading text-lg font-bold text-text-primary">Recent Activity</h3>
               <Link href="/dashboard/schedule" className="text-xs font-medium text-accent-blue hover:underline transition-colors">
@@ -428,9 +425,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
                       <p className="font-heading font-bold text-xs text-text-primary capitalize">{lesson.tier}</p>
                       <p className="font-body text-[11px] text-text-secondary mt-0.5">{new Date(lesson.createdAt).toLocaleDateString()}</p>
                     </div>
-                    <span className={`px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
-                        lesson.status === "completed" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"
-                      }`}>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-text-secondary">
                       {lesson.status}
                     </span>
                   </div>

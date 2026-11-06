@@ -73,7 +73,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="w-full bg-white p-8 sm:p-10 rounded-[28px] shadow-sm border border-border-light relative z-10 space-y-6">
+    <div className="w-full tactile-card p-8 sm:p-10 rounded-[28px] relative z-10 space-y-6">
       
       {/* Logo Badge */}
       <div className="mb-2">
@@ -82,9 +82,6 @@ export default function OnboardingPage() {
 
       {/* Header */}
       <div>
-        <span className="px-3 py-1 bg-surface-muted text-text-primary rounded-full text-[10px] font-bold uppercase tracking-wider border border-border-light mb-3 inline-block">
-          Personalize Your Learning Experience
-        </span>
         <h1 className="font-heading text-2xl sm:text-3xl font-bold text-text-primary tracking-tight mb-1">
           Welcome to Cubicle!
         </h1>
@@ -175,7 +172,7 @@ export default function OnboardingPage() {
         <button 
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 bg-text-primary text-white rounded-full font-body text-xs font-semibold hover:bg-black transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-xs"
+          className="tactile-btn btn-tactile-dark w-full py-3.5 rounded-full font-body text-xs font-semibold disabled:opacity-70 disabled:cursor-not-allowed shadow-xs"
         >
           {loading ? "Saving Profile..." : "Complete Setup & Book Session"}
         </button>

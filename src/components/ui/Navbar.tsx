@@ -56,7 +56,7 @@ export default function Navbar() {
             {!loading && user ? (
               <Link
                 href="/dashboard"
-                className="inline-flex items-center justify-center px-5 py-2 bg-text-primary text-white rounded-full font-body text-sm font-medium hover:bg-black transition-colors"
+                className="tactile-btn btn-tactile-dark inline-flex items-center justify-center px-5 py-2 rounded-full font-body text-sm font-medium transition-colors"
               >
                 Dashboard
               </Link>
@@ -64,13 +64,13 @@ export default function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className="font-body text-sm font-medium text-text-secondary hover:text-text-primary px-3 py-1.5 transition-colors"
+                  className="tactile-btn font-body text-sm font-medium text-text-secondary hover:text-text-primary px-3 py-1.5 transition-colors"
                 >
                   Log in
                 </Link>
                 <Link
                   href="/signup?redirect=/dashboard/book"
-                  className="inline-flex items-center justify-center px-5 py-2 bg-text-primary text-white rounded-full font-body text-sm font-medium hover:bg-black transition-colors"
+                  className="tactile-btn btn-tactile-dark inline-flex items-center justify-center px-5 py-2 rounded-full font-body text-sm font-medium transition-colors"
                 >
                   Free Trial
                 </Link>
