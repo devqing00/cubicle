@@ -185,7 +185,7 @@ function SignupForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-near-white font-body text-xs text-text-primary placeholder:text-text-subtle transition-colors focus:border-accent-blue"
-            placeholder="Alexander Adetayo"
+            placeholder="Divine Ailemen"
             required
             autoComplete="name"
           />

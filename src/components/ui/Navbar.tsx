@@ -19,34 +19,40 @@ export default function Navbar() {
   }, []);
 
   const navItems = [
-    { name: "About", href: "/about" },
-    { name: "Pricing", href: "/pricing" },
-    { name: "How it works", href: "/how-it-works" },
-    { name: "Policy", href: "/cancellation-policy" },
+    { name: "About", idx: "01", href: "/about" },
+    { name: "Pricing", idx: "02", href: "/pricing" },
+    { name: "How it works", idx: "03", href: "/how-it-works" },
+    { name: "Policy", idx: "04", href: "/cancellation-policy" },
   ];
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 py-3 pointer-events-none transition-all duration-300">
+      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 py-3 pointer-events-none">
         <div
-          className={`max-w-[1000px] pl-6 pr-4 pointer-events-auto transition-all duration-300 ease-in-out flex items-center justify-between h-[56px] ${
+          className={`max-w-[1040px] pl-6 pr-4 pointer-events-auto flex items-center justify-between h-[56px] border ${
             scrolled
-              ? "w-full bg-white/80 backdrop-blur-xl shadow-none rounded-full"
-              : "w-full bg-white/0 backdrop-blur-none"
+              ? "w-full bg-white/85 backdrop-blur-xl border-border-light shadow-xs rounded-full"
+              : "w-full bg-white/20 backdrop-blur-xs border-transparent"
           }`}
+          style={{
+            transition: "all 200ms cubic-bezier(0.16, 1, 0.3, 1)"
+          }}
         >
           {/* Logo */}
           <Logo variant="blue" size={24} />
 
-          {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-8">
+          {/* Desktop nav with Swiss Micro-Index Notation */}
+          <nav className="hidden lg:flex items-center gap-7">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="font-body text-sm font-medium text-text-secondary px-3 py-1.5 rounded-full transition-colors hover:text-accent-blue hover:bg-surface-muted capitalize"
+                className="font-body text-xs font-semibold text-text-secondary px-3 py-1.5 rounded-full hover:text-accent-blue hover:bg-surface-muted transition-colors flex items-center gap-1.5 group"
               >
-                {item.name}
+                <span>{item.name}</span>
+                <span className="font-mono text-[9px] text-text-subtle font-normal group-hover:text-accent-blue/70">
+                  {item.idx}
+                </span>
               </Link>
             ))}
           </nav>
@@ -56,7 +62,7 @@ export default function Navbar() {
             {!loading && user ? (
               <Link
                 href="/dashboard"
-                className="tactile-btn btn-tactile-dark inline-flex items-center justify-center px-5 py-2 rounded-full font-body text-sm font-medium transition-colors"
+                className="tactile-btn btn-tactile-dark inline-flex items-center justify-center px-5 py-2 rounded-full font-body text-xs font-semibold"
               >
                 Dashboard
               </Link>
@@ -64,13 +70,13 @@ export default function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className="tactile-btn font-body text-sm font-medium text-text-secondary hover:text-text-primary px-3 py-1.5 transition-colors"
+                  className="tactile-btn font-body text-xs font-semibold text-text-secondary hover:text-text-primary px-3 py-1.5 transition-colors"
                 >
-                  Log in
+                  Log In
                 </Link>
                 <Link
                   href="/signup?redirect=/dashboard/book"
-                  className="tactile-btn btn-tactile-dark inline-flex items-center justify-center px-5 py-2 rounded-full font-body text-sm font-medium transition-colors"
+                  className="tactile-btn btn-tactile-dark inline-flex items-center justify-center px-5 py-2 rounded-full font-body text-xs font-semibold"
                 >
                   Free Trial
                 </Link>
@@ -81,25 +87,30 @@ export default function Navbar() {
           {/* Mobile menu toggle button */}
           <div className="lg:hidden flex items-center">
             <button
-              className="lg:hidden bg-transparent border-none cursor-pointer p-2 text-text-primary z-[60]"
+              className="tactile-btn bg-transparent border-none cursor-pointer p-2 text-text-primary z-[60]"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >
               {menuOpen ? (
-                <HugeIcon name="cancel" size={24} />
+                <HugeIcon name="cancel" size={22} />
               ) : (
-                <HugeIcon name="menu" size={24} />
+                <HugeIcon name="menu" size={22} />
               )}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu Overlay with Composite Translation */}
       <div
-        className={`fixed inset-0 h-[100dvh] w-full bg-white/95 backdrop-blur-2xl z-[40] flex flex-col items-center justify-center gap-8 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-          menuOpen ? "opacity-100 pointer-events-auto translate-y-0" : "opacity-0 pointer-events-none -translate-y-4"
+        className={`fixed inset-0 h-[100dvh] w-full bg-white/95 backdrop-blur-2xl z-[40] flex flex-col items-center justify-center gap-8 ${
+          menuOpen ? "pointer-events-auto" : "pointer-events-none"
         }`}
+        style={{
+          opacity: menuOpen ? 1 : 0,
+          transform: menuOpen ? "translate3d(0, 0, 0)" : "translate3d(0, -12px, 0)",
+          transition: "opacity 200ms cubic-bezier(0.16, 1, 0.3, 1), transform 200ms cubic-bezier(0.16, 1, 0.3, 1)"
+        }}
       >
         <nav className="flex flex-col gap-6 items-center justify-center text-center w-full max-w-xs px-6">
           {navItems.map((item) => (
@@ -107,17 +118,17 @@ export default function Navbar() {
               key={item.name}
               href={item.href}
               onClick={() => setMenuOpen(false)}
-              className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight capitalize transition-colors hover:text-accent-blue py-1 inline-flex items-center justify-center gap-2 group text-center w-full"
+              className="font-heading text-3xl font-bold text-text-primary tracking-tight capitalize hover:text-accent-blue py-1 inline-flex items-center justify-center gap-2 group text-center w-full"
             >
               <span>{item.name}</span>
-              <HugeIcon name="arrow-up-right" size={22} className="text-text-subtle group-hover:text-accent-blue group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              <span className="font-mono text-xs font-normal text-text-subtle">({item.idx})</span>
             </Link>
           ))}
           {!loading && user ? (
             <Link
               href="/dashboard"
               onClick={() => setMenuOpen(false)}
-              className="mt-6 inline-flex items-center justify-center w-full px-8 py-3.5 bg-text-primary text-white rounded-full font-body text-base font-medium hover:bg-black transition-colors"
+              className="tactile-btn btn-tactile-dark mt-6 inline-flex items-center justify-center w-full px-8 py-3.5 rounded-full font-body text-sm font-semibold"
             >
               Dashboard
             </Link>
@@ -126,16 +137,16 @@ export default function Navbar() {
               <Link
                 href="/signup?redirect=/dashboard/book"
                 onClick={() => setMenuOpen(false)}
-                className="inline-flex items-center justify-center w-full px-8 py-3.5 bg-text-primary text-white rounded-full font-body text-base font-medium hover:bg-black transition-colors"
+                className="tactile-btn btn-tactile-dark inline-flex items-center justify-center w-full px-8 py-3.5 rounded-full font-body text-sm font-semibold"
               >
-                Free Trial
+                Start Free Trial
               </Link>
               <Link
                 href="/login"
                 onClick={() => setMenuOpen(false)}
-                className="inline-flex items-center justify-center w-full px-8 py-3.5 bg-surface-muted text-text-primary border border-border-light rounded-full font-body text-base font-medium hover:bg-border-light transition-colors"
+                className="tactile-btn btn-tactile-secondary inline-flex items-center justify-center w-full px-8 py-3.5 rounded-full font-body text-sm font-semibold"
               >
-                Log in
+                Log In
               </Link>
             </div>
           )}

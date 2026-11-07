@@ -89,7 +89,7 @@ export default function CancellationPolicyPage() {
               href={`https://wa.me/${(process.env.NEXT_PUBLIC_PLATFORM_WHATSAPP_NUMBER || "2348000000000").replace(/[^0-9]/g, '')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="tactile-btn inline-flex items-center gap-2 px-6 py-2.5 bg-[#25D366] text-white rounded-full font-body text-xs font-semibold hover:opacity-90 transition-opacity shadow-md"
+              className="tactile-btn btn-tactile-whatsapp inline-flex items-center gap-2 px-7 py-3 rounded-full font-body text-xs font-semibold"
             >
               <HugeIcon name="comment" size={16} />
               <span>Contact WhatsApp Support</span>

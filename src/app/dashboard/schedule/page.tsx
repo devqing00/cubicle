@@ -304,14 +304,14 @@ export default function SchedulePage() {
                             href={lesson.videoCallUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-3 py-1.5 bg-accent-blue text-white rounded-full text-xs font-semibold hover:bg-blue-600 transition-colors"
+                            className="tactile-btn btn-tactile-primary px-3.5 py-1.5 rounded-full text-xs font-semibold"
                           >
                             Join Call
                           </a>
                         ) : (
                           <button 
                             onClick={() => toast.info("Meeting links will be generated closer to the session.")}
-                            className="px-3 py-1.5 bg-surface-muted border border-border-light rounded-full text-xs font-medium text-text-subtle cursor-not-allowed"
+                            className="tactile-btn px-3 py-1.5 bg-surface-muted border border-border-light rounded-full text-xs font-medium text-text-subtle cursor-not-allowed"
                           >
                             Pending
                           </button>
@@ -319,14 +319,14 @@ export default function SchedulePage() {
                         <button
                           onClick={() => promptStatusUpdate(lesson.id, "cancelled", lesson.reference)}
                           disabled={actionLoading === lesson.id}
-                          className="px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-full text-xs font-medium hover:bg-red-100 transition-colors disabled:opacity-50"
+                          className="tactile-btn px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-full text-xs font-medium hover:bg-red-100 transition-colors disabled:opacity-50"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={() => promptStatusUpdate(lesson.id, "completed", lesson.reference)}
                           disabled={actionLoading === lesson.id}
-                          className="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-medium hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                          className="tactile-btn px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-medium hover:bg-emerald-100 transition-colors disabled:opacity-50"
                         >
                           Complete
                         </button>
@@ -663,7 +663,7 @@ export default function SchedulePage() {
                             navigator.clipboard.writeText(code);
                             toast.success(`Meeting code "${code}" copied!`);
                           }}
-                          className="px-2 py-0.5 bg-surface-muted hover:bg-surface-near-white border border-border-light rounded-md text-[10px] font-mono text-text-primary transition-colors flex items-center gap-1"
+                          className="tactile-btn px-2.5 py-0.5 bg-surface-muted hover:bg-surface-near-white border border-border-light rounded-md text-[10px] font-mono text-text-primary transition-colors flex items-center gap-1"
                         >
                           <span>Room Code: {booking.meetingCode || booking.meetLink?.split("/").pop()}</span>
                           <span className="text-[9px] opacity-75 font-sans">📋</span>

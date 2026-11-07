@@ -8,81 +8,116 @@ import Logo from "@/components/ui/Logo";
 const platformNumber = (process.env.NEXT_PUBLIC_PLATFORM_WHATSAPP_NUMBER || "2348000000000").replace(/[^0-9]/g, '');
 
 const socials = [
-  { name: "WhatsApp", href: `https://wa.me/${platformNumber}`, iconName: "comment" as const },
-  { name: "Instagram", href: "https://instagram.com/thecubicle", iconName: "instagram" as const },
-  { name: "LinkedIn", href: "https://linkedin.com/company/thecubicle", iconName: "linkedin" as const },
-  { name: "TikTok", href: "https://tiktok.com/@thecubicle", iconName: "tiktok" as const },
-  { name: "Facebook", href: "https://facebook.com/thecubicle", iconName: "facebook" as const },
+  { name: "WhatsApp", href: `https://wa.me/${platformNumber}` },
+  { name: "Instagram", href: "https://instagram.com/thecubicle" },
+  { name: "LinkedIn", href: "https://linkedin.com/company/thecubicle" },
+  { name: "Twitter / X", href: "https://x.com/thecubicle" },
 ];
 
 export default function Footer() {
   return (
-    <footer className="bg-surface-near-white pt-[80px] pb-12 relative overflow-hidden border-t border-border-subtle">
-      <div className="max-w-[1200px] mx-auto px-6 md:px-12 flex flex-col">
-        <div className="flex items-start justify-between flex-wrap gap-12 relative z-10">
+    <footer className="bg-surface-near-white pt-20 pb-12 relative overflow-hidden border-t border-border-light">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-10 flex flex-col">
+        
+        {/* Top Grid: Big Editorial Contact Callout & Navigation */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-16 border-b border-border-light">
           
-          {/* Brand & Copyright */}
-          <div className="flex flex-col gap-4">
+          {/* Left Column: Brand & Big Direct Action (FUEL Style) */}
+          <div className="md:col-span-7 space-y-6">
             <Logo variant="blue" size={26} />
-            <p className="font-body text-[15px] font-normal text-text-secondary max-w-[280px] leading-[1.7] block">
-              A softer, smarter way to learn. Real conversations, entirely built around your pace and goals.
+            
+            <h3 className="font-heading text-2xl sm:text-4xl font-bold text-text-primary tracking-tight leading-snug">
+              Personalized language learning. <br />
+              Direct with verified tutors.
+            </h3>
+
+            <p className="font-body text-xs sm:text-sm text-text-secondary max-w-md leading-relaxed font-normal">
+              Structured speaking dialogues tailored to your career, exam, and relocation milestones. Pick a slot, introduce yourself on WhatsApp, and start speaking.
             </p>
+
+            <div className="pt-2">
+              <Link
+                href="/signup?redirect=/dashboard/book"
+                className="swiss-link text-sm font-bold text-text-primary hover:text-accent-blue"
+              >
+                <span>Book Your Complimentary Trial Session</span>
+                <HugeIcon name="arrow-up-right" size={16} />
+              </Link>
+            </div>
           </div>
 
-          <div className="flex gap-8 md:gap-16 flex-col md:flex-row flex-wrap">
-            {/* Navigation Column */}
-            <div className="flex flex-col gap-3">
-              <h4 className="font-heading text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Navigation</h4>
-              {[
-                { name: "About", href: "/about" },
-                { name: "Pricing", href: "/pricing" },
-                { name: "How it works", href: "/how-it-works" },
-                { name: "Cancellation policy", href: "/cancellation-policy" },
-                { name: "FAQ", href: "/faq" },
-                { name: "Contact & Support", href: "/contact" },
-              ].map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="font-body text-[14px] font-medium text-text-secondary no-underline inline-flex items-center gap-1 transition-colors hover:text-accent-blue group"
-                >
-                  <span>{link.name}</span>
-                  <HugeIcon name="arrow-up-right" size={14} className="text-text-subtle group-hover:text-accent-blue group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </Link>
-              ))}
-            </div>
-
-            {/* Socials Column */}
-            <div className="flex flex-col gap-3">
-              <h4 className="font-heading text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Social</h4>
-              <div className="flex items-center gap-3">
-                {socials.map((s) => (
-                  <a
-                    key={s.name}
-                    href={s.href}
-                    id={`footer-social-${s.name.toLowerCase()}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={s.name}
-                    className="w-9 h-9 rounded-full border border-border-light flex items-center justify-center transition-colors bg-white text-text-secondary hover:bg-surface-muted hover:text-accent-blue hover:border-accent-blue/40"
-                  >
-                    <HugeIcon name={s.iconName} size={16} />
-                  </a>
+          {/* Right Column: Swiss Indexed Links */}
+          <div className="md:col-span-5 grid grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-text-subtle font-bold">
+                Platform
+              </span>
+              <ul className="space-y-2.5">
+                {[
+                  { name: "About", idx: "01", href: "/about" },
+                  { name: "Pricing", idx: "02", href: "/pricing" },
+                  { name: "How It Works", idx: "03", href: "/how-it-works" },
+                  { name: "Cancellation Policy", idx: "04", href: "/cancellation-policy" },
+                  { name: "FAQ", idx: "05", href: "/faq" },
+                  { name: "Contact & Support", idx: "06", href: "/contact" },
+                ].map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="font-body text-xs font-semibold text-text-secondary hover:text-accent-blue transition-colors flex items-center justify-between group"
+                    >
+                      <span>{link.name}</span>
+                      <span className="font-mono text-[9px] text-text-subtle group-hover:text-accent-blue/70">
+                        {link.idx}
+                      </span>
+                    </Link>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
+
+            <div className="space-y-3">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-text-subtle font-bold">
+                Connect
+              </span>
+              <ul className="space-y-2.5">
+                {socials.map((s) => (
+                  <li key={s.name}>
+                    <a
+                      href={s.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-body text-xs font-semibold text-text-secondary hover:text-accent-blue transition-colors flex items-center justify-between group"
+                    >
+                      <span>{s.name}</span>
+                      <HugeIcon name="arrow-up-right" size={12} className="text-text-subtle group-hover:text-accent-blue" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Bottom Legal Bar */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] text-text-subtle">
+          <div>
+            © 2026 Cubicle Language Learning. All rights reserved.
+          </div>
+          <div className="flex items-center gap-6">
+            <Link href="/terms" className="hover:text-text-primary transition-colors">
+              Terms of Service
+            </Link>
+            <Link href="/privacy" className="hover:text-text-primary transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/cancellation-policy" className="hover:text-text-primary transition-colors">
+              Refund Policy
+            </Link>
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-border-light flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="w-auto font-body text-[13px] font-normal text-text-subtle">
-            © {new Date().getFullYear()} Cubicle. All rights reserved.
-          </p>
-          <div className="flex gap-6 items-center whitespace-nowrap shrink-0">
-            <Link href="/privacy" className="font-body text-[13px] font-normal text-text-subtle hover:text-text-primary transition-colors whitespace-nowrap">Privacy Policy</Link>
-            <Link href="/terms" className="font-body text-[13px] font-normal text-text-subtle hover:text-text-primary transition-colors whitespace-nowrap">Terms of Service</Link>
-          </div>
-        </div>
       </div>
     </footer>
   );

@@ -134,7 +134,7 @@ export default function TutorDashboard({ userData }: { userData: UserData }) {
 
       {/* Next Upcoming Live Lesson Hero Countdown Banner */}
       {nextLesson && (
-        <div className="tactile-section-container-dark text-white p-6 sm:p-8 rounded-[28px] relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="tactile-section-container-dark bg-gradient-to-r from-text-primary via-neutral-900 to-accent-blue/90 text-white p-6 sm:p-8 rounded-[28px] border border-white/10 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2 relative z-10">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[10px] font-bold uppercase tracking-wider text-accent-blue">

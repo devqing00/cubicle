@@ -50,7 +50,7 @@ export default function ContactPage() {
                     required
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="Alexander Adetayo"
+                    placeholder="Divine Ailemen"
                     className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-near-white font-body text-xs text-text-primary outline-none focus:outline-none focus:ring-0 focus:border-accent-blue transition-colors"
                   />
                 </div>
@@ -107,8 +107,9 @@ export default function ContactPage() {
                   href={`https://wa.me/${(process.env.NEXT_PUBLIC_PLATFORM_WHATSAPP_NUMBER || "2348000000000").replace(/[^0-9]/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="tactile-btn inline-flex items-center justify-center gap-2 w-full py-3.5 bg-[#25D366] text-white rounded-full font-body text-xs font-semibold hover:opacity-90 transition-opacity shadow-md"
+                  className="tactile-btn btn-tactile-whatsapp inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-full font-body text-xs font-semibold"
                 >
+                  <HugeIcon name="comment" size={16} />
                   <span>Chat on WhatsApp</span>
                   <HugeIcon name="arrow-right" size={14} />
                 </a>

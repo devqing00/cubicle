@@ -1,47 +1,81 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import HugeIcon from "@/components/ui/HugeIcon";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function CTASection() {
-  return (
-    <section id="booking" className="py-20 px-4 sm:px-6 bg-surface-near-white">
-      <div className="max-w-[1200px] mx-auto w-full">
-        {/* Electric Blue Dark Mode Container with Tactile Hardware Depth */}
-        <div className="tactile-section-container-dark bg-gradient-to-b from-[#0a1936] via-[#051026] to-[#030918] border border-blue-900/40 rounded-[24px] md:rounded-[32px] p-8 sm:p-12 md:p-16 text-center w-full relative overflow-hidden">
-          
-          {/* Subtle Background Glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-accent-blue/15 blur-[120px] rounded-full pointer-events-none" />
+  const sectionRef = useRef<HTMLElement>(null);
 
-          {/* Heading */}
-          <h2 className="font-heading text-3xl sm:text-5xl md:text-6xl font-bold text-white leading-[1.1] tracking-tight mb-6 w-full max-w-3xl mx-auto text-center relative z-10">
-            YOUR FIRST LESSON IS <br className="hidden sm:block" />
-            <span className="italic text-accent-blue">COMPLETELY FREE!</span>
+  useEffect(() => {
+    if (typeof window === "undefined" || !sectionRef.current) return;
+    const ctx = gsap.context(() => {
+      gsap.from(".cta-bento-container", {
+        opacity: 0,
+        scale: 0.96,
+        y: 40,
+        duration: 0.85,
+        ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 85%",
+          toggleActions: "play none none none",
+          once: true,
+        },
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <section id="booking" ref={sectionRef} className="py-20 sm:py-28 px-4 sm:px-6 bg-surface-near-white">
+      <div className="max-w-[1200px] mx-auto w-full">
+        
+        {/* Container with High-Tension Tactile Depth */}
+        <div className="cta-bento-container tactile-section-container-dark bg-gradient-to-b from-[#0e1726] via-[#09101d] to-[#040810] border border-white/12 rounded-[28px] md:rounded-[36px] p-8 sm:p-14 md:p-16 text-center w-full relative overflow-hidden">
+          
+          {/* Subtle Ambient Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-sky-500/10 blur-[120px] rounded-full pointer-events-none -z-0" />
+
+          {/* Headline */}
+          <h2 className="font-heading text-3xl sm:text-5xl md:text-7xl font-bold text-white leading-[1.03] tracking-tight mb-6 w-full max-w-4xl mx-auto text-center relative z-10">
+            SPEAK FLUENTLY. <br />
+            START WITH A <span className="italic text-accent-blue">FREE LESSON.</span>
           </h2>
 
           {/* Subheading */}
           <p className="font-body text-base sm:text-lg text-slate-300 leading-relaxed mb-10 w-full max-w-xl mx-auto font-normal text-center relative z-10">
-            No commitment. No payment info upfront. Just show up, have a conversation, and see if this is the right fit for you.
+            Zero commitment. No credit card required. Pick your available slot, introduce yourself on WhatsApp, and meet your tutor.
           </p>
 
-          {/* CTA Button */}
-          <div className="w-full flex justify-center mb-12 relative z-10">
+          {/* CTA Buttons */}
+          <div className="w-full flex flex-wrap items-center justify-center gap-4 mb-12 relative z-10">
             <Link
               href="/signup?redirect=/dashboard/book"
-              id="cta-whatsapp-btn"
-              className="tactile-btn btn-tactile-secondary inline-flex items-center gap-2 px-8 py-4 rounded-full font-body text-base font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+              className="tactile-btn btn-tactile-primary inline-flex items-center gap-2 px-8 py-4 rounded-full font-body text-sm sm:text-base font-semibold shadow-lg"
             >
-              <HugeIcon name="comment" size={20} className="text-accent-blue" />
-              <span>Book now</span>
+              <span>Claim Free 60-Min Session</span>
               <HugeIcon name="arrow-right" size={18} />
+            </Link>
+            <Link
+              href="/how-it-works"
+              className="tactile-btn btn-tactile-secondary inline-flex items-center gap-2 px-7 py-4 rounded-full font-body text-sm sm:text-base font-semibold"
+            >
+              <span>See How It Works</span>
             </Link>
           </div>
 
-          {/* Policy Note */}
-          <div className="w-full max-w-2xl mx-auto p-4 sm:p-5 bg-white/5 border border-white/10 rounded-2xl text-center relative z-10 shadow-inner">
-            <p className="w-full font-body text-xs text-slate-400 leading-relaxed font-normal text-center">
-              Free trial limited to one redemption per student. Paid sessions can be rescheduled free of charge if requested more than 24 hours in advance. No-shows are non-refundable.
+          {/* Guarantee & Terms Bar */}
+          <div className="w-full max-w-2xl mx-auto p-4 bg-white/5 border border-white/10 rounded-2xl text-center relative z-10">
+            <p className="font-mono text-xs text-slate-400 leading-relaxed font-normal">
+              Free trial redemption: 1 session per student • Full 60 minutes • Includes live pronunciation feedback
             </p>
           </div>
 

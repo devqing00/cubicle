@@ -120,12 +120,12 @@ export default function HeroSection() {
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <div className="w-8 h-8 rounded-full bg-accent-blue/10 border border-accent-blue/20 flex items-center justify-center text-accent-blue font-bold text-xs">
-                    AA
+                    DA
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white animate-pulse" />
                 </div>
                 <div>
-                  <h4 className="font-heading text-xs font-bold text-text-primary leading-tight">Alexander Adetayo</h4>
+                  <h4 className="font-heading text-xs font-bold text-text-primary leading-tight">Divine Ailemen</h4>
                   <p className="font-body text-[11px] text-text-secondary">Language Instructor</p>
                 </div>
               </div>
@@ -185,8 +185,8 @@ export default function HeroSection() {
             </p>
           </div>
 
-          {/* Action Footer with Bouncy Arrow */}
-          <div className="w-full py-2.5 px-4 bg-text-primary text-white rounded-full font-body text-xs font-medium flex items-center justify-between group">
+          {/* Action Footer with Tactile Button */}
+          <div className="w-full py-2.5 px-4 tactile-btn btn-tactile-dark rounded-full font-body text-xs font-medium flex items-center justify-between group cursor-pointer">
             <span>Confirm Trial Session</span>
             <HugeIcon
               name="arrow-right"
@@ -247,7 +247,7 @@ export default function HeroSection() {
                 <div className="flex items-center justify-between text-[10px] text-blue-200">
                   <span className="font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Alexander (Tutor)
+                    Divine (Tutor)
                   </span>
                   <span className="text-[9px] opacity-75">Speaking</span>
                 </div>
@@ -270,8 +270,8 @@ export default function HeroSection() {
             <HugeIcon name="check" size={16} className="text-emerald-600" />
           </div>
 
-          {/* Footer Callout with Continuous Sparkle Spin */}
-          <div className="flex items-center justify-center gap-2 py-2 px-3 bg-surface-muted rounded-full text-xs font-semibold text-text-primary">
+          {/* Footer Callout with Tactile Button */}
+          <div className="flex items-center justify-center gap-2 py-2 px-3 tactile-btn btn-tactile-secondary rounded-full text-xs font-semibold text-text-primary">
             <HugeIcon name="sparkles" size={14} className="text-accent-blue animate-[spin_6s_linear_infinite]" />
             <span>Interactive Speaking Practice</span>
           </div>
@@ -341,7 +341,7 @@ export default function HeroSection() {
           </div>
 
           {/* Bottom Reminder Card */}
-          <div className="w-full py-2.5 px-4 bg-white border border-border-subtle rounded-full text-xs font-semibold text-text-primary flex items-center justify-between group">
+          <div className="w-full py-2.5 px-4 tactile-btn btn-tactile-secondary rounded-full text-xs font-semibold text-text-primary flex items-center justify-between group">
             <span>Next Session Scheduled</span>
             <HugeIcon name="calendar" size={14} className="text-accent-blue" />
           </div>
@@ -368,28 +368,6 @@ export default function HeroSection() {
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-surface-near-white via-surface-near-white/60 to-transparent" />
       </div>
 
-      {/* Inline Scoped AE Viral Motion Keyframes */}
-      <style jsx global>{`
-        @keyframes eqWave {
-          0% { height: 4px; }
-          100% { height: 20px; }
-        }
-        @keyframes aeBubblePop {
-          0% {
-            opacity: 0;
-            transform: translateY(8px) scale(0.94);
-          }
-          65% {
-            opacity: 1;
-            transform: translateY(-2px) scale(1.03);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0px) scale(1);
-          }
-        }
-      `}</style>
-
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 relative z-10 w-full text-center">
         
         {/* Header & Tagline */}
@@ -405,14 +383,14 @@ export default function HeroSection() {
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/signup?redirect=/dashboard/book"
-              className="tactile-btn btn-tactile-dark inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-body text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-text-primary text-white hover:bg-black rounded-full font-body text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg tactile-btn btn-tactile-dark"
             >
               <span>Start Free Trial</span>
               <HugeIcon name="arrow-right" size={16} />
             </Link>
             <Link
               href="/how-it-works"
-              className="tactile-btn btn-tactile-secondary inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-body text-sm font-medium transition-colors duration-200"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-text-primary border border-border-light hover:border-accent-blue/50 hover:text-accent-blue rounded-full font-body text-sm font-semibold transition-colors duration-200 shadow-xs tactile-btn btn-tactile-secondary"
             >
               <span>How It Works</span>
             </Link>
@@ -424,6 +402,9 @@ export default function HeroSection() {
           className="relative w-full h-[460px] mt-4 mb-6 perspective-[1200px] transform scale-100 max-[900px]:scale-[0.8] max-sm:scale-[0.55] max-sm:-mt-[100px] max-sm:-mb-[80px]"
           style={{ transformStyle: "preserve-3d" }}
         >
+          {/* Luminous Ambient Shadow (Zero-Lag GPU Glow) */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[420px] bg-sky-400/25 blur-[100px] rounded-full pointer-events-none -z-10" />
+
           {cards.map((card, idx) => {
             const posIndex = (idx + cycle) % 3;
             const style = positionStyles[posIndex];
