@@ -14,7 +14,7 @@ interface NumberTickerProps {
 
 export default function NumberTicker({
   value,
-  duration = 2,
+  duration = 1.8,
   delay = 0,
   decimalPlaces = 0,
   prefix = "",
@@ -23,6 +23,13 @@ export default function NumberTicker({
 }: NumberTickerProps) {
   const spanRef = useRef<HTMLSpanElement>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
+
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: decimalPlaces,
+      maximumFractionDigits: decimalPlaces,
+    }).format(num);
+  };
 
   useEffect(() => {
     const element = spanRef.current;
@@ -33,13 +40,6 @@ export default function NumberTicker({
 
     const easeOutQuart = (x: number): number => {
       return 1 - Math.pow(1 - x, 4);
-    };
-
-    const formatNumber = (num: number) => {
-      return new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: decimalPlaces,
-        maximumFractionDigits: decimalPlaces,
-      }).format(num);
     };
 
     const animate = (timestamp: number) => {
@@ -68,7 +68,7 @@ export default function NumberTicker({
       }
     };
 
-    // IntersectionObserver so animation triggers on scroll into view
+    // IntersectionObserver triggers count up once visible
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -78,7 +78,7 @@ export default function NumberTicker({
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.1 }
     );
 
     observer.observe(element);
@@ -92,9 +92,9 @@ export default function NumberTicker({
   return (
     <span
       ref={spanRef}
-      className={`inline-block tabular-nums tracking-tight font-variant-numeric:tabular-nums ${className}`}
+      className={`inline-block tabular-nums tracking-tight ${className}`}
     >
-      {prefix}0{suffix}
+      {prefix}{formatNumber(value)}{suffix}
     </span>
   );
 }

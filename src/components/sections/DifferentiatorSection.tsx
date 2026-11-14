@@ -113,43 +113,6 @@ const pillars = [
 export default function DifferentiatorSection() {
   const sectionRef = useRef<HTMLElement>(null);
 
-  // GSAP 60fps ScrollTrigger Hardware Accelerated Stagger
-  useEffect(() => {
-    if (typeof window === "undefined" || !sectionRef.current) return;
-
-    const ctx = gsap.context(() => {
-      gsap.from(".pillar-bento-card", {
-        opacity: 0,
-        y: 35,
-        duration: 0.65,
-        stagger: 0.08,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: ".pillar-bento-grid",
-          start: "top 85%",
-          toggleActions: "play none none none",
-          once: true,
-        },
-      });
-
-      gsap.from(".bento-track-card", {
-        opacity: 0,
-        y: 40,
-        duration: 0.75,
-        stagger: 0.12,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: ".bento-track-grid",
-          start: "top 82%",
-          toggleActions: "play none none none",
-          once: true,
-        },
-      });
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, []);
-
   return (
     <section id="about" ref={sectionRef} className="py-20 sm:py-28 px-4 sm:px-6 bg-surface-near-white">
       <div className="max-w-[1200px] mx-auto w-full">
@@ -157,10 +120,6 @@ export default function DifferentiatorSection() {
         {/* Section Headline */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-blue/10 border border-accent-blue/20 text-accent-blue text-xs font-bold uppercase tracking-wider mb-3">
-              <HugeIcon name="sparkles" size={13} />
-              <span>Pedagogy That Works</span>
-            </div>
             <h2 className="font-heading text-3xl sm:text-5xl md:text-6xl font-bold text-text-primary leading-[1.05] tracking-tight">
               Learning designed around <span className="italic text-accent-blue">your life.</span>
             </h2>

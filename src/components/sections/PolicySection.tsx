@@ -1,40 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import HugeIcon from "@/components/ui/HugeIcon";
 import Link from "next/link";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
 
 export default function PolicySection() {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !sectionRef.current) return;
-    const ctx = gsap.context(() => {
-      gsap.from(".policy-bento-card", {
-        opacity: 0,
-        y: 35,
-        duration: 0.75,
-        ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 85%",
-          toggleActions: "play none none none",
-          once: true,
-        },
-      });
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, []);
-
   return (
-    <section id="cancellation-policy" ref={sectionRef} className="py-20 sm:py-28 px-4 sm:px-6 bg-surface-near-white">
+    <section id="cancellation-policy" className="py-20 sm:py-28 px-4 sm:px-6 bg-surface-near-white">
       <div className="max-w-[1200px] mx-auto w-full">
         
         {/* Section Headline */}
@@ -51,7 +23,7 @@ export default function PolicySection() {
         </div>
 
         {/* 3-Pillar Standards Card */}
-        <div className="policy-bento-card tactile-card rounded-[28px] p-6 sm:p-12 space-y-8 w-full mb-10">
+        <div className="tactile-card rounded-[28px] p-6 sm:p-12 space-y-8 w-full mb-10 border border-border-light">
           
           <div className="flex flex-col sm:flex-row items-start gap-5 w-full">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center shrink-0">
@@ -98,31 +70,31 @@ export default function PolicySection() {
             <div className="w-full">
               <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
                 <h3 className="font-heading text-lg font-bold text-text-primary">
-                  Unnotified no-shows
+                  No-show policy
                 </h3>
-                <span className="font-mono text-[11px] font-bold text-text-subtle bg-surface-muted px-2.5 py-0.5 rounded-full border border-border-light">
-                  Non-refundable
+                <span className="font-mono text-[11px] font-bold text-text-subtle bg-surface-muted px-2.5 py-0.5 rounded-full">
+                  Slot Forfeited
                 </span>
               </div>
               <p className="font-body text-xs sm:text-sm text-text-secondary leading-relaxed font-normal">
-                Instructors wait in the Google Meet room for 15 minutes. If a student does not join and provides no notification, the session is marked as completed and forfeited.
+                Tutors wait in the Google Meet room for 15 minutes before the session is closed. To respect instructor preparation, unattended slots cannot be rescheduled.
               </p>
             </div>
           </div>
 
         </div>
 
-        {/* Read Full Policy Link */}
-        <div className="flex justify-between items-center text-xs">
-          <span className="text-text-subtle font-mono">
-            Governed by Cubicle Student Terms of Service
-          </span>
+        {/* Footer Link */}
+        <div className="flex items-center justify-between text-xs text-text-secondary border-t border-border-light pt-6 flex-wrap gap-4">
+          <p className="font-body">
+            Need special accommodations or custom corporate scheduling?
+          </p>
           <Link
-            href="/cancellation-policy"
-            className="swiss-link text-xs font-semibold hover:text-accent-blue"
+            href="/contact"
+            className="swiss-link font-semibold hover:text-accent-blue"
           >
-            <span>Read Complete Legal Policy</span>
-            <HugeIcon name="arrow-up-right" size={14} />
+            <span>Read full cancellation & refund terms</span>
+            <HugeIcon name="arrow-right" size={12} />
           </Link>
         </div>
 
