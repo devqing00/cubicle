@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import HugeIcon from "@/components/ui/HugeIcon";
 import Link from "next/link";
 import NumberTicker from "@/components/ui/NumberTicker";
+import FluencyConsole from "@/components/sections/FluencyConsole";
 
 interface Plan {
   id: string;
@@ -214,83 +215,12 @@ export default function PricingSection() {
         </div>
 
         {/* 
-          UPGRADED CLEAN METRICS SHOWCASE:
-          100% visible, fully rendered, high-taste Swiss layout with no AI slop badges.
+          INTERACTIVE FLUENCY LAB & COMMAND CONSOLE:
+          Replaces bland static counters with an interactive audio visualizer,
+          CEFR benchmark explorer, 1-click slot shifter, and private room simulator.
         */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          
-          {/* Metric 1 */}
-          <div className="bg-white border border-border-light rounded-[24px] p-7 flex flex-col justify-between shadow-2xs hover:border-border-subtle transition-colors">
-            <div className="w-10 h-10 rounded-xl bg-surface-muted border border-border-light flex items-center justify-center text-text-primary mb-5">
-              <HugeIcon name="calendar" size={20} />
-            </div>
-            <div>
-              <div className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
-                <NumberTicker value={1250} suffix="+" />
-              </div>
-              <h4 className="font-heading font-bold text-sm text-text-primary mt-1.5">
-                Live Hours Taught
-              </h4>
-              <p className="font-body text-xs text-text-secondary mt-1 leading-relaxed">
-                1-on-1 speaking sessions across all active language curriculum tracks.
-              </p>
-            </div>
-          </div>
-
-          {/* Metric 2 */}
-          <div className="bg-white border border-border-light rounded-[24px] p-7 flex flex-col justify-between shadow-2xs hover:border-border-subtle transition-colors">
-            <div className="w-10 h-10 rounded-xl bg-surface-muted border border-border-light flex items-center justify-center text-text-primary mb-5">
-              <HugeIcon name="sparkles" size={20} />
-            </div>
-            <div>
-              <div className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
-                <NumberTicker value={98.4} decimalPlaces={1} suffix="%" />
-              </div>
-              <h4 className="font-heading font-bold text-sm text-text-primary mt-1.5">
-                Fluency Completion
-              </h4>
-              <p className="font-body text-xs text-text-secondary mt-1 leading-relaxed">
-                Student target attainment across DELE, TEF Canada, and executive benchmarks.
-              </p>
-            </div>
-          </div>
-
-          {/* Metric 3 */}
-          <div className="bg-white border border-border-light rounded-[24px] p-7 flex flex-col justify-between shadow-2xs hover:border-border-subtle transition-colors">
-            <div className="w-10 h-10 rounded-xl bg-surface-muted border border-border-light flex items-center justify-center text-text-primary mb-5">
-              <HugeIcon name="clock" size={20} />
-            </div>
-            <div>
-              <div className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
-                <NumberTicker value={24} suffix="h" />
-              </div>
-              <h4 className="font-heading font-bold text-sm text-text-primary mt-1.5">
-                Free Rescheduling
-              </h4>
-              <p className="font-body text-xs text-text-secondary mt-1 leading-relaxed">
-                Shift or reschedule your slot directly in the dashboard up to 24 hours prior.
-              </p>
-            </div>
-          </div>
-
-          {/* Metric 4 */}
-          <div className="bg-white border border-border-light rounded-[24px] p-7 flex flex-col justify-between shadow-2xs hover:border-border-subtle transition-colors">
-            <div className="w-10 h-10 rounded-xl bg-surface-muted border border-border-light flex items-center justify-center text-text-primary mb-5">
-              <HugeIcon name="users" size={20} />
-            </div>
-            <div>
-              <div className="font-heading text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
-                1-on-1
-              </div>
-              <h4 className="font-heading font-bold text-sm text-text-primary mt-1.5">
-                Dedicated Attention
-              </h4>
-              <p className="font-body text-xs text-text-secondary mt-1 leading-relaxed">
-                Every minute is focused on your active speaking, immediate pronunciation, and notes.
-              </p>
-            </div>
-          </div>
-
+        <div className="mt-8">
+          <FluencyConsole />
         </div>
 
       </div>

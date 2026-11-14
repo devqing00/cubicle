@@ -25,20 +25,83 @@ const positionStyles = [
   },
 ];
 
-const dialogues = [
-  "¡Hola! Let's practice today's dialogue.",
-  "Perfect pronunciation on past tense verbs!",
-  "Great job! Ready for a quick recap?"
-];
-
-const feedbackNotes = [
-  "\"Excellent pronunciation on rolling R sounds today! Next class: past tense verbs.\"",
-  "\"Great confidence in free speaking! Working on subjunctive mood next session.\"",
-  "\"Spot-on vocabulary usage! Practice the 5 new idioms before Thursday.\""
-];
+const heroLangPresets: Record<string, {
+  label: string;
+  flag: string;
+  room: string;
+  trackTag: string;
+  dialogues: string[];
+  feedbackNotes: string[];
+}> = {
+  es: {
+    label: "Spanish",
+    flag: "🇪🇸",
+    room: "meet.google.com/cub-spn",
+    trackTag: "Spanish DELE Track",
+    dialogues: [
+      "¡Hola! Let's practice rolling R sounds today.",
+      "«¿Nos pone dos cafés con leche, por favor?»",
+      "Perfect pronunciation on past tense verbs!"
+    ],
+    feedbackNotes: [
+      "\"Excellent pronunciation on rolling R sounds today! Next class: past tense verbs.\"",
+      "\"Great confidence in free speaking! Working on subjunctive mood next session.\"",
+      "\"Spot-on vocabulary usage! Practice the 5 new idioms before Thursday.\""
+    ]
+  },
+  fr: {
+    label: "French",
+    flag: "🇫🇷",
+    room: "meet.google.com/cub-fra",
+    trackTag: "French TEF Track",
+    dialogues: [
+      "Bonjour ! Pratiquons le subjonctif aujourd'hui.",
+      "« Un croissant chaud et un café, s'il vous plaît. »",
+      "Flawless pronunciation on the nasal vowels!"
+    ],
+    feedbackNotes: [
+      "\"Superbe progression sur le passé composé ! Next class: subjonctif.\"",
+      "\"Targeting TEF Canada CLB 7+ benchmarks in our upcoming oral mock.\"",
+      "\"Great natural cadence during our spontaneous dialogue drills.\""
+    ]
+  },
+  de: {
+    label: "German",
+    flag: "🇩🇪",
+    room: "meet.google.com/cub-deu",
+    trackTag: "German Goethe Track",
+    dialogues: [
+      "Hallo! Heute üben wir die Akkusativ-Präpositionen.",
+      "« Könnten Sie das bitte noch einmal wiederholen? »",
+      "Great grasp of TeKaMoLo word order today!"
+    ],
+    feedbackNotes: [
+      "\"Sehr gut! Clear mastery of Dativ endings today. Next: separable verbs.\"",
+      "\"Goethe-Zertifikat B2 oral benchmark simulation completed with high marks.\"",
+      "\"Natural conversational speed achieved in everyday Berlin dialogue.\""
+    ]
+  },
+  en: {
+    label: "English",
+    flag: "🇬🇧",
+    room: "meet.google.com/cub-eng",
+    trackTag: "Executive English Track",
+    dialogues: [
+      "Welcome! Let's rehearse your quarterly pitch.",
+      "« Let's touch base to align our product roadmap. »",
+      "Crisp boardroom cadence and authoritative pacing!"
+    ],
+    feedbackNotes: [
+      "\"Eliminated filler pauses completely during the 10-minute slide walkthrough.\"",
+      "\"Targeted executive presence and persuasive stakeholder objections handling.\"",
+      "\"Spot-on business idioms and international negotiation phrasing.\""
+    ]
+  }
+};
 
 export default function HeroSection() {
   const [cycle, setCycle] = useState(0);
+  const [selectedLang, setSelectedLang] = useState<string>("es");
 
   // Independent staggered animation states for each card
   const [slotIndex, setSlotIndex] = useState(1);
@@ -77,7 +140,7 @@ export default function HeroSection() {
   // Card 2: Independent live session & dialogue timeline (every 3.6s + continuous 1s timer)
   useEffect(() => {
     const dialogueInterval = setInterval(() => {
-      setDialogueIndex((d) => (d + 1) % dialogues.length);
+      setDialogueIndex((d) => (d + 1) % 3);
       setDialogueKey((k) => k + 1);
     }, 3600);
 
@@ -95,7 +158,7 @@ export default function HeroSection() {
   useEffect(() => {
     const fluencyInterval = setInterval(() => {
       setFluencyIndex((f) => (f + 1) % 3);
-      setFeedbackIndex((b) => (b + 1) % feedbackNotes.length);
+      setFeedbackIndex((b) => (b + 1) % 3);
     }, 3200);
 
     const skillInterval = setInterval(() => {
@@ -227,7 +290,7 @@ export default function HeroSection() {
               {/* Top Room Tag & Continuous Organic Audio Waveform */}
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-mono text-blue-200/80 bg-white/10 px-2 py-0.5 rounded backdrop-blur-xs">
-                  meet.google.com/cub-spn
+                  {heroLangPresets[selectedLang]?.room || "meet.google.com/cub-spn"}
                 </span>
                 
                 {/* 5-Bar Fluid Continuous Audio Wave Equalizer */}
@@ -242,18 +305,18 @@ export default function HeroSection() {
 
               {/* Dynamic Rotating Chat Dialogue Bubble with Viral AE Pop Bounce */}
               <div
-                key={dialogueKey}
+                key={`${selectedLang}-${dialogueKey}`}
                 className="bg-white/10 border border-white/20 backdrop-blur-md p-2.5 rounded-lg text-white space-y-1 transform animate-[aeBubblePop_0.6s_cubic-bezier(0.34,1.56,0.64,1)_forwards]"
               >
                 <div className="flex items-center justify-between text-[10px] text-blue-200">
                   <span className="font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Divine (Tutor)
+                    Divine ({heroLangPresets[selectedLang]?.label || "Tutor"})
                   </span>
                   <span className="text-[9px] opacity-75">Speaking</span>
                 </div>
                 <p className="text-[11px] font-normal leading-snug text-slate-100">
-                  {dialogues[dialogueIndex]}
+                  {heroLangPresets[selectedLang]?.dialogues[dialogueIndex % (heroLangPresets[selectedLang]?.dialogues.length || 1)]}
                 </p>
               </div>
             </div>
@@ -313,12 +376,14 @@ export default function HeroSection() {
 
             {/* Tutor Feedback Note with AE Bouncy Spring Pop */}
             <div
-              key={feedbackIndex}
+              key={`${selectedLang}-${feedbackIndex}`}
               className="p-3 bg-surface-muted/80 border border-border-light rounded-xl space-y-1.5 animate-[aeBubblePop_0.6s_cubic-bezier(0.34,1.56,0.64,1)_forwards]"
             >
-              <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Instructor Insight</span>
+              <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">
+                Instructor Insight ({heroLangPresets[selectedLang]?.label})
+              </span>
               <p className="font-body text-[11px] text-text-primary leading-relaxed font-normal">
-                {feedbackNotes[feedbackIndex]}
+                {heroLangPresets[selectedLang]?.feedbackNotes[feedbackIndex % (heroLangPresets[selectedLang]?.feedbackNotes.length || 1)]}
               </p>
             </div>
           </div>
@@ -396,6 +461,33 @@ export default function HeroSection() {
             >
               <span>How It Works</span>
             </Link>
+          </div>
+
+          {/* Interactive Language Selector Strip */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-xs font-mono text-text-subtle mr-1 hidden sm:inline">Try Language:</span>
+            {Object.entries(heroLangPresets).map(([key, lang]) => {
+              const isSelected = selectedLang === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => {
+                    setSelectedLang(key);
+                    setDialogueKey((k) => k + 1);
+                    setDialogueIndex(0);
+                  }}
+                  className={`tactile-btn px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 border ${
+                    isSelected
+                      ? "bg-text-primary text-white border-text-primary shadow-xs font-semibold scale-105"
+                      : "bg-white/80 backdrop-blur-xs text-text-secondary border-border-light hover:border-border-subtle hover:text-text-primary"
+                  }`}
+                >
+                  <span>{lang.flag}</span>
+                  <span>{lang.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 

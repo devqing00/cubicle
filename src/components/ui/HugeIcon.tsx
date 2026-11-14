@@ -35,7 +35,9 @@ interface HugeIconProps extends React.SVGProps<SVGSVGElement> {
     | "book-open"
     | "logout"
     | "chevron-left"
-    | "chevron-right";
+    | "chevron-right"
+    | "play"
+    | "pause";
   size?: number;
   className?: string;
 }
@@ -155,6 +157,15 @@ export default function HugeIcon({
     ),
     "chevron-right": (
       <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    ),
+    play: (
+      <polygon points="6 4 20 12 6 20 6 4" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+    ),
+    pause: (
+      <g fill="currentColor">
+        <rect x="6" y="4" width="4" height="16" rx="1"/>
+        <rect x="14" y="4" width="4" height="16" rx="1"/>
+      </g>
     ),
   };
 
