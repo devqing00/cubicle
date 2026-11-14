@@ -75,6 +75,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Settings", href: "/dashboard/settings", icon: "settings" as const },
       ];
 
+  const dockItems = isTutor
+    ? [
+        { name: "Overview", href: "/dashboard", icon: "home" as const },
+        { name: "Students", href: "/dashboard/students", icon: "users" as const },
+        { name: "Schedule", href: "/dashboard/schedule", icon: "calendar" as const },
+        { name: "Chat", href: "/dashboard/chat", icon: "comment" as const },
+        { name: "Settings", href: "/dashboard/settings", icon: "settings" as const },
+      ]
+    : [
+        { name: "Dashboard", href: "/dashboard", icon: "home" as const },
+        { name: "Book", href: "/dashboard/book", icon: "calendar" as const },
+        { name: "Schedule", href: "/dashboard/schedule", icon: "clock" as const },
+        { name: "Chat", href: "/dashboard/chat", icon: "comment" as const },
+        { name: "Settings", href: "/dashboard/settings", icon: "settings" as const },
+      ];
+
   // Auto-collapse sidebar on tablet screen resize (< 1024px)
   React.useEffect(() => {
     const handleResize = () => {
@@ -283,7 +299,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         )}
 
-        <main className="flex-1 p-4 sm:p-6 md:p-10 max-w-7xl w-full mx-auto pt-[72px] md:pt-10">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 md:p-10 max-w-7xl w-full mx-auto pt-[72px] pb-24 md:pt-10 md:pb-10">{children}</main>
+
+        {/* Mobile App-Style Bottom Navigation Dock */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-border-light px-2 py-1.5 flex items-center justify-around shadow-lg">
+          {dockItems.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all relative ${
+                  active ? "text-accent-blue font-bold" : "text-text-secondary hover:text-text-primary"
+                }`}
+              >
+                <div className={`p-1 rounded-xl transition-all ${active ? "bg-accent-blue/10 scale-105" : ""}`}>
+                  <HugeIcon name={item.icon} size={20} className={active ? "text-accent-blue" : "text-text-secondary"} />
+                </div>
+                <span className="text-[10px] mt-0.5 tracking-tight">{item.name}</span>
+                {active && (
+                  <span className="w-1 h-1 rounded-full bg-accent-blue absolute -bottom-0.5 left-1/2 -translate-x-1/2" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
       {/* Reusable Sign Out Confirmation Modal */}

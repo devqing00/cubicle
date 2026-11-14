@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import SpotlightCard from "@/components/ui/SpotlightCard";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -20,6 +21,7 @@ const tracks = [
     intensity: "30 or 60 min",
     headline: "Rolling R sounds, subjunctive verbs & workplace fluency",
     detail: "From basic conversational confidence to advanced DELE exam certifications. Practice live speaking dialogues with real-time feedback.",
+    topics: ["Subjunctive Mood", "DELE Oral Mock", "Castilian vs LatAm Idioms"],
     image: "/images/tracks/spanish.jpg",
     accent: "Spanish",
     colSpan: "lg:col-span-7",
@@ -34,6 +36,7 @@ const tracks = [
     intensity: "60 or 90 min",
     headline: "Immigration interview simulations & past tense mastery",
     detail: "Targeted CLB 7+ Canadian immigration benchmarks with intensive speaking drills and listening comprehension.",
+    topics: ["TEF Section A & B", "Subjonctif & Passé Composé", "Express Entry Oral"],
     image: "/images/tracks/french.jpg",
     accent: "French",
     colSpan: "lg:col-span-5",
@@ -48,6 +51,7 @@ const tracks = [
     intensity: "60 min",
     headline: "Global boardroom presentations, accent clarity & idioms",
     detail: "Tailored for international founders, engineers, and corporate managers delivering high-stakes pitches and reports.",
+    topics: ["Executive Presentations", "Accent Neutralization", "Boardroom Debates"],
     image: "/images/tracks/english.jpg",
     accent: "English",
     colSpan: "lg:col-span-5",
@@ -62,6 +66,7 @@ const tracks = [
     intensity: "60 or 90 min",
     headline: "Grammar breakdown, case systems & confident speaking",
     detail: "Master the German case system (Nominativ, Akkusativ, Dativ, Genitiv) with structural drills and mock oral exams.",
+    topics: ["Case Systems & Endings", "Sprechen Prüfung", "Sentence Structure (TeKaMoLo)"],
     image: "/images/tracks/german.jpg",
     accent: "German",
     colSpan: "lg:col-span-7",
@@ -118,7 +123,7 @@ export default function DifferentiatorSection() {
         y: 35,
         duration: 0.65,
         stagger: 0.08,
-        ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+        ease: "power2.out",
         scrollTrigger: {
           trigger: ".pillar-bento-grid",
           start: "top 85%",
@@ -132,7 +137,7 @@ export default function DifferentiatorSection() {
         y: 40,
         duration: 0.75,
         stagger: 0.12,
-        ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+        ease: "power2.out",
         scrollTrigger: {
           trigger: ".bento-track-grid",
           start: "top 82%",
@@ -152,6 +157,10 @@ export default function DifferentiatorSection() {
         {/* Section Headline */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
           <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-blue/10 border border-accent-blue/20 text-accent-blue text-xs font-bold uppercase tracking-wider mb-3">
+              <HugeIcon name="sparkles" size={13} />
+              <span>Pedagogy That Works</span>
+            </div>
             <h2 className="font-heading text-3xl sm:text-5xl md:text-6xl font-bold text-text-primary leading-[1.05] tracking-tight">
               Learning designed around <span className="italic text-accent-blue">your life.</span>
             </h2>
@@ -164,13 +173,14 @@ export default function DifferentiatorSection() {
         {/* Sophisticated Pillars Bento Grid */}
         <div className="pillar-bento-grid grid gap-6 grid-cols-1 md:grid-cols-12 mb-20">
           {pillars.map((item, idx) => (
-            <div
+            <SpotlightCard
               key={idx}
-              className={`pillar-bento-card ${item.colSpan} tactile-card swiss-lift rounded-[28px] p-7 sm:p-8 flex flex-col justify-between group`}
+              spotlightColor="rgba(2, 132, 199, 0.08)"
+              className={`pillar-bento-card ${item.colSpan} tactile-card rounded-[28px] p-7 sm:p-8 flex flex-col justify-between group border border-border-light hover:border-accent-blue/30 shadow-xs hover:shadow-md transition-all duration-300`}
             >
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <div className="w-11 h-11 rounded-2xl bg-surface-muted border border-border-light flex items-center justify-center text-text-primary group-hover:border-accent-blue/40 group-hover:text-accent-blue transition-colors">
+                  <div className="w-11 h-11 rounded-2xl bg-surface-muted border border-border-light flex items-center justify-center text-text-primary group-hover:border-accent-blue/40 group-hover:text-accent-blue group-hover:scale-105 transition-all">
                     <HugeIcon name={item.icon} size={22} />
                   </div>
                   <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-accent-blue bg-accent-blue/10 px-2.5 py-1 rounded-full border border-accent-blue/20">
@@ -184,7 +194,7 @@ export default function DifferentiatorSection() {
                   {item.description}
                 </p>
               </div>
-            </div>
+            </SpotlightCard>
           ))}
         </div>
 
@@ -200,7 +210,7 @@ export default function DifferentiatorSection() {
           </div>
           <Link
             href="/signup?redirect=/dashboard/book"
-            className="swiss-link text-xs font-semibold hover:text-accent-blue"
+            className="swiss-link text-xs font-semibold hover:text-accent-blue flex items-center gap-1.5"
           >
             <span>Explore All Available Tracks</span>
             <HugeIcon name="arrow-up-right" size={14} />
@@ -210,9 +220,10 @@ export default function DifferentiatorSection() {
         {/* Sophisticated Language Tracks Bento Grid */}
         <div className="bento-track-grid grid grid-cols-1 lg:grid-cols-12 gap-6">
           {tracks.map((t) => (
-            <div
+            <SpotlightCard
               key={t.id}
-              className={`bento-track-card ${t.colSpan} tactile-card-dark swiss-lift rounded-[32px] overflow-hidden flex flex-col justify-between relative group min-h-[380px] p-7 sm:p-9`}
+              spotlightColor="rgba(255, 255, 255, 0.12)"
+              className={`bento-track-card ${t.colSpan} tactile-card-dark rounded-[32px] overflow-hidden flex flex-col justify-between relative group min-h-[380px] p-7 sm:p-9 border border-white/10 hover:border-accent-blue/40 shadow-xl transition-all duration-300`}
             >
               {/* Background Photographic Atmosphere */}
               <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -220,7 +231,8 @@ export default function DifferentiatorSection() {
                   src={t.image}
                   alt={t.language}
                   fill
-                  className="object-cover object-center group-hover:scale-[1.03] transition-transform duration-500 ease-out opacity-25 group-hover:opacity-35"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover object-center group-hover:scale-[1.04] transition-transform duration-700 ease-out opacity-25 group-hover:opacity-35"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0b0e14] via-[#0b0e14]/90 to-transparent" />
                 <div className="absolute inset-0 bg-radial at-top from-transparent to-[#0b0e14]/80" />
@@ -228,7 +240,7 @@ export default function DifferentiatorSection() {
 
               {/* Card Header Metadata */}
               <div className="relative z-10">
-                <div className="flex items-center justify-between gap-3 mb-6">
+                <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs font-bold text-accent-blue bg-accent-blue/15 px-2.5 py-1 rounded-full border border-accent-blue/30">
                       ({t.code}) {t.accent.toUpperCase()}
@@ -246,13 +258,25 @@ export default function DifferentiatorSection() {
                 <h3 className="font-heading text-2xl sm:text-3xl font-bold text-white tracking-tight leading-snug mb-2 group-hover:text-sky-300 transition-colors">
                   {t.language}
                 </h3>
-                <p className="font-body text-xs sm:text-sm text-slate-300 leading-relaxed font-normal max-w-xl">
+                <p className="font-body text-xs sm:text-sm text-slate-300 leading-relaxed font-normal max-w-xl mb-4">
                   {t.detail}
                 </p>
+
+                {/* Interactive Focus Topics */}
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {t.topics.map((topic, i) => (
+                    <span
+                      key={i}
+                      className="text-[11px] font-mono font-medium px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-slate-300 group-hover:border-accent-blue/30 group-hover:text-white transition-colors"
+                    >
+                      {topic}
+                    </span>
+                  ))}
+                </div>
               </div>
 
-              {/* Card Footer Actions & Meta (No Hairline Borders) */}
-              <div className="relative z-10 pt-6 mt-6 flex flex-wrap items-center justify-between gap-4">
+              {/* Card Footer Actions & Meta */}
+              <div className="relative z-10 pt-6 mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5 text-xs text-slate-400 font-mono">
                     <HugeIcon name="calendar" size={14} className="text-accent-blue" />
@@ -275,7 +299,7 @@ export default function DifferentiatorSection() {
                   <HugeIcon name="arrow-right" size={14} />
                 </Link>
               </div>
-            </div>
+            </SpotlightCard>
           ))}
         </div>
 

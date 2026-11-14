@@ -298,7 +298,7 @@ export default function ChatPage() {
       </div>
 
       {/* Main Chat Canvas */}
-      <div className="tactile-card rounded-[28px] overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[580px] max-h-[75vh]">
+      <div className="tactile-card rounded-[24px] sm:rounded-[28px] overflow-hidden grid grid-cols-1 md:grid-cols-12 h-[calc(100dvh-190px)] md:h-[680px]">
         
         {/* Left: Tutor Student Thread List (Only shown for Tutor) */}
         {isTutor && (

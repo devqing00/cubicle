@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import HugeIcon from "@/components/ui/HugeIcon";
+import ShimmerButton from "@/components/ui/ShimmerButton";
 
 // Pure 3D Composite-only transform styles (Zero Layout Reflows & 100% GPU Hardware Accelerated)
 const positionStyles = [
@@ -381,13 +382,14 @@ export default function HeroSection() {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link
+            <ShimmerButton
               href="/signup?redirect=/dashboard/book"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-text-primary text-white hover:bg-black rounded-full font-body text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg tactile-btn btn-tactile-dark"
+              variant="dark"
+              className="px-8 py-4 text-sm font-semibold shadow-md hover:shadow-lg"
             >
               <span>Start Free Trial</span>
               <HugeIcon name="arrow-right" size={16} />
-            </Link>
+            </ShimmerButton>
             <Link
               href="/how-it-works"
               className="inline-flex items-center gap-2 px-8 py-4 bg-white text-text-primary border border-border-light hover:border-accent-blue/50 hover:text-accent-blue rounded-full font-body text-sm font-semibold transition-colors duration-200 shadow-xs tactile-btn btn-tactile-secondary"
@@ -399,7 +401,7 @@ export default function HeroSection() {
 
         {/* 100% GPU Composite 3D Motion Cards Container */}
         <div 
-          className="relative w-full h-[460px] mt-4 mb-6 perspective-[1200px] transform scale-100 max-[900px]:scale-[0.8] max-sm:scale-[0.55] max-sm:-mt-[100px] max-sm:-mb-[80px]"
+          className="relative w-full h-[460px] mt-4 mb-6 perspective-[1200px] transform scale-100 max-[900px]:scale-[0.85] max-sm:scale-[0.72] max-sm:-mt-[45px] max-sm:-mb-[45px]"
           style={{ transformStyle: "preserve-3d" }}
         >
           {/* Luminous Ambient Shadow (Zero-Lag GPU Glow) */}
@@ -420,7 +422,7 @@ export default function HeroSection() {
                   willChange: "transform, opacity",
                   backfaceVisibility: "hidden"
                 }}
-                className="absolute left-1/2 top-0 -translate-x-1/2 w-[340px] h-[450px] bg-white p-6 border border-border-subtle rounded-2xl gap-4 flex flex-col justify-between select-none shadow-xl"
+                className="absolute left-1/2 top-0 -translate-x-1/2 w-[340px] h-[450px] bg-white p-6 border border-border-subtle rounded-2xl gap-4 flex flex-col justify-between select-none shadow-xl hover:shadow-2xl transition-shadow"
               >
                 {card.content}
               </div>

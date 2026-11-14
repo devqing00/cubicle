@@ -5,6 +5,7 @@ import Link from "next/link";
 import HugeIcon from "@/components/ui/HugeIcon";
 import { useAuth } from "@/lib/AuthContext";
 import Logo from "@/components/ui/Logo";
+import ShimmerButton from "@/components/ui/ShimmerButton";
 
 export default function Navbar() {
   const { user, loading } = useAuth();
@@ -74,12 +75,13 @@ export default function Navbar() {
                 >
                   Log In
                 </Link>
-                <Link
+                <ShimmerButton
                   href="/signup?redirect=/dashboard/book"
-                  className="tactile-btn btn-tactile-dark inline-flex items-center justify-center px-5 py-2 rounded-full font-body text-xs font-semibold"
+                  variant="dark"
+                  className="px-5 py-2 text-xs font-semibold"
                 >
                   Free Trial
-                </Link>
+                </ShimmerButton>
               </>
             )}
           </div>

@@ -468,140 +468,259 @@ export default function StudentsManagementPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px] text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border-light bg-surface-near-white/60 text-[11px] font-heading font-bold uppercase tracking-wider text-text-secondary whitespace-nowrap">
-                  <th className="py-4 px-6">Student</th>
-                  <th className="py-4 px-4">Language Track</th>
-                  <th className="py-4 px-4">Level & Goal</th>
-                  <th className="py-4 px-4">Sessions</th>
-                  <th className="py-4 px-4">Total Paid</th>
-                  <th className="py-4 px-6 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-light text-xs font-body">
-                {filteredStudents.map((student) => {
-                  const studentName =
-                    student.displayName || student.fullName || student.firstName || "Student Learner";
-                  const initial = studentName.charAt(0).toUpperCase();
-                  const targetLang = student.targetLanguage || "General";
-                  const level = student.experienceLevel || "Beginner";
-                  const totalSpent = student.totalSpent || 0;
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full min-w-[700px] text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border-light bg-surface-near-white/60 text-[11px] font-heading font-bold uppercase tracking-wider text-text-secondary whitespace-nowrap">
+                    <th className="py-4 px-6">Student</th>
+                    <th className="py-4 px-4">Language Track</th>
+                    <th className="py-4 px-4">Level & Goal</th>
+                    <th className="py-4 px-4">Sessions</th>
+                    <th className="py-4 px-4">Total Paid</th>
+                    <th className="py-4 px-6 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border-light text-xs font-body">
+                  {filteredStudents.map((student) => {
+                    const studentName =
+                      student.displayName || student.fullName || student.firstName || "Student Learner";
+                    const initial = studentName.charAt(0).toUpperCase();
+                    const targetLang = student.targetLanguage || "General";
+                    const level = student.experienceLevel || "Beginner";
+                    const totalSpent = student.totalSpent || 0;
 
-                  return (
-                    <tr key={student.uid} className="hover:bg-surface-near-white/50 transition-colors">
-                      {/* Name & Email */}
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-accent-blue/10 text-accent-blue border border-accent-blue/20 flex items-center justify-center font-heading font-bold text-xs shrink-0">
-                            {initial}
+                    return (
+                      <tr key={student.uid} className="hover:bg-surface-near-white/50 transition-colors">
+                        {/* Name & Email */}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-accent-blue/10 text-accent-blue border border-accent-blue/20 flex items-center justify-center font-heading font-bold text-xs shrink-0">
+                              {initial}
+                            </div>
+                            <div>
+                              <p className="font-heading font-bold text-xs text-text-primary">{studentName}</p>
+                              <p className="font-body text-[11px] text-text-secondary">{student.email}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-heading font-bold text-xs text-text-primary">{studentName}</p>
-                            <p className="font-body text-[11px] text-text-secondary">{student.email}</p>
+                        </td>
+
+                        {/* Language Track */}
+                        <td className="py-4 px-4">
+                          <span className="font-heading font-bold text-xs text-accent-blue capitalize">
+                            {targetLang}
+                          </span>
+                        </td>
+
+                        {/* Level & Goal */}
+                        <td className="py-4 px-4">
+                          <p className="font-semibold text-text-primary capitalize">{level}</p>
+                          <p className="text-[11px] text-text-secondary truncate max-w-[160px]">
+                            {student.learningGoal || "Conversational fluency"}
+                          </p>
+                        </td>
+
+                        {/* Sessions count */}
+                        <td className="py-4 px-4">
+                          <span className="font-semibold text-text-primary">
+                            {student.completedBookings || 0} / {student.totalBookings || 0}
+                          </span>
+                          <p className="text-[10px] text-text-secondary">Completed / Booked</p>
+                        </td>
+
+                        {/* Total Paid */}
+                        <td className="py-4 px-4 font-heading font-bold text-text-primary">
+                          ₦{totalSpent.toLocaleString()}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-4 px-6 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            {/* In-App Chat */}
+                            <Link
+                              href="/dashboard/chat"
+                              className="p-2 rounded-full hover:bg-surface-muted text-text-secondary hover:text-accent-blue transition-colors"
+                              title="Chat with Student"
+                            >
+                              <HugeIcon name="comment" size={16} />
+                            </Link>
+
+                            {/* Edit Student Profile */}
+                            <button
+                              onClick={() => openEditModal(student)}
+                              className="p-2 rounded-full hover:bg-surface-muted text-text-secondary hover:text-accent-blue transition-colors"
+                              title="Edit Student Profile"
+                            >
+                              <HugeIcon name="edit" size={16} />
+                            </button>
+
+                            {/* Private Notes */}
+                            <button
+                              onClick={() => {
+                                setSelectedStudentForNotes(student);
+                                setNotesInput(student.tutorNotes || "");
+                              }}
+                              className="p-2 rounded-full hover:bg-surface-muted text-text-secondary hover:text-text-primary transition-colors"
+                              title="Tutor Learning Notes"
+                            >
+                              <HugeIcon name="brain" size={16} />
+                            </button>
+
+                            {/* View Booking History */}
+                            <button
+                              onClick={() => setSelectedStudentForHistory(student)}
+                              className="p-2 rounded-full hover:bg-surface-muted text-text-secondary hover:text-text-primary transition-colors"
+                              title="Session History"
+                            >
+                              <HugeIcon name="calendar" size={16} />
+                            </button>
+
+                            {/* Schedule Lesson on behalf */}
+                            <button
+                              onClick={() => {
+                                setSelectedStudentForBooking(student);
+                                setManualDate(new Date().toISOString().split("T")[0]);
+                              }}
+                              className="px-2.5 py-1 bg-surface-muted hover:bg-text-primary hover:text-white rounded-full text-[11px] font-semibold text-text-primary transition-colors"
+                              title="Schedule on behalf"
+                            >
+                              + Schedule
+                            </button>
+
+                            {/* Delete Student */}
+                            <button
+                              onClick={() => setStudentToDelete(student)}
+                              className="p-2 rounded-full hover:bg-red-50 text-text-secondary hover:text-red-600 transition-colors"
+                              title="Delete Student Record"
+                            >
+                              <HugeIcon name="trash" size={16} />
+                            </button>
                           </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Touch-Optimized Card View */}
+            <div className="md:hidden divide-y divide-border-light">
+              {filteredStudents.map((student) => {
+                const studentName =
+                  student.displayName || student.fullName || student.firstName || "Student Learner";
+                const initial = studentName.charAt(0).toUpperCase();
+                const targetLang = student.targetLanguage || "General";
+                const level = student.experienceLevel || "Beginner";
+                const totalSpent = student.totalSpent || 0;
+                const studentPhone = (student.whatsapp || student.whatsappNumber || student.phoneNumber || "").replace(/[^0-9]/g, "");
+
+                return (
+                  <div key={student.uid} className="p-5 space-y-4 bg-white hover:bg-surface-near-white/40 transition-colors">
+                    {/* Top Row: Avatar, Name & Language Badge */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-full bg-accent-blue/10 text-accent-blue border border-accent-blue/20 flex items-center justify-center font-heading font-bold text-sm shrink-0">
+                          {initial}
                         </div>
-                      </td>
+                        <div className="min-w-0">
+                          <p className="font-heading font-bold text-sm text-text-primary leading-tight truncate">{studentName}</p>
+                          <p className="font-body text-xs text-text-secondary truncate">{student.email}</p>
+                        </div>
+                      </div>
+                      <span className="font-heading font-bold text-xs text-accent-blue bg-accent-blue/10 px-2.5 py-1 rounded-full border border-accent-blue/20 shrink-0">
+                        {targetLang}
+                      </span>
+                    </div>
 
-                      {/* Language Track */}
-                      <td className="py-4 px-4">
-                        <span className="font-heading font-bold text-xs text-accent-blue capitalize">
-                          {targetLang}
-                        </span>
-                      </td>
+                    {/* Middle Info: Level & Goal, Sessions, Spend */}
+                    <div className="grid grid-cols-2 gap-2 p-3 bg-surface-near-white rounded-xl border border-border-light text-xs font-body">
+                      <div>
+                        <span className="text-[10px] text-text-subtle uppercase font-mono block">Level & Goal</span>
+                        <span className="font-semibold text-text-primary capitalize">{level}</span>
+                        <p className="text-[11px] text-text-secondary truncate">{student.learningGoal || "Conversational fluency"}</p>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-text-subtle uppercase font-mono block">Sessions & Spend</span>
+                        <span className="font-semibold text-text-primary">{student.completedBookings || 0} / {student.totalBookings || 0} done</span>
+                        <p className="text-[11px] font-bold text-emerald-600">₦{totalSpent.toLocaleString()}</p>
+                      </div>
+                    </div>
 
-                      {/* Level & Goal */}
-                      <td className="py-4 px-4">
-                        <p className="font-semibold text-text-primary capitalize">{level}</p>
-                        <p className="text-[11px] text-text-secondary truncate max-w-[160px]">
-                          {student.learningGoal || "Conversational fluency"}
-                        </p>
-                      </td>
+                    {/* Bottom Row: Quick Action Touch Buttons */}
+                    <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        {/* Chat */}
+                        <Link
+                          href="/dashboard/chat"
+                          className="p-2 rounded-xl bg-surface-muted hover:bg-accent-blue/10 text-text-secondary hover:text-accent-blue transition-colors"
+                          title="Chat with Student"
+                        >
+                          <HugeIcon name="comment" size={16} />
+                        </Link>
 
-                      {/* Sessions count */}
-                      <td className="py-4 px-4">
-                        <span className="font-semibold text-text-primary">
-                          {student.completedBookings || 0} / {student.totalBookings || 0}
-                        </span>
-                        <p className="text-[10px] text-text-secondary">Completed / Booked</p>
-                      </td>
-
-                      {/* Total Paid */}
-                      <td className="py-4 px-4 font-heading font-bold text-text-primary">
-                        ₦{totalSpent.toLocaleString()}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-4 px-6 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {/* In-App Chat */}
-                          <Link
-                            href="/dashboard/chat"
-                            className="p-2 rounded-full hover:bg-surface-muted text-text-secondary hover:text-accent-blue transition-colors"
-                            title="Chat with Student"
+                        {/* WhatsApp if available */}
+                        {studentPhone && (
+                          <a
+                            href={`https://wa.me/${studentPhone}?text=${encodeURIComponent(`Hi ${studentName}, this is your Cubicle instructor.`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+                            title="WhatsApp"
                           >
                             <HugeIcon name="comment" size={16} />
-                          </Link>
+                          </a>
+                        )}
 
-                          {/* Edit Student Profile */}
-                          <button
-                            onClick={() => openEditModal(student)}
-                            className="p-2 rounded-full hover:bg-surface-muted text-text-secondary hover:text-accent-blue transition-colors"
-                            title="Edit Student Profile"
-                          >
-                            <HugeIcon name="edit" size={16} />
-                          </button>
+                        {/* Notes */}
+                        <button
+                          onClick={() => {
+                            setSelectedStudentForNotes(student);
+                            setNotesInput(student.tutorNotes || "");
+                          }}
+                          className="p-2 rounded-xl bg-surface-muted hover:bg-surface-near-white text-text-secondary hover:text-text-primary transition-colors"
+                          title="Tutor Learning Notes"
+                        >
+                          <HugeIcon name="brain" size={16} />
+                        </button>
 
-                          {/* Private Notes */}
-                          <button
-                            onClick={() => {
-                              setSelectedStudentForNotes(student);
-                              setNotesInput(student.tutorNotes || "");
-                            }}
-                            className="p-2 rounded-full hover:bg-surface-muted text-text-secondary hover:text-text-primary transition-colors"
-                            title="Tutor Learning Notes"
-                          >
-                            <HugeIcon name="brain" size={16} />
-                          </button>
+                        {/* Edit */}
+                        <button
+                          onClick={() => openEditModal(student)}
+                          className="p-2 rounded-xl bg-surface-muted hover:bg-surface-near-white text-text-secondary hover:text-text-primary transition-colors"
+                          title="Edit Profile"
+                        >
+                          <HugeIcon name="edit" size={16} />
+                        </button>
 
-                          {/* View Booking History */}
-                          <button
-                            onClick={() => setSelectedStudentForHistory(student)}
-                            className="p-2 rounded-full hover:bg-surface-muted text-text-secondary hover:text-text-primary transition-colors"
-                            title="Session History"
-                          >
-                            <HugeIcon name="calendar" size={16} />
-                          </button>
+                        {/* History */}
+                        <button
+                          onClick={() => setSelectedStudentForHistory(student)}
+                          className="p-2 rounded-xl bg-surface-muted hover:bg-surface-near-white text-text-secondary hover:text-text-primary transition-colors"
+                          title="Session History"
+                        >
+                          <HugeIcon name="calendar" size={16} />
+                        </button>
+                      </div>
 
-                          {/* Schedule Lesson on behalf */}
-                          <button
-                            onClick={() => {
-                              setSelectedStudentForBooking(student);
-                              setManualDate(new Date().toISOString().split("T")[0]);
-                            }}
-                            className="px-2.5 py-1 bg-surface-muted hover:bg-text-primary hover:text-white rounded-full text-[11px] font-semibold text-text-primary transition-colors"
-                            title="Schedule on behalf"
-                          >
-                            + Schedule
-                          </button>
-
-                          {/* Delete Student */}
-                          <button
-                            onClick={() => setStudentToDelete(student)}
-                            className="p-2 rounded-full hover:bg-red-50 text-text-secondary hover:text-red-600 transition-colors"
-                            title="Delete Student Record"
-                          >
-                            <HugeIcon name="trash" size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      {/* Schedule Button */}
+                      <button
+                        onClick={() => {
+                          setSelectedStudentForBooking(student);
+                          setManualDate(new Date().toISOString().split("T")[0]);
+                        }}
+                        className="tactile-btn btn-tactile-dark px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 shrink-0"
+                      >
+                        <HugeIcon name="sparkles" size={12} className="text-accent-blue" />
+                        <span>Schedule</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 

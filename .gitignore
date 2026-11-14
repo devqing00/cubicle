@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local scratch, outputs & heavy binary models (> 100MB blocked by GitHub)
+scratch/
+output/
+*.onnx
+*.pt
+*.pth
+*.bin
